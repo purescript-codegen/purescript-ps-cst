@@ -6,10 +6,8 @@ module Language.PS.AST.Types where
 
 import Prelude
 
-import Data.Array (zip) as Array
 import Data.Either (Either)
-import Data.Eq (class Eq1)
-import Data.Foldable (class Foldable, all, foldMap, foldlDefault, foldrDefault)
+import Data.Foldable (class Foldable, foldMap, foldlDefault, foldrDefault)
 import Data.Functor.Mu (Mu)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
@@ -18,11 +16,9 @@ import Data.Map (Map)
 import Data.Map (unionWith) as Map
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
-import Data.Ord (class Ord1)
 import Data.Set (Set)
 import Data.Set (fromFoldable, union) as Set
 import Data.Traversable (class Traversable, sequence, traverseDefault)
-import Data.Tuple (uncurry)
 
 -- | No need for imports list as they are collected from declarations
 -- | during final codegen.
@@ -78,91 +74,6 @@ type Type = Mu TypeF
 derive instance genericPropType :: Generic (TypeF ref) _
 instance showPropType :: Show ref => Show (TypeF ref) where
   show p = genericShow p
-
--- | This is __literal__ equality check which doesn't
--- | take into an account variable renaming etc.
--- | It is used only by `AST.Monomorphic` so it
--- | seems working there.
--- | Should we drop this trivial instance?
-instance eq1TypeF :: Eq1 TypeF where
-  eq1 (TypeApp f1 a1) (TypeApp f2 a2) =
-    eq f1 f2 && (all (uncurry eq) (Array.zip a1 a2))
-  eq1 (TypeApp _ _) _ = false
-  eq1 _ (TypeApp _ _) = false
-  eq1 (TypeArr arg1 res1) (TypeArr arg2 res2) = eq arg1 arg2 && eq res1 res2
-  eq1 (TypeArr arg1 res1) _ = false
-  eq1 _ (TypeArr arg1 res1) = false
-  eq1 (TypeArray t1) (TypeArray t2) = eq t1 t2
-  eq1 (TypeArray t1) _ = false
-  eq1 _ (TypeArray t1) = false
-  eq1 (TypeConstructor tc1) (TypeConstructor tc2) = tc1 == tc2
-  eq1 (TypeConstructor tc1) _ = false
-  eq1 _ (TypeConstructor tc1) = false
-  eq1 (TypeConstrained c1 t1) (TypeConstrained c2 t2) = c1 == c2 && t1 == t2
-  eq1 (TypeConstrained _ _) _ = false
-  eq1 _ (TypeConstrained _ _) = false
-  eq1 TypeBoolean TypeBoolean = true
-  eq1 TypeBoolean _ = false
-  eq1 _ TypeBoolean = false
-  eq1 (TypeForall v1 t1) (TypeForall v2 t2)
-    = Set.fromFoldable v1 == Set.fromFoldable v2
-    && eq t1 t2
-  eq1 (TypeForall v1 t1) _ = false
-  eq1 _ (TypeForall v1 t1) = false
-  eq1 TypeNumber TypeNumber = true
-  eq1 TypeNumber _ = false
-  eq1 _ TypeNumber = false
-  eq1 (TypeRecord row1) (TypeRecord row2) = row1 == row2
-  eq1 (TypeRecord _) _ = false
-  eq1 _ (TypeRecord _) = false
-  eq1 (TypeRow row1) (TypeRow row2) = row1 == row2
-  eq1 (TypeRow _) _ = false
-  eq1 _ (TypeRow _) = false
-  eq1 TypeString TypeString = true
-  eq1 TypeString _ = false
-  eq1 _ TypeString = false
-  eq1 (TypeVar v1) (TypeVar v2) = v1 == v2
-
--- | Should we drop this and similar instances and move on
--- | to unoredred collections when neccessary?
-instance ord1TypeF :: Ord1 TypeF where
-  compare1 (TypeApp f1 a1) (TypeApp f2 a2) =
-    compare f1 f2 <> compare a1 a2
-  compare1 (TypeApp _ _) _ = GT
-  compare1 _ (TypeApp _ _) = GT
-  compare1 (TypeArr arg1 res1) (TypeArr arg2 res2) =
-    compare arg1 arg2 <> compare res1 res2
-  compare1 (TypeArr _ _) _ = GT
-  compare1 _ (TypeArr _ _) = GT
-  compare1 (TypeArray t1) (TypeArray t2) = compare t1 t2
-  compare1 (TypeArray _) _ = GT
-  compare1 _ (TypeArray _) = GT
-  compare1 TypeBoolean TypeBoolean = EQ
-  compare1 TypeBoolean _ = GT
-  compare1 _ TypeBoolean = GT
-  compare1 (TypeConstrained c1 ref1) (TypeConstrained c2 ref2) = compare c1 c2 <> compare ref1 ref2
-  compare1 (TypeConstrained _ _) _ = GT
-  compare1 _ (TypeConstrained _ _) = GT
-  compare1 (TypeConstructor tc1) (TypeConstructor tc2) = compare tc1 tc2
-  compare1 (TypeConstructor tc1) _ = GT
-  compare1 _ (TypeConstructor tc1) = GT
-  compare1 (TypeForall v1 t1) (TypeForall v2 t2)
-    = compare v1 v2 <> compare t1 t2
-  compare1 (TypeForall _ _) _ = GT
-  compare1 _ (TypeForall _ _) = GT
-  compare1 TypeNumber TypeNumber = EQ
-  compare1 TypeNumber _ = GT
-  compare1 _ TypeNumber = GT
-  compare1 (TypeRecord (Row row1)) (TypeRecord (Row row2)) = compare row1 row2
-  compare1 (TypeRecord _) _ = GT
-  compare1 _ (TypeRecord _) = GT
-  compare1 (TypeRow (Row row1)) (TypeRow (Row row2)) = compare row1 row2
-  compare1 (TypeRow _) _ = GT
-  compare1 _ (TypeRow _) = GT
-  compare1 TypeString TypeString = EQ
-  compare1 TypeString _ = GT
-  compare1 _ TypeString = GT
-  compare1 (TypeVar i1) (TypeVar i2) = compare i1 i2
 
 derive instance functorTypeF :: Functor TypeF
 instance foldableTypeF :: Foldable TypeF where
@@ -247,8 +158,6 @@ data UnionMember
   | UnionNumber String Number
   | UnionConstructor String Type
   | UnionUndefined
-derive instance eqUnionMember :: Eq UnionMember
-derive instance ordUnionMember :: Ord UnionMember
 derive instance genericUnionMember :: Generic UnionMember _
 instance showUnionMember :: Show UnionMember where
   show = genericShow
