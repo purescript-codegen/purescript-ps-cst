@@ -143,25 +143,6 @@ type Row = RowF Type
 emptyRow :: Row
 emptyRow = Row { labels: mempty, tail: Nothing }
 
-data Union = Union QualifiedTypeName (Array UnionMember)
-derive instance genericUnion :: Generic Union _
-instance showUnion :: Show Union where
-  show = genericShow
-
--- | XXX: We should be able to handle also more general
--- | `UnionConstructor Type` too.
-data UnionMember
-  = UnionBoolean Boolean
-  | UnionString String
-  | UnionStringName String String
-  | UnionNull
-  | UnionNumber String Number
-  | UnionConstructor String Type
-  | UnionUndefined
-derive instance genericUnionMember :: Generic UnionMember _
-instance showUnionMember :: Show UnionMember where
-  show = genericShow
-
 type RowLabel = String
 
 newtype Ident = Ident String
