@@ -1,0 +1,3 @@
+module FooModuleName where
+
+data Foo = Bar Boolean { foo :: Number } | Baz Boolean

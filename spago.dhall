@@ -16,6 +16,10 @@ You can edit this file as you like.
     , "strings"
     , "strings-extra"
     , "unicode"
+    , "spec"
+    , "node-path"
+    , "node-fs-aff"
+    , "ansi"
     ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

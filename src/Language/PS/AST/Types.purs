@@ -199,6 +199,8 @@ type ValueBindingFields =
   , signature :: Maybe Type
   }
 
+data DeclDataType = DeclDataTypeData | DeclDataTypeNewtype
+
 data Declaration
   = DeclInstance
     { head ::
@@ -210,7 +212,8 @@ data Declaration
     }
   | DeclForeignValue { ident :: Ident, type :: Type }
   | DeclForeignData { typeName :: TypeName } -- , "kind" :: Maybe KindName }
-  | DeclType { typeName :: TypeName, "type" :: Type, vars :: Array Ident }
+  | DeclType { typeName :: TypeName, type :: Type, vars :: Array Ident }
+  | DeclData { dataDeclType :: DeclDataType, typeName :: TypeName, vars :: Array Ident, constructors :: Array { name :: TypeName, types :: Array Type } }
   | DeclValue ValueBindingFields
 
 newtype ClassName = ClassName String

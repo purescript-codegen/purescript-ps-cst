@@ -39,6 +39,7 @@ declarationImports (DeclValue { value, signature: Just s }) =
   cata typeImportsAlgebra s <> cata exprImportsAlgebra value.expr
 declarationImports (DeclValue { value, signature: Nothing }) =
   cata exprImportsAlgebra value.expr
+declarationImports (DeclData _) = Imports mempty
 
 typeImportsAlgebra :: Algebra TypeF Imports
 typeImportsAlgebra = case _ of
@@ -64,6 +65,7 @@ typeImportsAlgebra = case _ of
     rowImports (Row r) =
       (fromMaybe mempty $ r.tail >>= hush >>= qualifiedTypeNameImport)
       <> (fold r.labels)
+
 qualifiedTypeNameImport :: QualifiedName TypeName -> Maybe Imports
 qualifiedTypeNameImport { moduleName: Just moduleName, name: t } =
   Just $ importsSingleton moduleName (ImportType t)

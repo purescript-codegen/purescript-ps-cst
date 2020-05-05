@@ -1,0 +1,9 @@
+{
+  "name": "purescript-ps-ast",
+  "version": "1.0.0",
+  "repository": "https://github.com/srghma/purescript-ps-ast",
+  "license": "BSD",
+  "devDependencies": {
+    "ansidiff": "^1.0.0"
+  }
+}

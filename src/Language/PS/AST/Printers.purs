@@ -1,11 +1,13 @@
 module Language.PS.AST.Printers where
 
+import Language.PS.AST.Types
 import Prelude
 
 import Data.Array (cons, fromFoldable, null) as Array
 import Data.Char.Unicode (isUpper)
 import Data.Either (Either(..), fromRight)
 import Data.Foldable (foldMap, intercalate)
+import Data.List (List(..))
 import Data.List (intercalate) as List
 import Data.Map (toUnfoldable) as Map
 import Data.Maybe (Maybe(..))
@@ -18,7 +20,7 @@ import Data.String.Regex (test) as Regex
 import Data.String.Regex.Flags (noFlags) as Regex.Flags
 import Data.Tuple (Tuple(..))
 import Language.PS.AST.Imports (declarationImports, importsDeclarations)
-import Language.PS.AST.Types (Declaration(..), ExprF(..), Ident(..), Import(..), ImportDecl(..), Module(..), ModuleName(..), QualifiedName, RowF(..), TypeF(..), TypeName(..), ValueBindingFields, reservedNames)
+import Language.PS.AST.Sugar.Type (constructor)
 import Matryoshka (Algebra, cata)
 import Partial.Unsafe (unsafePartial)
 
@@ -31,13 +33,15 @@ line = joinWith " "
 printModule :: Module -> String
 printModule (Module { moduleName, declarations }) = lines $
   [ printModuleHead moduleName
-  , ""
-  , List.intercalate "\n" $ map printImport imports
-  , ""
+  , printedImports imports
   , List.intercalate "\n\n" $ map printDeclaration declarations
+  , ""
   ]
   where
-    imports = importsDeclarations <<< foldMap (declarationImports) $ declarations
+    imports = importsDeclarations <<< foldMap declarationImports $ declarations
+
+    printedImports Nil = ""
+    printedImports imports = List.intercalate "\n" $ map printImport imports
 
 printImport :: ImportDecl -> String
 printImport (ImportDecl { moduleName: ModuleName "Prelude" }) = "import Prelude"
@@ -63,8 +67,8 @@ printModuleHead moduleName =
 printDeclaration :: Declaration -> String
 printDeclaration (DeclForeignData { typeName: TypeName name }) = -- , "kind": k }) =
   line [ "foreign import data", name, "::", "Type" ] -- fromMaybe "Type" k
-printDeclaration (DeclForeignValue { ident: Ident ident, "type": t }) = -- , "kind": k }) =
-  line [ "foreign import", ident, "::", cata printType t StandAlone ] -- fromMaybe "Type" k
+printDeclaration (DeclForeignValue { ident: Ident ident, "type": type_ }) = -- , "kind": k }) =
+  line [ "foreign import", ident, "::", cata printType type_ StandAlone ] -- fromMaybe "Type" k
 printDeclaration (DeclInstance { head, body }) = lines $ Array.cons h (map (indent <<< printValueBindingFields) body)
   where
     indent = append "  "
@@ -73,8 +77,26 @@ printDeclaration (DeclInstance { head, body }) = lines $ Array.cons h (map (inde
       , line (map (flip (cata printType) InApplication) head.types), "where"
       ]
 printDeclaration (DeclValue v) = printValueBindingFields v
-printDeclaration (DeclType { typeName, "type": t, vars }) =
-  line ["type", unwrap typeName, line $ (map unwrap) vars, "=", cata printType t StandAlone]
+printDeclaration (DeclType { typeName, "type": type_, vars }) =
+  line ["type", unwrap typeName, line $ (map unwrap) vars, "=", cata printType type_ StandAlone]
+printDeclaration (DeclData { dataDeclType, typeName, vars, constructors }) =
+  (lines [ line [printDeclDataType dataDeclType, unwrap typeName, line $ (map unwrap) vars] ]) <> printedConstructors
+  where
+    printedConstructors :: String
+    printedConstructors =
+      constructors
+      # map printConstructor
+      # joinWith " | "
+      # ("= " <> _)
+
+    printConstructor :: { name :: TypeName, types :: Array Type } -> String
+    printConstructor constructor = line $ [unwrap constructor.name] <> map (\type_ -> cata printType type_ InApplication) constructor.types
+
+    indent = append "  "
+
+printDeclDataType :: DeclDataType -> String
+printDeclDataType DeclDataTypeData = "data"
+printDeclDataType DeclDataTypeNewtype = "newtype"
 
 printValueBindingFields :: ValueBindingFields -> String
 printValueBindingFields { value: { binders, name: Ident name, expr }, signature } =
@@ -161,7 +183,7 @@ printRowLabel l = case SCU.uncons l of
 printType :: Algebra TypeF (PrintingContext -> String)
 printType = case _ of
   TypeApp l params -> parens (line $ Array.cons (l InApplication) (map (_ $ InApplication) params))
-  TypeArray t -> parens $ "Array "  <> t StandAlone
+  TypeArray type_ -> parens $ "Array "  <> type_ StandAlone
   TypeArr f a ->  case _ of
     InArr -> "(" <> s <> ")"
     InApplication -> "(" <> s <> ")"
@@ -170,9 +192,9 @@ printType = case _ of
       s = f InArr <> " -> " <> a StandAlone
   TypeBoolean -> const "Boolean"
   TypeConstructor qn -> const $ printQualifiedName qn
-  TypeConstrained { className, params } t -> const $
-    printQualifiedName className <> " " <> line (map (_ $ InApplication) params) <> " => " <> t StandAlone
-  TypeForall vs t -> const $ "∀" <> " " <> line (map unwrap vs) <> "." <> " " <> t StandAlone
+  TypeConstrained { className, params } type_ -> const $
+    printQualifiedName className <> " " <> line (map (_ $ InApplication) params) <> " => " <> type_ StandAlone
+  TypeForall vs type_ -> const $ "∀" <> " " <> line (map unwrap vs) <> "." <> " " <> type_ StandAlone
   TypeNumber -> const "Number"
   TypeRecord r -> const $ "{ " <> printRow r <> " }"
   TypeRow r -> const $ "( " <> printRow r <> " )"
@@ -186,7 +208,7 @@ printType = case _ of
     printRow (Row { labels, tail }) = intercalate ", " labels' <> tail'
       where
         labels' :: Array String
-        labels' = map (\(Tuple n t) -> printRowLabel n <> " :: " <> t StandAlone) <<< Map.toUnfoldable $ labels
+        labels' = map (\(Tuple n type_) -> printRowLabel n <> " :: " <> type_ StandAlone) <<< Map.toUnfoldable $ labels
 
         tail' = case tail of
           Nothing -> mempty
