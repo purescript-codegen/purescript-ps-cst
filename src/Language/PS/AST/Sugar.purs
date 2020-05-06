@@ -6,8 +6,8 @@ import Data.Foldable (foldMap)
 import Data.Functor.Mu (roll)
 import Data.Maybe (Maybe(..))
 import Data.String.Extra (camelCase)
-import Language.PS.AST.Printers (PrintingContext(..), printQualifiedName, printType)
-import Language.PS.AST.Types (ClassName, Declaration(..), Expr, ExprF(..), Ident(..), QualifiedName, Type, TypeF(..), TypeName, ValueBindingFields)
+import Language.PS.AST.Printers
+import Language.PS.AST.Types
 import Matryoshka.Fold (cata)
 
 declType :: TypeName -> Array Ident -> Type -> { declaration :: Declaration , constructor :: Type }
@@ -46,14 +46,15 @@ declForeignValue ident t =
   in
     { declaration, var }
 
-declInstance :: QualifiedName ClassName -> Array Type -> Array ValueBindingFields -> Declaration
-declInstance className types body = DeclInstance
-  { head:
-    { className
-    , name: Ident $ camelCase $
-        printQualifiedName className <> foldMap (flip (cata printType) StandAlone) types
-    , types
-    }
-  , body
-  }
+-- TODO: use type hash?
+-- declInstance :: QualifiedName ClassName -> Array Type -> Array ValueBindingFields -> Declaration
+-- declInstance className types body = DeclInstance
+--   { head:
+--     { className
+--     , name: Ident $ camelCase $
+--         strinifyQualifiedName className <> foldMap (flip (cata printType) StandAlone) types
+--     , types
+--     }
+--   , body
+--   }
 

@@ -128,7 +128,18 @@ let additions =
           { dependencies =
             [ "fixed-points", "free", "prelude", "profunctor", "transformers" ]
           , repo = "https://github.com/slamdata/purescript-matryoshka.git"
-          , version = "v0.4.0"
+          , version = "master"
+          }
+      , boxes =
+          { dependencies =
+            [ "generics-rep"
+            , "prelude"
+            , "profunctor"
+            , "strings"
+            , "stringutils"
+            ]
+          , repo = "https://github.com/cdepillabout/purescript-boxes.git"
+          , version = "master"
           }
       }
 
