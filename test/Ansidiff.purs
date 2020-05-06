@@ -10,7 +10,7 @@ import Test.Spec.Assertions (fail)
 reset :: String
 reset = Ansi.Codes.escapeCodeToString (Ansi.Codes.Graphics (pure Ansi.Codes.Reset))
 
-wrapInReset :: String → String
+wrapInReset :: String -> String
 wrapInReset s = reset <> s <> reset
 
 foreign import _ansidiffLines :: Fn2 String String String

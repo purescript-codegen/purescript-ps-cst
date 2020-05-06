@@ -1,7 +1,9 @@
 module Language.PS.AST.Printers where
 
-import Language.PS.AST.Types
 import Prelude
+import Language.PS.AST.Types
+import Language.PS.AST.Printers.Utils
+import Language.PS.AST.Printers.PrintImports
 import Text.PrettyPrint.Boxes
 
 import Data.Array (cons, fromFoldable, null) as Array
@@ -24,83 +26,16 @@ import Data.Unfoldable (replicate)
 import Matryoshka (Algebra, cata)
 import Partial.Unsafe (unsafePartial)
 
-line :: ∀ f . Foldable f ⇒ f Box → Box
-line = hsep 1 left
-
-lines :: ∀ f . Foldable f ⇒ f Box → Box
-lines = vsep 0 left
-
 printModule :: Module -> Box
 printModule (Module { moduleName, imports }) = lines $
   [ printModuleModuleName moduleName
   , printedImports imports
   , emptyRow
   ]
-  -- <> (map printDeclaration declarations)
-  -- <> [emptyBox 1 1]
-  where
-    emptyRow = emptyBox 1 0
-
-    printedImports :: Array ImportDecl -> Box
-    printedImports [] = nullBox
-    printedImports imports =
-      emptyRow
-      /+/
-      (vsep 0 left $ map printImport imports)
-
-    printImport :: ImportDecl -> Box
-    printImport (ImportDecl { moduleName, names, qualification }) =
-      let
-        head = text "import" <<+>> printModuleName moduleName
-        qualification' = qualification <#> (\qualificationModuleName -> text "as" <<+>> printModuleName qualificationModuleName)
-        prependSpace x = emptyBox 1 1 <<>> x
-      in
-        if null names
-          then head <<>> maybe nullBox prependSpace qualification' -- in one line
-          else
-            let
-              wrapInParentheses :: Box -> Box
-              wrapInParentheses x = text "(" <<>> x <<>> text ")"
-
-              printConstructors :: Array (ProperName ProperNameType_ConstructorName) -> Box
-              printConstructors = punctuateH left (text ", ") <<< map (text <<< unwrap)
-
-              printImportName :: Import -> Box
-              printImportName (ImportValue ident) = text $ unwrap ident
-              printImportName (ImportOp valueOpName) = wrapInParentheses $ text $ unwrap valueOpName
-              printImportName (ImportType properNameTypeName maybeDataMembers) =
-                let
-                  printedProperNameTypeName :: Box
-                  printedProperNameTypeName = text $ unwrap properNameTypeName
-
-                  printedMaybeDataMembers :: Box
-                  printedMaybeDataMembers =
-                    case maybeDataMembers of
-                      Nothing -> nullBox
-                      (Just DataAll) -> text "(..)"
-                      (Just (DataEnumerated constructors)) -> wrapInParentheses $ printConstructors constructors
-                in printedProperNameTypeName <<>> printedMaybeDataMembers
-              printImportName (ImportTypeOp opName) = text "type" <<+>> (wrapInParentheses $ text $ unwrap $ opName)
-              printImportName (ImportClass properName) = text "class" <<+>> (text $ unwrap $ properName)
-              printImportName (ImportKind properName) = text "kind" <<+>> (text $ unwrap $ properName)
-
-              printedNamesColumn = vcat left $ map printImportName names
-              commasColumn = vcat left $ [text "("] <> replicate (length names - 1) (text ",")
-              printedNames = emptyBox 0 2 <<>> commasColumn <<+>> printedNamesColumn
-            in
-            head
-            // printedNames
-            // (emptyBox 0 2 <<>> text ")" <<+>> fromMaybe nullBox qualification')
 
 printModuleModuleName :: ModuleName -> Box
 printModuleModuleName moduleName =
   line [text "module", printModuleName moduleName, text "where" ]
-
-printModuleName :: ModuleName -> Box
-printModuleName (ModuleName nonEmptyArray) =
-  nonEmptyArray
-  # map (unwrap >>> text)
-  # punctuateH left (text ".")
 
 -- printDeclaration :: Declaration -> Box
 -- printDeclaration (DeclForeignData { typeName: TypeName name }) = -- , "kind": k }) =

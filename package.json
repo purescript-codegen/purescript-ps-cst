@@ -4,6 +4,6 @@
   "repository": "https://github.com/srghma/purescript-ps-ast",
   "license": "BSD",
   "devDependencies": {
-    "diff": "^4.0.2"
+    "disparity": "^3.0.0"
   }
 }
