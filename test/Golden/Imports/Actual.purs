@@ -4,6 +4,7 @@ import Data.Either
 import Data.Maybe
 import Language.PS.AST
 import Language.PS.AST.Types
+import Language.PS.AST.Sugar
 import Prelude
 
 import Data.Functor.Mu (roll)
@@ -55,7 +56,5 @@ actualModule = Module
       , qualification: Just $ mkModuleName $ "My" :| ["Data", "List"]
       }
     ]
+  , exports: []
   }
-
-mkModuleName :: NonEmpty Array String -> ModuleName
-mkModuleName = ModuleName <<< map wrap

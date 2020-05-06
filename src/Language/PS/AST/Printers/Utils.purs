@@ -41,3 +41,18 @@ printModuleName (ModuleName nonEmptyArray) =
   nonEmptyArray
   # map (unwrap >>> text)
   # punctuateH left (text ".")
+
+wrapInParentheses :: Box -> Box
+wrapInParentheses x = text "(" <<>> x <<>> text ")"
+
+punctuateWithComma :: ∀ f. Foldable f ⇒ f Box → Box
+punctuateWithComma = punctuateH left (text ", ")
+
+textFromNewtype :: ∀ x. Newtype x String ⇒ x → Box
+textFromNewtype = text <<< unwrap
+
+twoSpaceIdentation :: Box
+twoSpaceIdentation = emptyBox 0 2
+
+printConstructors :: Array (ProperName ProperNameType_ConstructorName) -> Box
+printConstructors = punctuateWithComma <<< map textFromNewtype

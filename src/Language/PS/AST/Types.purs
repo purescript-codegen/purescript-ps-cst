@@ -25,7 +25,7 @@ import Data.Traversable (class Traversable, sequence, traverseDefault)
 newtype Module = Module
   { moduleName :: ModuleName
   , imports :: Array ImportDecl
-  -- , exports :: Array ExportDecl
+  , exports :: Array Export
   -- , declarations :: Array Declaration
   }
 
@@ -34,15 +34,14 @@ derive instance newtypeModuleName :: Newtype ModuleName _
 derive instance genericModuleName :: Generic ModuleName _
 derive instance eqModuleName :: Eq ModuleName
 derive instance ordModuleName :: Ord ModuleName
-instance showModuleName :: Show ModuleName where
-  show = genericShow
+instance showModuleName :: Show ModuleName where show = genericShow
 
 newtype Ident = Ident String
+derive instance newtypeIdent :: Newtype Ident _
 derive instance genericIdent :: Generic Ident _
 derive instance eqIdent :: Eq Ident
 derive instance ordIdent :: Ord Ident
-instance showIdent :: Show Ident where
-  show = genericShow
+instance showIdent :: Show Ident where show = genericShow
 
 data DeclDataType = DeclDataTypeData | DeclDataTypeNewtype
 
@@ -55,8 +54,7 @@ derive instance newtypeImportDecl :: Newtype ImportDecl _
 derive instance genericImportDecl :: Generic ImportDecl _
 derive instance eqImportDecl :: Eq ImportDecl
 derive instance ordImportDecl :: Ord ImportDecl
-instance showImportDecl :: Show ImportDecl where
-  show = genericShow
+instance showImportDecl :: Show ImportDecl where show = genericShow
 
 foreign import kind OpNameType
 foreign import data OpNameType_ValueOpName :: OpNameType
@@ -68,8 +66,7 @@ derive instance newtypeOpName :: Newtype (OpName proxy) _
 derive instance genericOpName :: Generic (OpName proxy) _
 derive instance eqOpName :: Eq (OpName proxy)
 derive instance ordOpName :: Ord (OpName proxy)
-instance showOpName :: Show (OpName proxy) where
-  show = genericShow
+instance showOpName :: Show (OpName proxy) where show = genericShow
 
 foreign import kind ProperNameType
 foreign import data ProperNameType_TypeName :: ProperNameType
@@ -84,8 +81,7 @@ derive instance newtypeProperName :: Newtype (ProperName proxy) _
 derive instance genericProperName :: Generic (ProperName proxy) _
 derive instance eqProperName :: Eq (ProperName proxy)
 derive instance ordProperName :: Ord (ProperName proxy)
-instance showProperName :: Show (ProperName proxy) where
-  show = genericShow
+instance showProperName :: Show (ProperName proxy) where show = genericShow
 
 data DataMembers
   = DataAll
@@ -93,8 +89,7 @@ data DataMembers
 derive instance genericDataMembers :: Generic DataMembers _
 derive instance eqDataMembers :: Eq DataMembers
 derive instance ordDataMembers :: Ord DataMembers
-instance showDataMembers :: Show DataMembers where
-  show = genericShow
+instance showDataMembers :: Show DataMembers where show = genericShow
 
 data Import
   = ImportValue Ident
@@ -103,19 +98,30 @@ data Import
   | ImportTypeOp (OpName OpNameType_TypeOpName) -- e.g. "<<<" type alias, rendered in parentheses as `type (<<<)`
   | ImportClass (ProperName ProperNameType_ClassName)
   | ImportKind (ProperName ProperNameType_KindName)
-derive instance newtypeIdent :: Newtype Ident _
 derive instance genericImport :: Generic Import _
 derive instance eqImport :: Eq Import
 derive instance ordImport :: Ord Import
-instance showImport :: Show Import where
-  show = genericShow
+instance showImport :: Show Import where show = genericShow
 
-reservedNames :: Set String
-reservedNames = Set.fromFoldable
-  [ "ado" , "case" , "class" , "data"
-  , "derive" , "do" , "else" , "false"
-  , "forall" , "foreign" , "import" , "if"
-  , "in" , "infix" , "infixl" , "infixr"
-  , "instance" , "let" , "module" , "newtype"
-  , "of" , "true" , "type" , "where"
-  ]
+data Export
+  = ExportValue Ident
+  | ExportOp (OpName OpNameType_ValueOpName) -- e.g. "&&" function/value, rendered in parentheses
+  | ExportType (ProperName ProperNameType_TypeName) (Maybe DataMembers) -- e.g. "CONSOLE", "Maybe"
+  | ExportTypeOp (OpName OpNameType_TypeOpName) -- e.g. "<<<" type alias, rendered in parentheses as `type (<<<)`
+  | ExportClass (ProperName ProperNameType_ClassName)
+  | ExportKind (ProperName ProperNameType_KindName)
+  | ExportModule ModuleName
+derive instance genericExport :: Generic Export _
+derive instance eqExport :: Eq Export
+derive instance ordExport :: Ord Export
+instance showExport :: Show Export where show = genericShow
+
+-- reservedNames :: Set String
+-- reservedNames = Set.fromFoldable
+--   [ "ado" , "case" , "class" , "data"
+--   , "derive" , "do" , "else" , "false"
+--   , "forall" , "foreign" , "import" , "if"
+--   , "in" , "infix" , "infixl" , "infixr"
+--   , "instance" , "let" , "module" , "newtype"
+--   , "of" , "true" , "type" , "where"
+--   ]

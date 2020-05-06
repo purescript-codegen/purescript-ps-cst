@@ -1,14 +1,19 @@
 module Language.PS.AST.Sugar where
 
+import Language.PS.AST.Printers
+import Language.PS.AST.Types
 import Prelude
 
 import Data.Foldable (foldMap)
 import Data.Functor.Mu (roll)
 import Data.Maybe (Maybe(..))
+import Data.Newtype (wrap)
+import Data.NonEmpty (NonEmpty(..))
 import Data.String.Extra (camelCase)
-import Language.PS.AST.Printers
-import Language.PS.AST.Types
 import Matryoshka.Fold (cata)
+
+mkModuleName :: NonEmpty Array String -> ModuleName
+mkModuleName = ModuleName <<< map wrap
 
 -- emptyRow :: Row
 -- emptyRow = Row { labels: mempty, tail: Nothing }

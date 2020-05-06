@@ -42,19 +42,13 @@ printImport (ImportDecl { moduleName, names, qualification }) =
       then head <<>> maybe nullBox prependSpace qualification' -- in one line
       else
         let
-          wrapInParentheses :: Box -> Box
-          wrapInParentheses x = text "(" <<>> x <<>> text ")"
-
-          printConstructors :: Array (ProperName ProperNameType_ConstructorName) -> Box
-          printConstructors = punctuateH left (text ", ") <<< map (text <<< unwrap)
-
           printImportName :: Import -> Box
-          printImportName (ImportValue ident) = text $ unwrap ident
-          printImportName (ImportOp valueOpName) = wrapInParentheses $ text $ unwrap valueOpName
+          printImportName (ImportValue ident) = textFromNewtype ident
+          printImportName (ImportOp valueOpName) = wrapInParentheses $ textFromNewtype valueOpName
           printImportName (ImportType properNameTypeName maybeDataMembers) =
             let
               printedProperNameTypeName :: Box
-              printedProperNameTypeName = text $ unwrap properNameTypeName
+              printedProperNameTypeName = textFromNewtype properNameTypeName
 
               printedMaybeDataMembers :: Box
               printedMaybeDataMembers =
@@ -63,14 +57,14 @@ printImport (ImportDecl { moduleName, names, qualification }) =
                   (Just DataAll) -> text "(..)"
                   (Just (DataEnumerated constructors)) -> wrapInParentheses $ printConstructors constructors
             in printedProperNameTypeName <<>> printedMaybeDataMembers
-          printImportName (ImportTypeOp opName) = text "type" <<+>> (wrapInParentheses $ text $ unwrap $ opName)
-          printImportName (ImportClass properName) = text "class" <<+>> (text $ unwrap $ properName)
-          printImportName (ImportKind properName) = text "kind" <<+>> (text $ unwrap $ properName)
+          printImportName (ImportTypeOp opName) = text "type" <<+>> (wrapInParentheses $ textFromNewtype $ opName)
+          printImportName (ImportClass properName) = text "class" <<+>> (textFromNewtype $ properName)
+          printImportName (ImportKind properName) = text "kind" <<+>> (textFromNewtype $ properName)
 
           printedNamesColumn = vcat left $ map printImportName names
           commasColumn = vcat left $ [text "("] <> replicate (length names - 1) (text ",")
-          printedNames = emptyBox 0 2 <<>> commasColumn <<+>> printedNamesColumn
+          printedNames = twoSpaceIdentation <<>> commasColumn <<+>> printedNamesColumn
         in
         head
         // printedNames
-        // (emptyBox 0 2 <<>> text ")" <<+>> fromMaybe nullBox qualification')
+        // (twoSpaceIdentation <<>> text ")" <<+>> fromMaybe nullBox qualification')

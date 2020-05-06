@@ -1,11 +1,12 @@
 module Exports
   ( module A
+  , module A.B
   , class A
   , kind A
   , type (||)
+  , A(B)
+  , A(..)
   , A
-    (B)
   , (||)
   , a
-  , b
   ) where
