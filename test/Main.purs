@@ -58,8 +58,7 @@ mkAllTests tests = traverse_ mkTest tests
   mkTest :: GoldenTestWithExpected -> Test.Spec.Spec Unit
   mkTest test = Test.Spec.it test.name do
     let
-      trimEachLineEnd = Regex.replace (Regex.unsafeRegex "\\ +$" (Regex.multiline <> Regex.global)) ""
-      actualParsed = trimEachLineEnd $ Text.PrettyPrint.Boxes.render $ Language.PS.AST.Printers.printModule test.actualModule
+      actualParsed = Text.PrettyPrint.Boxes.render $ Language.PS.AST.Printers.printModule test.actualModule
     actualParsed `textShouldMatch` test.expected
 
 main :: Effect Unit

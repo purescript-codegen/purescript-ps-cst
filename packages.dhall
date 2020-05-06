@@ -138,7 +138,7 @@ let additions =
             , "strings"
             , "stringutils"
             ]
-          , repo = "https://github.com/cdepillabout/purescript-boxes.git"
+          , repo = "https://github.com/srghma/purescript-boxes.git"
           , version = "master"
           }
       }
