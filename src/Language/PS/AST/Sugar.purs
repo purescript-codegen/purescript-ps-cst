@@ -10,41 +10,44 @@ import Language.PS.AST.Printers
 import Language.PS.AST.Types
 import Matryoshka.Fold (cata)
 
-declType :: TypeName -> Array Ident -> Type -> { declaration :: Declaration , constructor :: Type }
-declType typeName vars body =
-  let
-    declaration = DeclType
-      { typeName, "type": body, vars }
-    constructor = roll $ TypeConstructor { name: typeName, moduleName: Nothing }
-  in
-    { declaration, constructor }
+-- emptyRow :: Row
+-- emptyRow = Row { labels: mempty, tail: Nothing }
 
-declForeignData :: TypeName -> { declaration :: Declaration, constructor :: Type }
-declForeignData typeName =
-  let
-    declaration = DeclForeignData { typeName }
-    constructor = roll $ TypeConstructor { name: typeName, moduleName: Nothing }
-  in
-    { declaration, constructor }
+-- declType :: TypeName -> Array Ident -> Type -> { declaration :: Declaration , constructor :: Type }
+-- declType typeName vars body =
+--   let
+--     declaration = DeclType
+--       { typeName, "type": body, vars }
+--     constructor = roll $ TypeConstructor { name: typeName, moduleName: Nothing }
+--   in
+--     { declaration, constructor }
 
-valueBindingFields :: Ident -> Array Ident -> Expr -> Maybe Type -> ValueBindingFields
-valueBindingFields name binders expr signature = { value: { binders, expr, name }, signature }
+-- declForeignData :: TypeName -> { declaration :: Declaration, constructor :: Type }
+-- declForeignData typeName =
+--   let
+--     declaration = DeclForeignData { typeName }
+--     constructor = roll $ TypeConstructor { name: typeName, moduleName: Nothing }
+--   in
+--     { declaration, constructor }
 
-declValue :: Ident -> Array Ident -> Expr -> Maybe Type -> { declaration :: Declaration, var :: Expr }
-declValue name binders expr signature =
-  let
-    declaration = DeclValue (valueBindingFields name binders expr signature)
-    var = roll $ ExprIdent { name, moduleName: Nothing }
-  in
-    { declaration, var }
+-- valueBindingFields :: Ident -> Array Ident -> Expr -> Maybe Type -> ValueBindingFields
+-- valueBindingFields name binders expr signature = { value: { binders, expr, name }, signature }
 
-declForeignValue :: Ident -> Type -> { declaration :: Declaration, var :: Expr }
-declForeignValue ident t =
-  let
-    declaration = DeclForeignValue { ident, "type": t }
-    var = roll $ ExprIdent { name: ident, moduleName: Nothing }
-  in
-    { declaration, var }
+-- declValue :: Ident -> Array Ident -> Expr -> Maybe Type -> { declaration :: Declaration, var :: Expr }
+-- declValue name binders expr signature =
+--   let
+--     declaration = DeclValue (valueBindingFields name binders expr signature)
+--     var = roll $ ExprIdent { name, moduleName: Nothing }
+--   in
+--     { declaration, var }
+
+-- declForeignValue :: Ident -> Type -> { declaration :: Declaration, var :: Expr }
+-- declForeignValue ident t =
+--   let
+--     declaration = DeclForeignValue { ident, "type": t }
+--     var = roll $ ExprIdent { name: ident, moduleName: Nothing }
+--   in
+--     { declaration, var }
 
 -- TODO: use type hash?
 -- declInstance :: QualifiedName ClassName -> Array Type -> Array ValueBindingFields -> Declaration

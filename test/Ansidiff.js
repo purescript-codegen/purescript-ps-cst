@@ -7,7 +7,7 @@ function bright(obj) {
     return (
       '\033[' + 7 + 'm'   // inverse
       + '\033[' + 32 + 'm'  // green
-      + obj.value
+      + obj.value.replace(/^/gm, '+ ')
       + '\033[' + 39 + 'm'
       + '\033[' + 27 + 'm'
     );
@@ -15,12 +15,13 @@ function bright(obj) {
     return (
       '\033[' + 7 + 'm'     // inverse
       + '\033[' + 31 + 'm'  // red
-      + obj.value
+      + obj.value.replace(/^/gm, '- ')
       + '\033[' + 39 + 'm'
       + '\033[' + 27 + 'm'
     );
   } else {
-    return obj.value;
+    console.log('obj.value', obj.value)
+    return obj.value.replace(/^/gm, '~ ');
   }
 }
 

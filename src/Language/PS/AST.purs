@@ -3,4 +3,4 @@ module Language.PS.AST
   )
   where
 
-import Language.PS.AST.Types (ClassName(..), Constraint, Declaration(..), Expr, ExprF(..), Ident(..), Import(..), ImportDecl(..), Imports(..), Module(..), ModuleName(..), QualifiedName, QualifiedTypeName, Row, RowF(..), RowLabel, Type, TypeF(..), TypeName(..), ValueBindingFields, emptyRow, reservedNames) as Types
+import Language.PS.AST.Types as Types

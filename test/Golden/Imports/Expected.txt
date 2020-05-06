@@ -1,0 +1,21 @@
+module Foo where
+
+import Prelude
+import Data.Maybe
+  ( Maybe
+  )
+import Prelude
+  ( class EuclideanRing
+  , kind MyKind
+  , type (<<<)
+  , Ordering(EQ, GT, LT)
+  , Unit(..)
+  , Void
+  , compose
+  , (&&)
+  )
+import Data.Array
+  ( head
+  , tail
+  ) as Array
+import Data.List as My.Data.List
