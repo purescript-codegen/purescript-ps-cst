@@ -4,6 +4,7 @@ import Prelude
 import Language.PS.AST.Types
 import Language.PS.AST.Printers.Utils
 import Language.PS.AST.Printers.PrintImports
+import Language.PS.AST.Printers.PrintModuleModuleNameAndExports
 import Text.PrettyPrint.Boxes
 
 import Data.Array (cons, fromFoldable, null) as Array
@@ -32,38 +33,6 @@ printModule (Module { moduleName, imports, exports }) = lines $
   , printedImports imports
   , emptyRow
   ]
-
-printModuleModuleNameAndExports :: ModuleName -> Array Export -> Box
-printModuleModuleNameAndExports moduleName [] = text "module" <<+>> printModuleName moduleName <<+>> text "where"
-printModuleModuleNameAndExports moduleName exports =
-  let
-      printExportName :: Export -> Box
-      printExportName (ExportValue ident) = textFromNewtype ident
-      printExportName (ExportOp valueOpName) = wrapInParentheses $ textFromNewtype valueOpName
-      printExportName (ExportType properNameTypeName maybeDataMembers) =
-        let
-          printedProperNameTypeName :: Box
-          printedProperNameTypeName = textFromNewtype properNameTypeName
-
-          printedMaybeDataMembers :: Box
-          printedMaybeDataMembers =
-            case maybeDataMembers of
-              Nothing -> nullBox
-              (Just DataAll) -> text "(..)"
-              (Just (DataEnumerated constructors)) -> wrapInParentheses $ printConstructors constructors
-        in printedProperNameTypeName <<>> printedMaybeDataMembers
-      printExportName (ExportTypeOp opName) = text "type" <<+>> (wrapInParentheses $ textFromNewtype $ opName)
-      printExportName (ExportClass properName) = text "class" <<+>> (textFromNewtype $ properName)
-      printExportName (ExportKind properName) = text "kind" <<+>> (textFromNewtype $ properName)
-      printExportName (ExportModule moduleName) = text "module" <<+>> printModuleName moduleName
-
-      printedNamesColumn = vcat left $ map printExportName exports
-      commasColumn = vcat left $ [text "("] <> replicate (length exports - 1) (text ",")
-      printedNames = twoSpaceIdentation <<>> commasColumn <<+>> printedNamesColumn
-   in
-    text "module" <<+>> printModuleName moduleName
-    // printedNames
-    // (twoSpaceIdentation <<>> text ")" <<+>> text "where")
 
 -- printDeclaration :: Declaration -> Box
 -- printDeclaration (DeclForeignData { typeName: TypeName name }) = -- , "kind": k }) =
