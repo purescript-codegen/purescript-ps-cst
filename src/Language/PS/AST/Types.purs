@@ -66,7 +66,8 @@ derive instance newtypeOpName :: Newtype (OpName proxy) _
 derive instance genericOpName :: Generic (OpName proxy) _
 derive instance eqOpName :: Eq (OpName proxy)
 derive instance ordOpName :: Ord (OpName proxy)
-instance showOpName :: Show (OpName proxy) where show = genericShow
+instance showOpName :: Show (OpName proxy) where
+  show (OpName string) = "(OpName" <> show string <> ")"
 
 foreign import kind ProperNameType
 foreign import data ProperNameType_TypeName :: ProperNameType
@@ -81,7 +82,8 @@ derive instance newtypeProperName :: Newtype (ProperName proxy) _
 derive instance genericProperName :: Generic (ProperName proxy) _
 derive instance eqProperName :: Eq (ProperName proxy)
 derive instance ordProperName :: Ord (ProperName proxy)
-instance showProperName :: Show (ProperName proxy) where show = genericShow
+instance showProperName :: Show (ProperName proxy) where
+  show (ProperName string) = "(ProperName" <> show string <> ")"
 
 data DataMembers
   = DataAll
@@ -127,6 +129,10 @@ data Declaration
   -- | DeclValue (ValueBindingFields a)
   -- | DeclFixity FixityFields
   -- | DeclForeign (Foreign a)
+derive instance genericDeclaration :: Generic Declaration _
+derive instance eqDeclaration :: Eq Declaration
+derive instance ordDeclaration :: Ord Declaration
+-- instance showDeclaration :: Show Declaration where show = genericShow
 
 data Type
   = TypeVar Ident
@@ -148,19 +154,33 @@ data Type
   -- | TypeOpName (QualifiedName (OpName OpNameType_TypeOpName))
   -- | TypeArrName
   -- | TypeParens Type
+derive instance genericType :: Generic Type _
+derive instance eqType :: Eq Type
+derive instance ordType :: Ord Type
+-- instance showType :: Show Type where show = genericShow
 
 newtype QualifiedName a = QualifiedName
   { qualModule :: Maybe ModuleName
   , qualName :: a
   }
 derive instance newtypeQualifiedName :: Newtype (QualifiedName a) _
+derive instance eqQualifiedName :: Eq a => Eq (QualifiedName a)
+derive instance ordQualifiedName :: Ord a => Ord (QualifiedName a)
+instance showQualifiedName :: Show a => Show (QualifiedName a) where
+  show (QualifiedName { qualModule, qualName }) = "(QualifiedName { qualModule = " <> show qualModule <> ", qualName = " <> show qualName <> " })"
 
 -- Mu
+
 data Kind
   = KindName (QualifiedName (ProperName ProperNameType_KindName))
   | KindArr Kind Kind
   | KindRow Kind
   | KindParens Kind
+derive instance genericKind :: Generic Kind _
+derive instance eqKind :: Eq Kind
+derive instance ordKind :: Ord Kind
+-- instance showKind :: Show Kind where
+--   show _ = ""
 
 -- e.g. main , forAll
 -- data Labeled a b = Labeled
@@ -171,29 +191,47 @@ data Kind
 data TypeVarBinding
   = TypeVarKinded Ident Kind
   | TypeVarName Ident
+derive instance genericTypeVarBinding :: Generic TypeVarBinding _
+derive instance eqTypeVarBinding :: Eq TypeVarBinding
+derive instance ordTypeVarBinding :: Ord TypeVarBinding
+-- instance showTypeVarBinding :: Show TypeVarBinding where show = genericShow
 
 newtype DataHead = DataHead
   { dataHdName :: ProperName ProperNameType_TypeName
   , dataHdVars :: Array TypeVarBinding
   }
 derive instance newtypeDataHead :: Newtype DataHead _
+derive instance genericDataHead :: Generic DataHead _
+derive instance eqDataHead :: Eq DataHead
+derive instance ordDataHead :: Ord DataHead
+-- instance showDataHead :: Show DataHead where show = genericShow
 
 newtype DataCtor = DataCtor
   { dataCtorName :: ProperName ProperNameType_ConstructorName
   , dataCtorFields :: Array Type
   }
 derive instance newtypeDataCtor :: Newtype DataCtor _
+derive instance genericDataCtor :: Generic DataCtor _
+derive instance eqDataCtor :: Eq DataCtor
+derive instance ordDataCtor :: Ord DataCtor
+-- instance showDataCtor :: Show DataCtor where show = genericShow
 
 newtype Label = Label String
-
 derive instance newtypeLabel :: Newtype Label _
+derive instance genericLabel :: Generic Label _
+derive instance eqLabel :: Eq Label
+derive instance ordLabel :: Ord Label
+instance showLabel :: Show Label where show = genericShow
 
 newtype Row = Row
   { rowLabels :: Array { label :: Label, type_ :: Type }
   , rowTail :: Maybe Type
   }
-
 derive instance newtypeRow :: Newtype Row _
+derive instance genericRow :: Generic Row _
+derive instance eqRow :: Eq Row
+derive instance ordRow :: Ord Row
+-- instance showRow :: Show Row where show = genericShow
 
 data Constraint
   = Constraint
@@ -201,32 +239,60 @@ data Constraint
     , args :: Array Type
     }
   | ConstraintParens Constraint
+derive instance genericConstraint :: Generic Constraint _
+derive instance eqConstraint :: Eq Constraint
+derive instance ordConstraint :: Ord Constraint
+-- instance showConstraint :: Show Constraint where show = genericShow
 
 data OneOrDelimited a
   = OneOrDelimited_One a
   | OneOrDelimited_Many { first :: a, second :: a, tail :: Array a }
+derive instance genericOneOrDelimited :: Generic (OneOrDelimited a) _
+derive instance eqOneOrDelimited :: Eq a => Eq (OneOrDelimited a)
+derive instance ordOneOrDelimited :: Ord a => Ord (OneOrDelimited a)
+instance showOneOrDelimited :: Show a => Show (OneOrDelimited a) where
+  show (OneOrDelimited_One a) = "(OneOrDelimited_One " <> show a <> ")"
+  show (OneOrDelimited_Many { first, second, tail }) = "(OneOrDelimited_Many " <> show ([first, second] <> tail) <> ")"
 
 data ClassFundep
   = FundepDetermined (NonEmpty Array Ident)
   | FundepDetermines (NonEmpty Array Ident) (NonEmpty Array Ident)
+derive instance genericClassFundep :: Generic ClassFundep _
+derive instance eqClassFundep :: Eq ClassFundep
+derive instance ordClassFundep :: Ord ClassFundep
+instance showClassFundep :: Show ClassFundep where show = genericShow
 
 -- Delimeted or separated
-newtype ClassHead a = ClassHead
+newtype ClassHead = ClassHead
   { clsSuper :: Maybe (OneOrDelimited Constraint)
   , clsName :: ProperName ProperNameType_ClassName
   , clsVars :: Array TypeVarBinding
   , clsFundeps :: Array ClassFundep
   }
+derive instance genericClassHead :: Generic ClassHead _
+derive instance eqClassHead :: Eq ClassHead
+derive instance ordClassHead :: Ord ClassHead
+-- instance showClassHead :: Show ClassHead where show = genericShow
 
 newtype ValueBindingFields = ValueBindingFields
   { valName :: Ident
   , valBinders :: Array Binder
   -- , valGuarded :: Guarded
   }
+derive instance genericValueBindingFields :: Generic ValueBindingFields _
+derive instance eqValueBindingFields :: Eq ValueBindingFields
+derive instance ordValueBindingFields :: Ord ValueBindingFields
+-- instance showValueBindingFields :: Show ValueBindingFields where show = genericShow
 
 data RecordLabeled a
   = RecordPun Ident
   | RecordField Label a
+derive instance genericRecordLabeled :: Generic (RecordLabeled a) _
+derive instance eqRecordLabeled :: Eq a => Eq (RecordLabeled a)
+derive instance ordRecordLabeled :: Ord a => Ord (RecordLabeled a)
+instance showRecordLabeled :: Show a => Show (RecordLabeled a) where
+  show (RecordPun ident) = "(RecordPun " <> show ident <> ")"
+  show (RecordField label a) = "(RecordField { label = " <> show label <> ", a = " <> show a <> " })"
 
 data Binder
   = BinderWildcard
@@ -242,6 +308,10 @@ data Binder
   | BinderParens Binder
   | BinderTyped Binder Type
   | BinderOp Binder (QualifiedName (OpName OpNameType_ValueOpName)) Binder
+derive instance genericBinder :: Generic Binder _
+derive instance eqBinder :: Eq Binder
+derive instance ordBinder :: Ord Binder
+-- instance showBinder :: Show Binder where show = genericShow
 
 -- newtype Where = Where
 --   { whereExpr :: Expr
@@ -273,12 +343,16 @@ data Binder
 --   , instBody :: Array InstanceBinding
 --   }
 
-newtype InstanceHead a = InstanceHead
+newtype InstanceHead = InstanceHead
   { instName :: Ident
   , instConstraints :: Maybe (OneOrDelimited Constraint)
   , instClass :: QualifiedName (ProperName ProperNameType_ClassName)
   , instTypes :: Array Type
   }
+derive instance genericInstanceHead :: Generic InstanceHead _
+derive instance eqInstanceHead :: Eq InstanceHead
+derive instance ordInstanceHead :: Ord InstanceHead
+-- instance showInstanceHead :: Show InstanceHead where show = genericShow
 
 -- reservedNames :: Set String
 -- reservedNames = Set.fromFoldable

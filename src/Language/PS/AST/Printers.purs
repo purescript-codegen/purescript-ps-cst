@@ -12,6 +12,7 @@ import Data.Char.Unicode (isUpper)
 import Data.Either (Either(..), fromRight)
 import Data.Foldable (class Foldable, foldMap, intercalate, length, null)
 import Data.FunctorWithIndex (mapWithIndex)
+import Data.Identity (Identity(..))
 import Data.List (List(..))
 import Data.List (fromFoldable, intercalate) as List
 import Data.Map (toUnfoldable) as Map
@@ -25,6 +26,7 @@ import Data.String.Regex (test) as Regex
 import Data.String.Regex.Flags (noFlags) as Regex.Flags
 import Data.Tuple (Tuple(..))
 import Data.Unfoldable (replicate)
+import Debug.Trace (trace, traceM)
 import Matryoshka (Algebra, cata)
 import Partial.Unsafe (unsafePartial)
 
@@ -76,8 +78,13 @@ printDataCtor (DataCtor dataCtor) =
     doWrap (TypeOp _ _ _) = true
     doWrap (TypeConstrained _ _) = true
 
+    context = { printTypeStyle: PreferMultiline, isAlreadyInsideOfApp: IsAlreadyInsideOfApp_No }
+
     printType' :: Type -> Box
-    printType' type_ = if doWrap type_ then wrapInParentheses <<< printType PreferMultiline $ type_ else printType PreferMultiline type_
+    printType' type_ =
+      if doWrap type_
+        then wrapInParentheses <<< printType context $ type_
+        else printType context type_
 
     name = textFromNewtype dataCtor.dataCtorName
     fields = dataCtor.dataCtorFields <#> printType'
@@ -125,69 +132,117 @@ printQualifiedName_AnyOpNameType (QualifiedName qualifiedName) =
        (Just moduleName) -> printModuleName moduleName <<>> text "." <<>> wrapInParentheses (textFromNewtype qualifiedName.qualName)
 
 data PrintTypeStyle = PreferMultiline | PreferOneLine
--- data IsInsideOfApp = IsInsideOfApp_Yes | IsInsideOfApp_No -- Am I inside of TypeApp that didn't yet break? used to determine whether to
+data IsAlreadyInsideOfApp = IsAlreadyInsideOfApp_Yes | IsAlreadyInsideOfApp_No -- Am I inside of TypeApp that didn't yet break? used to determine whether to
 
-printType :: PrintTypeStyle -> Type -> Box
-printType printTypeStyle (TypeVar ident)                             = textFromNewtype ident
-printType printTypeStyle (TypeConstructor qualifiedTypeName)         = printQualifiedName_AnyProperNameType qualifiedTypeName
-printType printTypeStyle TypeWildcard                                = text "_"
-printType printTypeStyle (TypeHole ident)                            = text "?" <<>> textFromNewtype ident
-printType printTypeStyle (TypeString string)                         = text "\"" <<>> text string <<>> text "\""
-printType printTypeStyle (TypeRow row)                               = printRowLikeType printTypeStyle (text "(") (text ")") row
-printType printTypeStyle (TypeRecord row)                            = printRowLikeType printTypeStyle (text "{") (text "}") row
-printType printTypeStyle (TypeApp leftType rightType)                =
+type PrintTypeContext = { printTypeStyle :: PrintTypeStyle, isAlreadyInsideOfApp :: IsAlreadyInsideOfApp }
+
+resetIsAlreadyInsideOfApp printTypeContext = printTypeContext { isAlreadyInsideOfApp = IsAlreadyInsideOfApp_No }
+setIsAlreadyInsideOfAppYes printTypeContext = printTypeContext { isAlreadyInsideOfApp = IsAlreadyInsideOfApp_Yes }
+
+printType :: PrintTypeContext -> Type -> Box
+printType printTypeContext (TypeVar ident)                             = textFromNewtype ident
+printType printTypeContext (TypeConstructor qualifiedTypeName)         = printQualifiedName_AnyProperNameType qualifiedTypeName
+printType printTypeContext TypeWildcard                                = text "_"
+printType printTypeContext (TypeHole ident)                            = text "?" <<>> textFromNewtype ident
+printType printTypeContext (TypeString string)                         = text "\"" <<>> text string <<>> text "\""
+printType printTypeContext (TypeRow row)                               = printRowLikeType (resetIsAlreadyInsideOfApp printTypeContext) (text "(") (text ")") row
+printType printTypeContext (TypeRecord row)                            = printRowLikeType (resetIsAlreadyInsideOfApp printTypeContext) (text "{") (text "}") row
+printType printTypeContext (TypeApp leftType rightType)                =
   let
-    -- doWrapLeft :: Type -> Boolean
-    -- doWrapLeft (TypeVar _) = false
-    -- doWrapLeft (TypeConstructor _) = false
-    -- doWrapLeft TypeWildcard = false
-    -- doWrapLeft (TypeHole _) = false
-    -- doWrapLeft (TypeString _) = false
-    -- doWrapLeft (TypeRow _) = false
-    -- doWrapLeft (TypeRecord _) = false
-    -- doWrapLeft (TypeApp _ _) = true
-    -- doWrapLeft (TypeForall _ _) = true
-    -- doWrapLeft (TypeArr _ _) = true
-    -- doWrapLeft (TypeKinded _ _) = false
-    -- doWrapLeft (TypeOp _ _ _) = true
-    -- doWrapLeft (TypeConstrained _ _) = true
+    doWrapLeft :: Type -> Boolean
+    doWrapLeft (TypeVar _) = false
+    doWrapLeft (TypeConstructor _) = false
+    doWrapLeft TypeWildcard = false
+    doWrapLeft (TypeHole _) = false
+    doWrapLeft (TypeString _) = false
+    doWrapLeft (TypeRow _) = false
+    doWrapLeft (TypeRecord _) = false
+    doWrapLeft (TypeApp _ _) =
+      case printTypeContext.isAlreadyInsideOfApp of
+        IsAlreadyInsideOfApp_No -> false
+        IsAlreadyInsideOfApp_Yes -> true
+    doWrapLeft (TypeForall _ _) = true
+    doWrapLeft (TypeArr _ _) = true
+    doWrapLeft (TypeKinded _ _) = false
+    doWrapLeft (TypeOp _ _ _) = true
+    doWrapLeft (TypeConstrained _ _) = true
 
-    printedLeft = printType PreferOneLine leftType
-    -- printedLeft' = if doWrapLeft leftType then wrapInParentheses printedLeft else printedLeft
-    printed = printedLeft <<+>> printType PreferOneLine rightType
+    newLeftContext :: PrintTypeContext
+    newLeftContext = { printTypeStyle: PreferOneLine, isAlreadyInsideOfApp: IsAlreadyInsideOfApp_Yes }
+
+    newRightContext :: PrintTypeContext
+    newRightContext = { printTypeStyle: PreferOneLine, isAlreadyInsideOfApp: IsAlreadyInsideOfApp_Yes }
+
+    doWrap :: Boolean
+    doWrap = doWrapLeft leftType
+
+    maybeWrap :: Box -> Box
+    maybeWrap = if doWrap then wrapInParentheses else identity
+
+    printedLeft :: Box
+    printedLeft = printType newLeftContext leftType
+
+    printedRight :: Box
+    printedRight = printType newRightContext rightType
+
+    printed :: Box
+    printed = maybeWrap $ printedLeft <<+>> printedRight
    in printed
-printType printTypeStyle (TypeForall typeVarBindings type_)          = text "forall" <<+>> punctuateH left (text " ") (map printTypeVarBinding typeVarBindings) <<+>> text "." <<+>> printType printTypeStyle type_
-printType printTypeStyle (TypeArr leftType rightType)                = printType printTypeStyle leftType <<+>> text "->" <<+>> printType printTypeStyle rightType
-printType printTypeStyle (TypeKinded type_ kind_)                    = text "(" <<>> printType printTypeStyle type_ <<+>> text "::" <<+>> printKind kind_ <<>> text ")"
-printType printTypeStyle (TypeOp leftType qualifiedOpName rightType) = printType printTypeStyle leftType <<+>> printQualifiedName_AnyOpNameType qualifiedOpName <<+>> printType printTypeStyle rightType
-printType printTypeStyle (TypeConstrained constraint type_)          = printConstraint constraint <<+>> text "=>" <<+>> printType PreferOneLine type_
+printType printTypeContext (TypeForall typeVarBindings type_) =
+  let
+    newContext = resetIsAlreadyInsideOfApp printTypeContext
+   in text "forall" <<+>> punctuateH left (text " ") (map printTypeVarBinding typeVarBindings) <<+>> text "." <<+>> printType newContext type_
+printType printTypeContext (TypeArr leftType rightType) =
+  let
+    newContext = resetIsAlreadyInsideOfApp printTypeContext
+   in printType newContext leftType <<+>> text "->" <<+>> printType newContext rightType
+printType printTypeContext (TypeKinded type_ kind_) =
+  let
+    newContext = resetIsAlreadyInsideOfApp printTypeContext
+   in wrapInParentheses $ printType newContext type_ <<+>> text "::" <<+>> printKind kind_
+printType printTypeContext (TypeOp leftType qualifiedOpName rightType) =
+  let
+    newContext = resetIsAlreadyInsideOfApp printTypeContext
+   in printType newContext leftType <<+>> printQualifiedName_AnyOpNameType qualifiedOpName <<+>> printType newContext rightType
+printType printTypeContext (TypeConstrained constraint type_) =
+  let
+    newContext = { printTypeStyle: PreferOneLine, isAlreadyInsideOfApp: IsAlreadyInsideOfApp_No }
+   in printConstraint constraint <<+>> text "=>" <<+>> printType newContext type_
 
 printConstraint :: Constraint -> Box
-printConstraint (Constraint { className, args }) = printQualifiedName_AnyProperNameType className <<+>> (punctuateH left (text " ") $ map (printType PreferOneLine) args)
+printConstraint (Constraint { className, args }) =
+  let
+    context = { printTypeStyle: PreferOneLine, isAlreadyInsideOfApp: IsAlreadyInsideOfApp_No }
+   in printQualifiedName_AnyProperNameType className <<+>> (punctuateH left (text " ") $ map (printType context) args)
 printConstraint (ConstraintParens constraint) = wrapInParentheses $ printConstraint constraint
 
-printRowLikeType :: PrintTypeStyle -> Box -> Box -> Row -> Box
-printRowLikeType printTypeStyle leftWrapper rightWrapper row@(Row { rowLabels: [], rowTail: Nothing }) = leftWrapper <<>> rightWrapper
-printRowLikeType printTypeStyle leftWrapper rightWrapper row@(Row { rowLabels: [], rowTail: Just rowTail }) = leftWrapper <<+>> text "|" <<+>> printType PreferOneLine rowTail <<+>> rightWrapper
-printRowLikeType PreferOneLine leftWrapper rightWrapper row@(Row { rowLabels, rowTail }) =
+printRowLikeType :: PrintTypeContext -> Box -> Box -> Row -> Box
+printRowLikeType _ leftWrapper rightWrapper row@(Row { rowLabels: [], rowTail: Nothing }) = leftWrapper <<>> rightWrapper
+printRowLikeType _ leftWrapper rightWrapper row@(Row { rowLabels: [], rowTail: Just rowTail }) =
   let
-    printedTail = rowTail <#> printType PreferOneLine <#> (text "|" <<+>> _)
+    context = { printTypeStyle: PreferOneLine, isAlreadyInsideOfApp: IsAlreadyInsideOfApp_No }
+   in leftWrapper <<+>> text "|" <<+>> printType context rowTail <<+>> rightWrapper
+printRowLikeType ({ printTypeStyle: PreferOneLine }) leftWrapper rightWrapper row@(Row { rowLabels, rowTail }) =
+  let
+    context = { printTypeStyle: PreferOneLine, isAlreadyInsideOfApp: IsAlreadyInsideOfApp_No }
+    printedTail = rowTail <#> printType context <#> (text "|" <<+>> _)
 
     printedRowLabels =
       rowLabels
-      <#> printRowLabel PreferOneLine
-      # punctuateH left (text ",")
+      <#> printRowLabel context
+      # punctuateH left (text ", ")
       # maybe identity (\tail rowLine -> rowLine <<+>> tail) printedTail
       # (\x -> leftWrapper <<+>> x <<+>> rightWrapper)
    in
     printedRowLabels
-printRowLikeType PreferMultiline leftWrapper rightWrapper row@(Row { rowLabels, rowTail }) =
+printRowLikeType ({ printTypeStyle: PreferMultiline }) leftWrapper rightWrapper row@(Row { rowLabels, rowTail }) =
   let
-    printedTail = rowTail <#> printType PreferMultiline <#> (text "|" <<+>> _)
+    context = { printTypeStyle: PreferMultiline, isAlreadyInsideOfApp: IsAlreadyInsideOfApp_No }
+    printedTail = rowTail <#> printType context <#> (text "|" <<+>> _)
 
     printedRowLabels =
       rowLabels
-      <#> printRowLabel PreferMultiline
+      <#> printRowLabel context
       # mapWithIndex (\i box -> ifelse (i == 0) leftWrapper (text ",") <<+>> box)
       # maybe identity (flip Array.snoc) printedTail
       # flip Array.snoc rightWrapper
@@ -196,8 +251,8 @@ printRowLikeType PreferMultiline leftWrapper rightWrapper row@(Row { rowLabels, 
    in
     printedRowLabels
 
-printRowLabel :: PrintTypeStyle -> { label :: Label, type_ :: Type } -> Box
-printRowLabel printTypeStyle { label, type_ } = textFromNewtype label <<+>> text "::" <<+>> printType printTypeStyle type_
+printRowLabel :: PrintTypeContext -> { label :: Label, type_ :: Type } -> Box
+printRowLabel printTypeContext { label, type_ } = textFromNewtype label <<+>> text "::" <<+>> printType printTypeContext type_
 
 ifelse :: forall a. Boolean -> a -> a -> a
 ifelse p a b = if (p) then a else b

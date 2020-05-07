@@ -21,6 +21,7 @@ You can edit this file as you like.
     , "node-fs-aff"
     , "ansi"
     , "boxes"
+    , "debug"
     ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

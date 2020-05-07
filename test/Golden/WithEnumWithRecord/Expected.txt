@@ -5,7 +5,7 @@ data Foo
         { foo :: Number
         , bar :: { baz :: Data.Map.Map String Number
                  }
-        , qwe :: { rty :: Data.Map.Map { asd :: Number } { foo :: Number }
+        , qwe :: { rty :: Data.Map.Map { asd :: Number } { foo :: Number, bar :: Data.Map.Map (Data.Map.Map (Data.Map.Map Number Boolean) (Data.Map.Map Number Boolean)) Boolean }
                  , uio :: Data.Map.Map (Data.Map.Map (Data.Map.Map Number Boolean) (Data.Map.Map Number Boolean)) Boolean
                  }
         }

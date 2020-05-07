@@ -30,7 +30,7 @@ actualModule = Module
             [ "foo" /\ number
             , "bar" /\ typeRecordWithoutTail [ "baz" /\ dataMapMap string number ]
             , "qwe" /\ typeRecordWithoutTail
-              [ "rty" /\ (dataMapMap (typeRecordWithoutTail [ "asd" /\ number ]) (typeRecordWithoutTail [ "foo" /\ number ]))
+              [ "rty" /\ (dataMapMap (typeRecordWithoutTail [ "asd" /\ number ]) (typeRecordWithoutTail [ "foo" /\ number, "bar" /\ (dataMapMap (dataMapMap (dataMapMap number boolean) (dataMapMap number boolean)) boolean) ]))
               , "uio" /\ (dataMapMap (dataMapMap (dataMapMap number boolean) (dataMapMap number boolean)) boolean)
               ]
             ]
