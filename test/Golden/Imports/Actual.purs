@@ -1,16 +1,12 @@
 module Test.Golden.Imports.Actual where
 
-import Data.Either
-import Data.Maybe
-import Language.PS.AST
-import Language.PS.AST.Types
-import Language.PS.AST.Sugar
-import Prelude
+import Data.Maybe (Maybe(..))
+import Language.PS.AST.Types (DataMembers(..), Import(..), ImportDecl(..), Module(..))
+import Language.PS.AST.Sugar (mkModuleName)
+import Prelude (map, ($))
 
-import Data.Functor.Mu (roll)
-import Data.List (fromFoldable) as List
 import Data.Newtype (wrap)
-import Data.NonEmpty (NonEmpty(..), (:|))
+import Data.NonEmpty ((:|))
 
 actualModule :: Module
 actualModule = Module

@@ -7,18 +7,11 @@ module Language.PS.AST.Types where
 import Prelude
 
 import Data.Either (Either)
-import Data.Foldable (class Foldable, foldMap, foldlDefault, foldrDefault)
-import Data.Functor.Mu (Mu)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
-import Data.Map (Map)
-import Data.Map (unionWith) as Map
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
-import Data.NonEmpty (NonEmpty(..))
-import Data.Set (Set)
-import Data.Set (fromFoldable, union) as Set
-import Data.Traversable (class Traversable, sequence, traverseDefault)
+import Data.NonEmpty (NonEmpty)
 
 -- | No need for imports list as they are collected from declarations
 -- | during final codegen.

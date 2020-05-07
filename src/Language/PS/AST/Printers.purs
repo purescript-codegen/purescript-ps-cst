@@ -1,34 +1,16 @@
 module Language.PS.AST.Printers where
 
-import Language.PS.AST.Printers.PrintImports
-import Language.PS.AST.Printers.PrintModuleModuleNameAndExports
-import Language.PS.AST.Printers.Utils
-import Language.PS.AST.Types
-import Prelude
-import Text.PrettyPrint.Boxes
+import Language.PS.AST.Printers.PrintImports (printImports)
+import Language.PS.AST.Printers.PrintModuleModuleNameAndExports (printModuleModuleNameAndExports)
+import Language.PS.AST.Printers.Utils (emptyRow, ifelse, lines, printModuleName, textFromNewtype, twoSpaceIdentation, wrapInParentheses)
+import Language.PS.AST.Types (Constraint(..), DataCtor(..), DataHead(..), Declaration(..), Kind(..), Label, Module(..), OpName, ProperName, QualifiedName(..), Row(..), Type(..), TypeVarBinding(..))
+import Prelude (flip, identity, map, (#), ($), (<#>), (<<<), (==))
+import Text.PrettyPrint.Boxes (Box, left, nullBox, punctuateH, text, vcat, vsep, (//), (<<+>>), (<<>>))
 
-import Data.Array (cons, fromFoldable, null, snoc) as Array
-import Data.Char.Unicode (isUpper)
-import Data.Either (Either(..), fromRight)
-import Data.Foldable (class Foldable, foldMap, intercalate, length, null)
+import Data.Array (snoc) as Array
+import Data.Foldable (null)
 import Data.FunctorWithIndex (mapWithIndex)
-import Data.Identity (Identity(..))
-import Data.List (List(..))
-import Data.List (fromFoldable, intercalate) as List
-import Data.Map (toUnfoldable) as Map
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Data.Newtype (class Newtype, unwrap)
-import Data.Set (member) as Set
-import Data.String (joinWith)
-import Data.String.CodeUnits (uncons) as SCU
-import Data.String.Regex (Regex, regex)
-import Data.String.Regex (test) as Regex
-import Data.String.Regex.Flags (noFlags) as Regex.Flags
-import Data.Tuple (Tuple(..))
-import Data.Unfoldable (replicate)
-import Debug.Trace (trace, traceM)
-import Matryoshka (Algebra, cata)
-import Partial.Unsafe (unsafePartial)
+import Data.Maybe (Maybe(..), maybe)
 
 printModule :: Module -> Box
 printModule (Module { moduleName, imports, exports, declarations }) = lines $
@@ -48,9 +30,6 @@ printDeclaration :: Declaration -> Box
 printDeclaration (DeclData dataHead []) = printDataHead dataHead
 printDeclaration (DeclData dataHead arrayDataCtor) =
   let
-    -- printedNamesColumn = vcat left $ map printDataCtor
-    -- separatorsColumn = vcat left $ [text "="] <> replicate (length arrayDataCtor - 1) (text "|")
-    -- printedCtors = twoSpaceIdentation <<>> separatorsColumn <<+>> printedNamesColumn
     printedCtors =
       arrayDataCtor
       <#> printDataCtor
@@ -139,7 +118,21 @@ data IsAlreadyInsideOfApp = IsAlreadyInsideOfApp_Yes | IsAlreadyInsideOfApp_No
 
 type PrintTypeContext = { printTypeStyle :: PrintTypeStyle, isAlreadyInsideOfApp :: IsAlreadyInsideOfApp }
 
+resetIsAlreadyInsideOfApp :: forall t8 t9.
+  { isAlreadyInsideOfApp :: t9
+  | t8
+  }
+  -> { isAlreadyInsideOfApp :: IsAlreadyInsideOfApp
+     | t8
+     }
 resetIsAlreadyInsideOfApp printTypeContext = printTypeContext { isAlreadyInsideOfApp = IsAlreadyInsideOfApp_No }
+setIsAlreadyInsideOfAppYes :: forall t3 t4.
+  { isAlreadyInsideOfApp :: t4
+  | t3
+  }
+  -> { isAlreadyInsideOfApp :: IsAlreadyInsideOfApp
+     | t3
+     }
 setIsAlreadyInsideOfAppYes printTypeContext = printTypeContext { isAlreadyInsideOfApp = IsAlreadyInsideOfApp_Yes }
 
 printType :: PrintTypeContext -> Type -> Box

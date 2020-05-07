@@ -1,11 +1,8 @@
 module Test.Golden.WithEnum.Actual where
 
-import Data.Either
-import Data.Maybe
-import Language.PS.AST
-import Language.PS.AST.Sugar
-import Language.PS.AST.Types
-import Prelude
+import Language.PS.AST.Sugar (mkModuleName)
+import Language.PS.AST.Types (DataCtor(..), DataHead(..), Declaration(..), Module(..), ProperName(..))
+import Prelude (($))
 
 import Data.NonEmpty ((:|))
 

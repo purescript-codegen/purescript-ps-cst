@@ -1,11 +1,9 @@
 module Test.Golden.WithEnumWithRecord.Actual where
 
-import Data.Either
-import Data.Maybe
-import Language.PS.AST
-import Language.PS.AST.Types
-import Language.PS.AST.Sugar
-import Prelude
+import Data.Maybe (Maybe(..))
+import Language.PS.AST.Types (Constraint(..), DataCtor(..), DataHead(..), Declaration(..), Ident(..), Kind(..), Label(..), Module(..), OpName(..), ProperName(..), Row(..), Type(..), TypeVarBinding(..))
+import Language.PS.AST.Sugar (mkModuleName, nonQualifiedName, qualifiedName)
+import Prelude (map, ($), (<<<))
 import Data.Tuple.Nested (type (/\), (/\))
 
 import Data.NonEmpty ((:|))

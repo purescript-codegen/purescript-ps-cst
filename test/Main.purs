@@ -1,18 +1,11 @@
 module Test.Main where
 
-import Effect
-import Effect.Aff
-import Language.PS.AST
-import Prelude
+import Effect (Effect)
+import Effect.Aff (Aff, launchAff_)
+import Language.PS.AST (Module)
+import Prelude (Unit, bind, flip, pure, ($))
 
 import Control.Parallel (parTraverse)
-import Data.Either (Either(..))
-import Data.Functor.Mu (roll)
-import Data.List (fromFoldable) as List
-import Data.Maybe (Maybe(..))
-import Data.String.Regex as Regex
-import Data.String.Regex.Unsafe as Regex
-import Data.String.Regex.Flags as Regex
 import Data.Traversable (traverse_)
 import Effect.Class (liftEffect)
 import Language.PS.AST.Printers as Language.PS.AST.Printers
@@ -21,7 +14,6 @@ import Node.FS.Aff (readTextFile)
 import Node.Path as Node.Path
 import Test.Ansidiff (textShouldMatch)
 import Test.Spec as Test.Spec
-import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.Reporter as Test.Spec.Reporter
 import Test.Spec.Runner as Test.Spec.Runner
 import Text.PrettyPrint.Boxes (render) as Text.PrettyPrint.Boxes
