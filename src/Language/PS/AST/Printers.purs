@@ -116,6 +116,7 @@ printQualifiedName_AnyOpNameType (QualifiedName qualifiedName) = case qualifiedN
   Nothing -> textFromNewtype qualifiedName.qualName
   (Just moduleName) -> printModuleName moduleName <<>> text "." <<>> wrapInParentheses (textFromNewtype qualifiedName.qualName)
 
+-- Prefer multiline when first enter the rendering function, prefer one line when inside of row extensions (i.e. `MyExt + MyOtherExt` in `( foo :: Bar | MyExt + MyOtherExt )`)
 data PrintTypeStyle
   = PreferMultiline
   | PreferOneLine

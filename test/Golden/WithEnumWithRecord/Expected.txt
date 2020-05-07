@@ -37,6 +37,10 @@ data Foo
         , rowField2 :: Number
         | MyExtension + MyOtherExtension { someField :: Number }
         )
+        ( rowField :: { foo :: Number
+                      , bar :: Data.Map.Map (Data.Map.Map (Data.Map.Map Number Boolean) (Data.Map.Map Number Boolean)) Boolean
+                      }
+        )
         (forall a (b :: # Type) . Array a)
         (Array a -> Maybe a)
         (Array ~> Maybe)

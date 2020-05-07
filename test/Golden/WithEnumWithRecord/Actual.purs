@@ -54,6 +54,7 @@ actualModule = Module
                                       (typeRecordWithoutTail [ "someField" /\ number ])
                                      )
             }
+          , TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ (typeRecordWithoutTail [ "foo" /\ number, "bar" /\ (dataMapMap (dataMapMap (dataMapMap number boolean) (dataMapMap number boolean)) boolean) ]) ], rowTail: Nothing }
           , TypeForall
             ((typeVarName "a") :| [(TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )])
             (array $ typeVar "a")
