@@ -3,7 +3,6 @@ module Language.PS.AST.Printers.Utils where
 import Prelude
 import Language.PS.AST.Types
 import Text.PrettyPrint.Boxes
-
 import Data.Array (cons, fromFoldable, null) as Array
 import Data.Char.Unicode (isUpper)
 import Data.Either (Either(..), fromRight)
@@ -24,10 +23,10 @@ import Data.Unfoldable (replicate)
 import Matryoshka (Algebra, cata)
 import Partial.Unsafe (unsafePartial)
 
-line :: ∀ f . Foldable f ⇒ f Box → Box
+line :: ∀ f. Foldable f ⇒ f Box → Box
 line = hsep 1 left
 
-lines :: ∀ f . Foldable f ⇒ f Box → Box
+lines :: ∀ f. Foldable f ⇒ f Box → Box
 lines = vsep 0 left
 
 emptyRow :: Box
@@ -39,8 +38,8 @@ emptyColumn = emptyBox 0 1
 printModuleName :: ModuleName -> Box
 printModuleName (ModuleName nonEmptyArray) =
   nonEmptyArray
-  # map (unwrap >>> text)
-  # punctuateH left (text ".")
+    # map (unwrap >>> text)
+    # punctuateH left (text ".")
 
 wrapInParentheses :: Box -> Box
 wrapInParentheses x = text "(" <<>> x <<>> text ")"

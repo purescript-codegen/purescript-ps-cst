@@ -1,6 +1,5 @@
 module Language.PS.AST
   ( module Types
-  )
-  where
+  ) where
 
 import Language.PS.AST.Types as Types
