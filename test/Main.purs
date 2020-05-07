@@ -20,15 +20,16 @@ import Node.Encoding (Encoding(..))
 import Node.FS.Aff (readTextFile)
 import Node.Path as Node.Path
 import Test.Ansidiff (textShouldMatch)
-import Test.Golden.WithEnum.Actual as Test.Golden.WithEnum.Actual
--- import Test.Golden.WithEnumWithRecord.Actual as Test.Golden.WithEnumWithRecord.Actual
-import Test.Golden.Imports.Actual as Test.Golden.Imports.Actual
-import Test.Golden.Exports.Actual as Test.Golden.Exports.Actual
 import Test.Spec as Test.Spec
 import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.Reporter as Test.Spec.Reporter
 import Test.Spec.Runner as Test.Spec.Runner
 import Text.PrettyPrint.Boxes (render) as Text.PrettyPrint.Boxes
+
+import Test.Golden.WithEnum.Actual           as Test.Golden.WithEnum.Actual
+import Test.Golden.WithEnumWithRecord.Actual as Test.Golden.WithEnumWithRecord.Actual
+import Test.Golden.Imports.Actual            as Test.Golden.Imports.Actual
+import Test.Golden.Exports.Actual            as Test.Golden.Exports.Actual
 
 type GoldenTest =
   { name :: String
@@ -46,7 +47,7 @@ goldenTests =
   [ { name: "Imports", actualModule: Test.Golden.Imports.Actual.actualModule }
   , { name: "Exports", actualModule: Test.Golden.Exports.Actual.actualModule }
   , { name: "WithEnum", actualModule: Test.Golden.WithEnum.Actual.actualModule }
-  -- , { name: "WithEnumWithRecord", actualModule: Test.Golden.WithEnumWithRecord.Actual.actualModule }
+  , { name: "WithEnumWithRecord", actualModule: Test.Golden.WithEnumWithRecord.Actual.actualModule }
   ]
 
 addText :: GoldenTest -> Aff GoldenTestWithExpected

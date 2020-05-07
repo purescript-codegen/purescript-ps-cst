@@ -130,18 +130,18 @@ data Declaration
 
 data Type
   = TypeVar Ident
-  -- | TypeConstructor (QualifiedName (ProperName ProperNameType_TypeName))
-  -- | TypeWildcard
-  -- | TypeHole Ident
-  -- | TypeString String
-  -- | TypeRow Row
-  -- | TypeRecord Row
-  -- | TypeForall (NonEmpty Array TypeVarBinding) Type
-  -- | TypeKinded Type Kind
-  -- | TypeApp Type Type
-  -- | TypeOp Type (QualifiedName (OpName OpNameType_TypeOpName)) Type
-  -- | TypeArr Type Type
-  -- | TypeConstrained (Constraint a) Type
+  | TypeConstructor (QualifiedName (ProperName ProperNameType_TypeName))
+  | TypeWildcard
+  | TypeHole Ident
+  | TypeString String
+  | TypeRow Row
+  | TypeRecord Row
+  | TypeApp Type Type
+  | TypeForall (NonEmpty Array TypeVarBinding) Type
+  | TypeArr Type Type
+  | TypeKinded Type Kind
+  | TypeOp Type (QualifiedName (OpName OpNameType_TypeOpName)) Type -- like TypeArr, but with custom type alias
+  | TypeConstrained Constraint Type
   --
   -- no need to implement
   --
@@ -189,19 +189,22 @@ newtype Label = Label String
 derive instance newtypeLabel :: Newtype Label _
 
 newtype Row = Row
-  { rowLabels :: Array { label :: Label, type :: Type }
+  { rowLabels :: Array { label :: Label, type_ :: Type }
   , rowTail :: Maybe Type
   }
 
 derive instance newtypeRow :: Newtype Row _
 
 data Constraint
-  = Constraint (QualifiedName (ProperName ProperNameType_ClassName)) (Array Type)
+  = Constraint
+    { className :: QualifiedName (ProperName ProperNameType_ClassName)
+    , args :: Array Type
+    }
   | ConstraintParens Constraint
 
 data OneOrDelimited a
-  = One a
-  | Many (NonEmpty Array a)
+  = OneOrDelimited_One a
+  | OneOrDelimited_Many { first :: a, second :: a, tail :: Array a }
 
 data ClassFundep
   = FundepDetermined (NonEmpty Array Ident)

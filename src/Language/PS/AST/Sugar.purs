@@ -15,6 +15,12 @@ import Matryoshka.Fold (cata)
 mkModuleName :: NonEmpty Array String -> ModuleName
 mkModuleName = ModuleName <<< map wrap
 
+nonQualifiedName :: ∀ a . a -> QualifiedName a
+nonQualifiedName a = QualifiedName { qualModule: Nothing, qualName: a }
+
+qualifiedName :: ∀ a . ModuleName -> a -> QualifiedName a
+qualifiedName moduleName a = QualifiedName { qualModule: Just moduleName, qualName: a }
+
 -- emptyRow :: Row
 -- emptyRow = Row { labels: mempty, tail: Nothing }
 
