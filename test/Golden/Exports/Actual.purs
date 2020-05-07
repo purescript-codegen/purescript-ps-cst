@@ -28,4 +28,5 @@ actualModule = Module
       , ExportOp (wrap "||")
       , ExportValue (wrap "a")
       ]
+  , declarations: []
   }

@@ -57,4 +57,5 @@ actualModule = Module
       }
     ]
   , exports: []
+  , declarations: []
   }

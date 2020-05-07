@@ -1,3 +1,5 @@
-module FooModuleName where
+module WithEnum where
 
-data Foo = Bar | Baz
+data Foo
+  = Bar
+  | Baz

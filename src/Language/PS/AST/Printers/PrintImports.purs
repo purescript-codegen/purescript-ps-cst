@@ -25,9 +25,9 @@ import Data.Unfoldable (replicate)
 import Matryoshka (Algebra, cata)
 import Partial.Unsafe (unsafePartial)
 
-printedImports :: Array ImportDecl -> Box
-printedImports [] = nullBox
-printedImports imports =
+printImports :: Array ImportDecl -> Box
+printImports [] = nullBox
+printImports imports =
   emptyRow
   // (vsep 0 left $ map printImport imports)
 

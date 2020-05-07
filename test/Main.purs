@@ -20,7 +20,7 @@ import Node.Encoding (Encoding(..))
 import Node.FS.Aff (readTextFile)
 import Node.Path as Node.Path
 import Test.Ansidiff (textShouldMatch)
--- import Test.Golden.WithEnum.Actual as Test.Golden.WithEnum.Actual
+import Test.Golden.WithEnum.Actual as Test.Golden.WithEnum.Actual
 -- import Test.Golden.WithEnumWithRecord.Actual as Test.Golden.WithEnumWithRecord.Actual
 import Test.Golden.Imports.Actual as Test.Golden.Imports.Actual
 import Test.Golden.Exports.Actual as Test.Golden.Exports.Actual
@@ -45,7 +45,7 @@ goldenTests :: Array GoldenTest
 goldenTests =
   [ { name: "Imports", actualModule: Test.Golden.Imports.Actual.actualModule }
   , { name: "Exports", actualModule: Test.Golden.Exports.Actual.actualModule }
-  -- , { name: "WithEnum", actualModule: Test.Golden.WithEnum.Actual.actualModule }
+  , { name: "WithEnum", actualModule: Test.Golden.WithEnum.Actual.actualModule }
   -- , { name: "WithEnumWithRecord", actualModule: Test.Golden.WithEnumWithRecord.Actual.actualModule }
   ]
 

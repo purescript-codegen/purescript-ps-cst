@@ -28,14 +28,57 @@ import Matryoshka (Algebra, cata)
 import Partial.Unsafe (unsafePartial)
 
 printModule :: Module -> Box
-printModule (Module { moduleName, imports, exports }) = lines $
+printModule (Module { moduleName, imports, exports, declarations }) = lines $
   [ printModuleModuleNameAndExports moduleName exports
-  , printedImports imports
+  , printImports imports
+  , printDeclarations declarations
   , emptyRow
   ]
 
--- printDeclaration :: Declaration -> Box
--- printDeclaration (DeclForeignData { typeName: TypeName name }) = -- , "kind": k }) =
+printDeclarations :: Array Declaration -> Box
+printDeclarations [] = nullBox
+printDeclarations declarations =
+  emptyRow
+  // (vsep 1 left $ map printDeclaration declarations)
+
+printDeclaration :: Declaration -> Box
+printDeclaration (DeclData dataHead []) = printDataHead dataHead
+printDeclaration (DeclData dataHead arrayDataCtor) =
+  let
+    head = printDataHead dataHead
+
+    printCtors :: DataCtor -> Box
+    printCtors (DataCtor dataCtor) = textFromNewtype dataCtor.dataCtorName
+
+    printedNamesColumn = vcat left $ map printCtors arrayDataCtor
+    separatorsColumn = vcat left $ [text "="] <> replicate (length arrayDataCtor - 1) (text "|")
+    printedCtors = twoSpaceIdentation <<>> separatorsColumn <<+>> printedNamesColumn
+  in head // printedCtors
+printDeclaration (DeclType dataHead type_) = nullBox
+
+printDataHead :: DataHead -> Box
+printDataHead (DataHead dataHead) =
+  let
+    head = text "data" <<+>> textFromNewtype dataHead.dataHdName
+    vars = map printTypeVarBinding dataHead.dataHdVars
+   in if null vars then head else head <<+>> punctuateH left (text " ") vars
+
+printTypeVarBinding :: TypeVarBinding -> Box
+printTypeVarBinding (TypeVarName ident) = textFromNewtype ident
+printTypeVarBinding (TypeVarKinded ident kind_) = wrapInParentheses $ textFromNewtype ident <<+>> text " :: " <<+>> printKind kind_
+
+printKind :: Kind -> Box
+printKind (KindName (QualifiedName qualifiedKindName)) =
+  case qualifiedKindName.qualModule of
+       Nothing -> textFromNewtype qualifiedKindName.qualName
+       (Just moduleName) -> printModuleName moduleName <<>> text "." <<>> textFromNewtype qualifiedKindName.qualName
+printKind (KindArr kindLeft_ kindRight_) = printKind kindLeft_ <<+>> text "->" <<+>> printKind kindRight_
+printKind (KindRow kind_) = text "#" <<+>> printKind kind_
+printKind (KindParens kind_) = wrapInParentheses $ printKind kind_
+
+printType :: Type -> Box
+printType (TypeVar ident) = textFromNewtype ident
+
 --   line
 --     [ text "foreign import data"
 --     , text $ name

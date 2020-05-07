@@ -26,7 +26,7 @@ newtype Module = Module
   { moduleName :: ModuleName
   , imports :: Array ImportDecl
   , exports :: Array Export
-  -- , declarations :: Array Declaration
+  , declarations :: Array Declaration
   }
 
 newtype ModuleName = ModuleName (NonEmpty Array (ProperName ProperNameType_Namespace))
@@ -115,6 +115,167 @@ derive instance genericExport :: Generic Export _
 derive instance eqExport :: Eq Export
 derive instance ordExport :: Ord Export
 instance showExport :: Show Export where show = genericShow
+
+data Declaration
+  = DeclData DataHead (Array DataCtor)
+  | DeclType DataHead Type
+  -- | DeclNewtype DataHead (ProperName ProperNameType_ConstructorName) Type
+  -- | DeclClass (ClassHead a) Array (Labeled Ident Type)
+  -- | DeclInstanceChain (NonEmpty Array (Instance a))
+  -- | DeclDerive {- (Maybe SourceToken) -} (InstanceHead a)
+  -- | DeclSignature (Labeled Ident Type)
+  -- | DeclValue (ValueBindingFields a)
+  -- | DeclFixity FixityFields
+  -- | DeclForeign (Foreign a)
+
+data Type
+  = TypeVar Ident
+  -- | TypeConstructor (QualifiedName (ProperName ProperNameType_TypeName))
+  -- | TypeWildcard
+  -- | TypeHole Ident
+  -- | TypeString String
+  -- | TypeRow Row
+  -- | TypeRecord Row
+  -- | TypeForall (NonEmpty Array TypeVarBinding) Type
+  -- | TypeKinded Type Kind
+  -- | TypeApp Type Type
+  -- | TypeOp Type (QualifiedName (OpName OpNameType_TypeOpName)) Type
+  -- | TypeArr Type Type
+  -- | TypeConstrained (Constraint a) Type
+  --
+  -- no need to implement
+  --
+  -- | TypeOpName (QualifiedName (OpName OpNameType_TypeOpName))
+  -- | TypeArrName
+  -- | TypeParens Type
+
+newtype QualifiedName a = QualifiedName
+  { qualModule :: Maybe ModuleName
+  , qualName :: a
+  }
+derive instance newtypeQualifiedName :: Newtype (QualifiedName a) _
+
+-- Mu
+data Kind
+  = KindName (QualifiedName (ProperName ProperNameType_KindName))
+  | KindArr Kind Kind
+  | KindRow Kind
+  | KindParens Kind
+
+-- e.g. main , forAll
+-- data Labeled a b = Labeled
+--   { lblLabel :: a
+--   , lblValue  :: b
+--   }
+
+data TypeVarBinding
+  = TypeVarKinded Ident Kind
+  | TypeVarName Ident
+
+newtype DataHead = DataHead
+  { dataHdName :: ProperName ProperNameType_TypeName
+  , dataHdVars :: Array TypeVarBinding
+  }
+derive instance newtypeDataHead :: Newtype DataHead _
+
+newtype DataCtor = DataCtor
+  { dataCtorName :: ProperName ProperNameType_ConstructorName
+  , dataCtorFields :: Array Type
+  }
+derive instance newtypeDataCtor :: Newtype DataCtor _
+
+newtype Label = Label String
+
+derive instance newtypeLabel :: Newtype Label _
+
+newtype Row = Row
+  { rowLabels :: Array { label :: Label, type :: Type }
+  , rowTail :: Maybe Type
+  }
+
+derive instance newtypeRow :: Newtype Row _
+
+data Constraint
+  = Constraint (QualifiedName (ProperName ProperNameType_ClassName)) (Array Type)
+  | ConstraintParens Constraint
+
+data OneOrDelimited a
+  = One a
+  | Many (NonEmpty Array a)
+
+data ClassFundep
+  = FundepDetermined (NonEmpty Array Ident)
+  | FundepDetermines (NonEmpty Array Ident) (NonEmpty Array Ident)
+
+-- Delimeted or separated
+newtype ClassHead a = ClassHead
+  { clsSuper :: Maybe (OneOrDelimited Constraint)
+  , clsName :: ProperName ProperNameType_ClassName
+  , clsVars :: Array TypeVarBinding
+  , clsFundeps :: Array ClassFundep
+  }
+
+newtype ValueBindingFields = ValueBindingFields
+  { valName :: Ident
+  , valBinders :: Array Binder
+  -- , valGuarded :: Guarded
+  }
+
+data RecordLabeled a
+  = RecordPun Ident
+  | RecordField Label a
+
+data Binder
+  = BinderWildcard
+  | BinderVar Ident
+  | BinderNamed Ident Binder
+  | BinderConstructor (QualifiedName (ProperName ProperNameType_ConstructorName)) (Array Binder)
+  | BinderBoolean Boolean
+  | BinderChar Char
+  | BinderString String
+  | BinderNumber (Either Int Number)
+  | BinderArray (Array Binder)
+  | BinderRecord (Array (RecordLabeled Binder))
+  | BinderParens Binder
+  | BinderTyped Binder Type
+  | BinderOp Binder (QualifiedName (OpName OpNameType_ValueOpName)) Binder
+
+-- newtype Where = Where
+--   { whereExpr :: Expr
+--   , whereBindings :: Array LetBinding
+--   }
+
+-- data Guarded
+--   = Unconditional Where
+--   | Guarded (NonEmpty Array GuardedExpr)
+
+-- newtype GuardedExpr = GuardedExpr
+--   { grdBar :: SourceToken
+--   , grdPatterns :: Separated PatternGuard
+--   , grdSep :: SourceToken
+--   , grdWhere :: Where
+--   }
+
+-- newtype PatternGuard = PatternGuard
+--   { patBinder :: Maybe Binder
+--   , patExpr :: Expr
+--   }
+
+-- data InstanceBinding
+--   = InstanceBindingSignature (Labeled (Name Ident) Type)
+--   | InstanceBindingName ValueBindingFields
+
+-- newtype Instance = Instance
+--   { instHead :: InstanceHead
+--   , instBody :: Array InstanceBinding
+--   }
+
+newtype InstanceHead a = InstanceHead
+  { instName :: Ident
+  , instConstraints :: Maybe (OneOrDelimited Constraint)
+  , instClass :: QualifiedName (ProperName ProperNameType_ClassName)
+  , instTypes :: Array Type
+  }
 
 -- reservedNames :: Set String
 -- reservedNames = Set.fromFoldable
