@@ -132,7 +132,10 @@ printQualifiedName_AnyOpNameType (QualifiedName qualifiedName) =
        (Just moduleName) -> printModuleName moduleName <<>> text "." <<>> wrapInParentheses (textFromNewtype qualifiedName.qualName)
 
 data PrintTypeStyle = PreferMultiline | PreferOneLine
-data IsAlreadyInsideOfApp = IsAlreadyInsideOfApp_Yes | IsAlreadyInsideOfApp_No -- Am I inside of TypeApp that didn't yet break? used to determine whether to
+
+-- Am I inside of TypeApp that didn't yet break? (i.e. TypeApp inside TypeApp)
+-- used to determine whether to wrap in parentheses the `Array Int` inside of `Map (Array Int) Other`
+data IsAlreadyInsideOfApp = IsAlreadyInsideOfApp_Yes | IsAlreadyInsideOfApp_No
 
 type PrintTypeContext = { printTypeStyle :: PrintTypeStyle, isAlreadyInsideOfApp :: IsAlreadyInsideOfApp }
 
