@@ -248,8 +248,6 @@ printRowLikeType ({ printTypeStyle: PreferMultiline }) leftWrapper rightWrapper 
         # mapWithIndex (\i box -> ifelse (i == 0) leftWrapper (text ",") <<+>> box)
         # maybe identity (flip Array.snoc) printedTail
         # flip Array.snoc rightWrapper
-        -- <#> (twoSpaceIdentation <<>> _)
-
         # vcat left
   in
     printedRowLabels
