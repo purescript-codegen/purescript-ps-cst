@@ -256,6 +256,3 @@ printRowLikeType ({ printTypeStyle: PreferMultiline }) leftWrapper rightWrapper 
 
 printRowLabel :: PrintTypeContext -> { label :: Label, type_ :: Type } -> Box
 printRowLabel printTypeContext { label, type_ } = textFromNewtype label <<+>> text "::" <<+>> printType printTypeContext type_
-
-ifelse :: forall a. Boolean -> a -> a -> a
-ifelse p a b = if (p) then a else b

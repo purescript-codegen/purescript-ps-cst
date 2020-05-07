@@ -56,3 +56,6 @@ twoSpaceIdentation = emptyBox 0 2
 
 printConstructors :: Array (ProperName ProperNameType_ConstructorName) -> Box
 printConstructors = punctuateWithComma <<< map textFromNewtype
+
+ifelse :: forall a. Boolean -> a -> a -> a
+ifelse p a b = if p then a else b
