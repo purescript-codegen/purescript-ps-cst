@@ -1,12 +1,12 @@
 module Test.Golden.WithEnumWithRecord.Actual where
 
-import Data.Maybe (Maybe(..))
-import Language.PS.AST.Types
 import Language.PS.AST.Sugar
-import Prelude (map, ($), (<<<))
-import Data.Tuple.Nested (type (/\), (/\))
+import Language.PS.AST.Types
 
+import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
+import Data.Tuple.Nested (type (/\), (/\))
+import Prelude (map, ($), (<<<))
 
 actualModule :: Module
 actualModule = Module
@@ -54,7 +54,53 @@ actualModule = Module
                                       (typeRecord [ "someField" /\ number ])
                                      )
             }
-          , TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ (typeRecord [ "foo" /\ number, "bar" /\ (dataMapMap (dataMapMap (dataMapMap number boolean) (dataMapMap number boolean)) boolean) ]) ], rowTail: Nothing }
+          , TypeRow $ Row
+            { rowLabels: mkRowLabels
+              [ "rowField" /\ (typeRecord
+                [ "foo" /\ number
+                , "bar" /\ (dataMapMap (dataMapMap (dataMapMap number boolean) (dataMapMap number boolean)) boolean)
+                , "baz" /\ (
+                  (TypeConstructor $ nonQualifiedName (ProperName "Complex"))
+                  `TypeApp`
+                  (TypeConstructor $ nonQualifiedName (ProperName "A"))
+                  `TypeApp`
+                  (TypeConstructor $ nonQualifiedName (ProperName "B"))
+                  `TypeApp`
+                  (TypeConstructor $ nonQualifiedName (ProperName "C"))
+                  `TypeApp`
+                  (TypeConstructor $ nonQualifiedName (ProperName "D"))
+                  `TypeApp`
+                  (TypeConstructor $ nonQualifiedName (ProperName "F"))
+                  `TypeApp`
+                  (TypeConstructor $ nonQualifiedName (ProperName "G"))
+                  `TypeApp`
+                  (TypeConstructor $ nonQualifiedName (ProperName "H"))
+                )
+                , "qux" /\ (
+                  (TypeConstructor $ nonQualifiedName (ProperName "Complex"))
+                  `TypeApp`
+                  (
+                    (TypeConstructor $ nonQualifiedName (ProperName "A"))
+                    `TypeApp`
+                    (TypeConstructor $ nonQualifiedName (ProperName "B"))
+                    `TypeApp`
+                    (TypeConstructor $ nonQualifiedName (ProperName "C"))
+                  )
+                  `TypeApp`
+                  (TypeConstructor $ nonQualifiedName (ProperName "F"))
+                  `TypeApp`
+                  (
+                    (TypeConstructor $ nonQualifiedName (ProperName "D"))
+                    `TypeApp`
+                    (TypeConstructor $ nonQualifiedName (ProperName "G"))
+                    `TypeApp`
+                    (TypeConstructor $ nonQualifiedName (ProperName "H"))
+                  )
+                )
+                ])
+              ]
+            , rowTail: Nothing
+            }
           , TypeForall
             ((typeVarName "a") :| [(TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )])
             (array $ typeVar "a")
