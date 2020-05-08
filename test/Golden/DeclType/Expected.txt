@@ -1,0 +1,74 @@
+module DeclType where
+
+type Foo = Boolean
+
+type Foo = { foo :: Number
+           , bar :: { baz :: Data.Map.Map String Number
+                    }
+           , qwe :: { rty :: Data.Map.Map { asd :: Number } { foo :: Number, bar :: Data.Map.Map (Data.Map.Map (Data.Map.Map Number Boolean) (Data.Map.Map Number Boolean)) Boolean }
+                    , uio :: Data.Map.Map (Data.Map.Map (Data.Map.Map Number Boolean) (Data.Map.Map Number Boolean)) Boolean
+                    }
+           }
+
+type Foo = a
+
+type Foo = Array a
+
+type Foo = Array { foo :: Number }
+
+type Foo = _
+
+type Foo = ?myhole
+
+type Foo = "PsString"
+
+type Foo = ()
+
+type Foo = ( | MyExtension )
+
+type Foo = ( rowField :: Number
+           )
+
+type Foo = ( rowField :: Number
+           | MyExtension
+           )
+
+type Foo = ( rowField :: Number
+           , rowField2 :: Number
+           )
+
+type Foo = ( rowField :: Number
+           , rowField2 :: Number
+           | MyExtension
+           )
+
+type Foo = ( rowField :: Number
+           , rowField2 :: Number
+           | MyExtension + MyOtherExtension
+           )
+
+type Foo = ( rowField :: Number
+           , rowField2 :: Number
+           | MyExtension + MyOtherExtension { someField :: Number }
+           )
+
+type Foo = ( rowField :: { foo :: Number
+                         , bar :: Data.Map.Map (Data.Map.Map (Data.Map.Map Number Boolean) (Data.Map.Map Number Boolean)) Boolean
+                         , baz :: Complex A B C D F G H
+                         , qux :: Complex (A B C) D (F G H)
+                         }
+           )
+
+type Foo = (forall a (b :: # Type) . Array a)
+
+type Foo = (Array a -> Maybe a)
+
+type Foo = (Array ~> Maybe)
+
+type Foo = (forall f . Functor f => f ~> Maybe)
+
+type Foo = (MyClass f g k => MyClass2 { foo :: Number } => f)
+
+type Foo = (MyKindedType :: (CustomKind -> # Type) -> Type)
+
+type Foo = (MyKindedType :: CustomKind -> # Type -> Type)

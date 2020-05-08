@@ -112,8 +112,8 @@ derive instance ordExport :: Ord Export
 instance showExport :: Show Export where show = genericShow
 
 data Declaration
-  = DeclData DataHead (Array DataCtor)
-  | DeclType DataHead Type
+  = DeclData { head :: DataHead, constructors :: Array DataCtor }
+  | DeclType { head :: DataHead, type_ :: Type }
   -- | DeclNewtype DataHead (ProperName ProperNameType_ConstructorName) Type
   -- | DeclClass (ClassHead a) Array (Labeled Ident Type)
   -- | DeclInstanceChain (NonEmpty Array (Instance a))

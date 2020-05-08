@@ -13,13 +13,14 @@ actualModule = Module
   , exports: []
   , declarations:
     [ DeclData
-      ( DataHead
-        { dataHdName: ProperName "Foo"
-        , dataHdVars: []
+        { head: DataHead
+            { dataHdName: ProperName "Foo"
+            , dataHdVars: []
+            }
+        , constructors:
+          [ DataCtor { dataCtorName: ProperName "Bar", dataCtorFields: [] }
+          , DataCtor { dataCtorName: ProperName "Baz", dataCtorFields: [] }
+          ]
         }
-      )
-      [ DataCtor { dataCtorName: ProperName "Bar", dataCtorFields: [] }
-      , DataCtor { dataCtorName: ProperName "Baz", dataCtorFields: [] }
-      ]
     ]
   }

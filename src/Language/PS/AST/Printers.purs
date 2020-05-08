@@ -1,15 +1,15 @@
 module Language.PS.AST.Printers where
 
+import Data.Array (snoc) as Array
+import Data.Foldable (null)
+import Data.FunctorWithIndex (mapWithIndex)
+import Data.Maybe (Maybe(..), maybe)
 import Language.PS.AST.Printers.PrintImports (printImports)
 import Language.PS.AST.Printers.PrintModuleModuleNameAndExports (printModuleModuleNameAndExports)
 import Language.PS.AST.Printers.Utils (emptyRow, ifelse, lines, printModuleName, textFromNewtype, twoSpaceIdentation, wrapInParentheses)
 import Language.PS.AST.Types (Constraint(..), DataCtor(..), DataHead(..), Declaration(..), Kind(..), Label, Module(..), OpName, ProperName, QualifiedName(..), Row(..), Type(..), TypeVarBinding(..))
 import Prelude (flip, identity, map, (#), ($), (<#>), (<<<), (==))
 import Text.PrettyPrint.Boxes (Box, left, nullBox, punctuateH, text, vcat, vsep, (//), (<<+>>), (<<>>))
-import Data.Array (snoc) as Array
-import Data.Foldable (null)
-import Data.FunctorWithIndex (mapWithIndex)
-import Data.Maybe (Maybe(..), maybe)
 
 printModule :: Module -> Box
 printModule (Module { moduleName, imports, exports, declarations }) =
@@ -27,18 +27,42 @@ printDeclarations declarations =
     // (vsep 1 left $ map printDeclaration declarations)
 
 printDeclaration :: Declaration -> Box
-printDeclaration (DeclData dataHead []) = printDataHead dataHead
-printDeclaration (DeclData dataHead arrayDataCtor) =
+printDeclaration (DeclData { head, constructors: [] }) = printDataHead (text "data") head
+printDeclaration (DeclData { head, constructors }) =
   let
     printedCtors =
-      arrayDataCtor
+      constructors
         <#> printDataCtor
         # mapWithIndex (\i box -> ifelse (i == 0) (text "=") (text "|") <<+>> box)
         <#> (twoSpaceIdentation <<>> _)
         # vcat left
   in
-    printDataHead dataHead // printedCtors
-printDeclaration (DeclType dataHead type_) = nullBox
+    printDataHead (text "data") head // printedCtors
+printDeclaration (DeclType { head, type_ }) =
+  let
+    doWrap :: Type -> Boolean
+    doWrap (TypeVar _) = false
+    doWrap (TypeConstructor _) = false
+    doWrap TypeWildcard = false
+    doWrap (TypeHole _) = false
+    doWrap (TypeString _) = false
+    doWrap (TypeRow _) = false
+    doWrap (TypeRecord _) = false
+    doWrap (TypeApp _ _) = false
+    doWrap (TypeForall _ _) = true
+    doWrap (TypeArr _ _) = true
+    doWrap (TypeKinded _ _) = false
+    doWrap (TypeOp _ _ _) = true
+    doWrap (TypeConstrained _ _) = true
+
+    context = { printType_Style: PrintType_Multiline, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
+
+    maybeWrap x = if doWrap x then wrapInParentheses else identity
+
+    printType' :: Type -> Box
+    printType' type_ = maybeWrap type_ $ printType context $ type_
+  in
+    printDataHead (text "type") head <<+>> text "=" <<+>> printType' type_
 
 printDataCtor :: DataCtor -> Box
 printDataCtor (DataCtor dataCtor) =
@@ -60,12 +84,10 @@ printDataCtor (DataCtor dataCtor) =
 
     context = { printType_Style: PrintType_Multiline, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
 
+    maybeWrap x = if doWrap x then wrapInParentheses else identity
+
     printType' :: Type -> Box
-    printType' type_ =
-      if doWrap type_ then
-        wrapInParentheses <<< printType context $ type_
-      else
-        printType context type_
+    printType' type_ = maybeWrap type_ $ printType context $ type_
 
     name = textFromNewtype dataCtor.dataCtorName
 
@@ -75,10 +97,10 @@ printDataCtor (DataCtor dataCtor) =
   in
     name <<+>> printedFields
 
-printDataHead :: DataHead -> Box
-printDataHead (DataHead dataHead) =
+printDataHead :: Box -> DataHead -> Box
+printDataHead reservedWord (DataHead dataHead) =
   let
-    head = text "data" <<+>> textFromNewtype dataHead.dataHdName
+    head = reservedWord <<+>> textFromNewtype dataHead.dataHdName
 
     vars = map printTypeVarBinding dataHead.dataHdVars
   in
