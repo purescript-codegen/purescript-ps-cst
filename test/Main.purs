@@ -19,6 +19,7 @@ import Test.Spec.Runner as Test.Spec.Runner
 import Text.PrettyPrint.Boxes (render) as Text.PrettyPrint.Boxes
 
 import Test.Golden.DeclType.Actual        as Test.Golden.DeclType.Actual
+import Test.Golden.DeclNewtype.Actual     as Test.Golden.DeclNewtype.Actual
 import Test.Golden.DeclData.Actual        as Test.Golden.DeclData.Actual
 import Test.Golden.DeclDataComplex.Actual as Test.Golden.DeclDataComplex.Actual
 import Test.Golden.Imports.Actual         as Test.Golden.Imports.Actual
@@ -42,6 +43,7 @@ goldenTests =
   , { name: "DeclData", actualModule: Test.Golden.DeclData.Actual.actualModule }
   , { name: "DeclDataComplex", actualModule: Test.Golden.DeclDataComplex.Actual.actualModule }
   , { name: "DeclType", actualModule: Test.Golden.DeclType.Actual.actualModule }
+  , { name: "DeclNewtype", actualModule: Test.Golden.DeclNewtype.Actual.actualModule }
   ]
 
 addText :: GoldenTest -> Aff GoldenTestWithExpected

@@ -114,7 +114,7 @@ instance showExport :: Show Export where show = genericShow
 data Declaration
   = DeclData { head :: DataHead, constructors :: Array DataCtor }
   | DeclType { head :: DataHead, type_ :: Type }
-  -- | DeclNewtype DataHead (ProperName ProperNameType_ConstructorName) Type
+  | DeclNewtype { head :: DataHead, name :: ProperName ProperNameType_ConstructorName, type_ :: Type }
   -- | DeclClass (ClassHead a) Array (Labeled Ident Type)
   -- | DeclInstanceChain (NonEmpty Array (Instance a))
   -- | DeclDerive {- (Maybe SourceToken) -} (InstanceHead a)

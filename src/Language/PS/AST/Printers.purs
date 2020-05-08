@@ -63,6 +63,31 @@ printDeclaration (DeclType { head, type_ }) =
     printType' type_ = maybeWrap type_ $ printType context $ type_
   in
     printDataHead (text "type") head <<+>> text "=" <<+>> printType' type_
+printDeclaration (DeclNewtype { head, name, type_ }) =
+  let
+    doWrap :: Type -> Boolean
+    doWrap (TypeVar _) = false
+    doWrap (TypeConstructor _) = false
+    doWrap TypeWildcard = false
+    doWrap (TypeHole _) = false
+    doWrap (TypeString _) = false
+    doWrap (TypeRow _) = false
+    doWrap (TypeRecord _) = false
+    doWrap (TypeApp _ _) = true
+    doWrap (TypeForall _ _) = true
+    doWrap (TypeArr _ _) = true
+    doWrap (TypeKinded _ _) = false
+    doWrap (TypeOp _ _ _) = true
+    doWrap (TypeConstrained _ _) = true
+
+    context = { printType_Style: PrintType_Multiline, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
+
+    maybeWrap x = if doWrap x then wrapInParentheses else identity
+
+    printType' :: Type -> Box
+    printType' type_ = maybeWrap type_ $ printType context $ type_
+  in
+    printDataHead (text "newtype") head <<+>> text "=" <<+>> (textFromNewtype name <<+>> printType' type_)
 
 printDataCtor :: DataCtor -> Box
 printDataCtor (DataCtor dataCtor) =
