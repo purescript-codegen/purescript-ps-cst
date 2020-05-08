@@ -69,7 +69,7 @@ mkAllTests tests = traverse_ mkTest tests
   mkTest :: GoldenTestWithExpected -> Test.Spec.Spec Unit
   mkTest test = Test.Spec.it test.name do
     let
-      actualParsed = Text.PrettyPrint.Boxes.render $ Language.PS.AST.Printers.printModule test.actualModule
+      actualParsed = Language.PS.AST.Printers.printModuleToString test.actualModule
     actualParsed `textShouldMatch` test.expected
 
 main :: Effect Unit

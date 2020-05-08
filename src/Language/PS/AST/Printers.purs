@@ -21,7 +21,7 @@ import Text.PrettyPrint.Boxes (Box, left, nullBox, punctuateH, text, vcat, vsep,
 import Text.PrettyPrint.Boxes (render) as Text.PrettyPrint.Boxes
 
 printModuleToString :: Module -> String
-printModuleToString = Text.PrettyPrint.Boxes.render <<< Language.PS.AST.Printers.printModule
+printModuleToString = Text.PrettyPrint.Boxes.render <<< printModule
 
 printModule :: Module -> Box
 printModule (Module { moduleName, imports, exports, declarations }) =
