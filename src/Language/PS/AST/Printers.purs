@@ -10,8 +10,10 @@ import Prelude
 import Data.Array (snoc) as Array
 import Data.Either (Either(..))
 import Data.Either.Nested (type (\/), (\/))
-import Data.Foldable (null)
+import Data.Foldable (class Foldable, null)
 import Data.FunctorWithIndex (mapWithIndex)
+import Data.List (List(..), (:))
+import Data.List (fromFoldable) as List
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
 import Data.NonEmpty (NonEmpty(..))
@@ -27,11 +29,33 @@ printModule (Module { moduleName, imports, exports, declarations }) =
       , emptyRow
       ]
 
+foldWithPrev :: ∀ a b . (b -> Maybe a -> a -> b) -> b -> List a -> b
+foldWithPrev _   default' Nil   = default'
+foldWithPrev fun default' list = foo default' Nothing list
+    where foo acc _    Nil     = acc
+          foo acc prev (x : xs) = foo (fun acc prev x) (Just x) xs
+
 printDeclarations :: Array Declaration -> Box
 printDeclarations [] = nullBox
 printDeclarations declarations =
-  emptyRow
-    // (vsep 1 left $ map printDeclaration declarations)
+  let
+    declarations' = List.fromFoldable declarations
+
+    shouldBeNoNewlineBetweenDeclarations :: Declaration -> Declaration -> Boolean
+    shouldBeNoNewlineBetweenDeclarations (DeclSignature { ident }) (DeclValue { name }) = ident == name
+    shouldBeNoNewlineBetweenDeclarations (DeclValue { name }) (DeclValue { name: nameNext }) = name == nameNext
+    shouldBeNoNewlineBetweenDeclarations _ _ = false
+
+    foldDeclaration accum Nothing current = accum // printDeclaration current
+    foldDeclaration accum (Just prev) current = accum //
+                                                if shouldBeNoNewlineBetweenDeclarations prev current
+                                                  then printDeclaration current
+                                                  else emptyRow // printDeclaration current
+
+    printedDeclarations = foldWithPrev foldDeclaration emptyRow declarations'
+  in
+    printedDeclarations
+
 
 printDeclaration :: Declaration -> Box
 printDeclaration (DeclData { head, constructors: [] }) = printDataHead (text "data") head
@@ -151,7 +175,13 @@ printDeclaration (DeclClass { head: { name, vars, super, fundeps }, methods }) =
            )
 printDeclaration (DeclInstanceChain _) = nullBox
 printDeclaration (DeclSignature { ident, type_ }) = textFromNewtype ident <<+>> text "::" <<+>> printType (initialPrintType_Context PrintType_OneLine) type_
-printDeclaration (DeclValue { name, binders, guarded }) = textFromNewtype name <<+>> (punctuateH left (text " ") $ map printBinder binders) <<+>> text "=" <<+>> printGuarded guarded
+printDeclaration (DeclValue { name, binders, guarded }) =
+  let
+    printedBinders =
+      if null binders
+        then nullBox
+        else (punctuateH left (text " ") $ map printBinder binders) <<>> emptyColumn
+   in textFromNewtype name <<+>> printedBinders <<>> text "=" <<+>> printGuarded guarded
 
 printBinder :: Binder -> Box
 printBinder BinderWildcard = text "_"
