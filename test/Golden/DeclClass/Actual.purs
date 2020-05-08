@@ -18,7 +18,7 @@ actualModule = Module
       { head:
         { name: ProperName "Foo"
         , vars: [TypeVarName (Ident "a")]
-        , super: Nothing
+        , super: []
         , fundeps: []
         }
       , methods: []
@@ -27,7 +27,7 @@ actualModule = Module
       { head:
         { name: ProperName "Bar"
         , vars: [TypeVarName (Ident "a")]
-        , super: Nothing
+        , super: []
         , fundeps: []
         }
       , methods:
@@ -40,7 +40,7 @@ actualModule = Module
       { head:
         { name: ProperName "FunDep"
         , vars: [typeVarName "a", typeVarName "b"]
-        , super: Nothing
+        , super: []
         , fundeps: [(singleton (Ident "a")) `FundepDetermines` (singleton (Ident "b"))]
         }
       , methods: []
@@ -49,7 +49,7 @@ actualModule = Module
       { head:
         { name: ProperName "MultiFunDep"
         , vars: [typeVarName "a", typeVarName "b", typeVarName "c", typeVarName "d", typeVarName "e"]
-        , super: Nothing
+        , super: []
         , fundeps:
           [ ((Ident "b" :| [(Ident "c")])) `FundepDetermines` (singleton (Ident "d"))
           , ((Ident "d" :| [])) `FundepDetermines` ((Ident "b" :| [(Ident "c")]))
@@ -61,7 +61,21 @@ actualModule = Module
       { head:
         { name: ProperName "Foo"
         , vars: [typeVarName "m"]
-        , super: Just $ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [typeVar "m"] }
+        , super:
+          [ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [typeVar "m"] }
+          ]
+        , fundeps: []
+        }
+      , methods: []
+      }
+    , DeclClass
+      { head:
+        { name: ProperName "Foo"
+        , vars: [typeVarName "m"]
+        , super:
+          [ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [typeVar "m"] }
+          , Constraint { className: nonQualifiedName (ProperName "Baz"), args: [typeVar "m"] }
+          ]
         , fundeps: []
         }
       , methods: []
@@ -70,7 +84,9 @@ actualModule = Module
       { head:
         { name: ProperName "Foo"
         , vars: [typeVarName "m", typeVarName "c"]
-        , super: Just $ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [typeVar "m", typeVar "c"] }
+        , super:
+          [ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [typeVar "m", typeVar "c"] }
+          ]
         , fundeps: [(singleton (Ident "m")) `FundepDetermines` (singleton (Ident "c"))]
         }
       , methods: []

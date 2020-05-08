@@ -28,6 +28,7 @@ import Test.Golden.DeclDerive.Actual      as Test.Golden.DeclDerive.Actual
 import Test.Golden.DeclClass.Actual       as Test.Golden.DeclClass.Actual
 import Test.Golden.Imports.Actual         as Test.Golden.Imports.Actual
 import Test.Golden.Exports.Actual         as Test.Golden.Exports.Actual
+import Test.Golden.Value.Actual           as Test.Golden.Value.Actual
 
 type GoldenTest =
   { name :: String
@@ -52,6 +53,7 @@ goldenTests =
   , { name: "DeclForeign", actualModule: Test.Golden.DeclForeign.Actual.actualModule }
   , { name: "DeclDerive", actualModule: Test.Golden.DeclDerive.Actual.actualModule }
   , { name: "DeclClass", actualModule: Test.Golden.DeclClass.Actual.actualModule }
+  , { name: "Value", actualModule: Test.Golden.Value.Actual.actualModule }
   ]
 
 addText :: GoldenTest -> Aff GoldenTestWithExpected

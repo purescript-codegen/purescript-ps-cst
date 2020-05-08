@@ -9,6 +9,8 @@ class FunDep a b | a -> b
 
 class MultiFunDep a b c d e | b c -> d, d -> b c
 
-class Foo m <= Bar m
+class Bar m <= Foo m
 
-class Foo m c <= Bar m c | m -> c
+class (Bar m, Baz m) <= Foo m
+
+class Bar m c <= Foo m c | m -> c

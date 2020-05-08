@@ -1,0 +1,10 @@
+module Value where
+
+x = true
+x = true
+
+y :: Boolean
+y = true
+
+z :: Boolean -> Boolean
+z false = true

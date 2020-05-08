@@ -7,12 +7,12 @@ module Language.PS.AST.Types where
 import Prelude
 
 import Data.Either (Either)
+import Data.Either.Nested (type (\/), (\/))
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
-import Data.NonEmpty (NonEmpty)
-import Data.Either.Nested (type (\/), (\/))
+import Data.NonEmpty (NonEmpty(..))
 
 -- | No need for imports list as they are collected from declarations
 -- | during final codegen.
@@ -115,11 +115,10 @@ data Declaration
   | DeclType { head :: DataHead, type_ :: Type }
   | DeclNewtype { head :: DataHead, name :: ProperName ProperNameType_ConstructorName, type_ :: Type }
   | DeclClass { head :: ClassHead, methods :: Array { ident :: Ident, type_ :: Type } }
-  -- | DeclInstanceChain (NonEmpty Array (Instance a))
+  | DeclInstanceChain (NonEmpty Array Instance)
   | DeclDerive DeclDeriveType InstanceHead
-  -- | DeclSignature { ident :: Ident, type_ :: Type }
-  -- | DeclValue ValueBindingFields
-  -- | DeclSignatureAndValue { signature :: { ident :: Ident, type_ :: Type }, value :: ValueBindingFields }
+  | DeclSignature { ident :: Ident, type_ :: Type }
+  | DeclValue ValueBindingFields
   | DeclFixity FixityFields
   | DeclForeign Foreign
 derive instance genericDeclaration :: Generic Declaration _
@@ -290,19 +289,15 @@ instance showClassFundep :: Show ClassFundep where show = genericShow
 type ClassHead =
   { name :: ProperName ProperNameType_ClassName
   , vars :: Array TypeVarBinding
-  , super :: Maybe Constraint -- TODO: should be an array as in purescript-cst, https://github.com/purescript/purescript/issues/3865
+  , super :: Array Constraint
   , fundeps :: Array ClassFundep
   }
 
-newtype ValueBindingFields = ValueBindingFields
-  { valName :: Ident
-  , valBinders :: Array Binder
-  -- , valGuarded :: Guarded
+type ValueBindingFields =
+  { name :: Ident
+  , binders :: Array Binder
+  , guarded :: Guarded
   }
-derive instance genericValueBindingFields :: Generic ValueBindingFields _
-derive instance eqValueBindingFields :: Eq ValueBindingFields
-derive instance ordValueBindingFields :: Ord ValueBindingFields
--- instance showValueBindingFields :: Show ValueBindingFields where show = genericShow
 
 data RecordLabeled a
   = RecordPun Ident
@@ -317,8 +312,8 @@ instance showRecordLabeled :: Show a => Show (RecordLabeled a) where
 data Binder
   = BinderWildcard
   | BinderVar Ident
-  | BinderNamed Ident Binder
-  | BinderConstructor (QualifiedName (ProperName ProperNameType_ConstructorName)) (Array Binder)
+  | BinderNamed { ident :: Ident, binder :: Binder }
+  | BinderConstructor { name :: QualifiedName (ProperName ProperNameType_ConstructorName), args :: Array Binder }
   | BinderBoolean Boolean
   | BinderChar Char
   | BinderString String
@@ -333,35 +328,125 @@ derive instance eqBinder :: Eq Binder
 derive instance ordBinder :: Ord Binder
 -- instance showBinder :: Show Binder where show = genericShow
 
--- newtype Where = Where
---   { whereExpr :: Expr
---   , whereBindings :: Array LetBinding
---   }
+data Guarded
+  = Unconditional Where
+  | Guarded (NonEmpty Array GuardedExpr)
+derive instance genericGuarded :: Generic Guarded _
+derive instance eqGuarded :: Eq Guarded
+derive instance ordGuarded :: Ord Guarded
 
--- data Guarded
---   = Unconditional Where
---   | Guarded (NonEmpty Array GuardedExpr)
+type Where =
+  { expr :: Expr
+  , bindings :: Array LetBinding
+  }
 
--- newtype GuardedExpr = GuardedExpr
---   { grdBar :: SourceToken
---   , grdPatterns :: Separated PatternGuard
---   , grdSep :: SourceToken
---   , grdWhere :: Where
---   }
+data LetBinding
+  = LetBindingSignature { ident :: Ident, type_ :: Type }
+  | LetBindingName ValueBindingFields
+  | LetBindingPattern { binder :: Binder, where_ :: Where }
+derive instance genericLetBinding :: Generic LetBinding _
+derive instance eqLetBinding :: Eq LetBinding
+derive instance ordLetBinding :: Ord LetBinding
 
--- newtype PatternGuard = PatternGuard
---   { patBinder :: Maybe Binder
---   , patExpr :: Expr
---   }
+type GuardedExpr =
+  { patterns :: NonEmpty Array PatternGuard
+  , where_ :: Where
+  }
 
--- data InstanceBinding
---   = InstanceBindingSignature (Labeled (Name Ident) Type)
---   | InstanceBindingName ValueBindingFields
+type PatternGuard =
+  { binder :: Maybe Binder
+  , expr :: Expr
+  }
 
--- newtype Instance = Instance
---   { instHead :: InstanceHead
---   , instBody :: Array InstanceBinding
---   }
+data Expr
+  = ExprHole Ident
+  -- | ExprSection -- ???
+  | ExprIdent (QualifiedName Ident)
+  | ExprConstructor (QualifiedName (ProperName ProperNameType_ConstructorName))
+  | ExprBoolean Boolean
+  | ExprChar Char
+  | ExprString String
+  | ExprNumber (Either Int Number)
+  | ExprArray (Array Expr)
+  | ExprRecord (Array (RecordLabeled Expr))
+  | ExprParens Expr
+  | ExprTyped Expr Type
+  | ExprInfix Expr Expr Expr -- e.g. `1 : 2 : Nil`
+  | ExprOp Expr (QualifiedName (OpName OpNameType_ValueOpName)) Expr
+  | ExprOpName (QualifiedName (OpName OpNameType_ValueOpName))
+  | ExprNegate Expr -- ????
+  | ExprRecordAccessor RecordAccessor
+  | ExprRecordUpdate Expr (NonEmpty Array RecordUpdate)
+  | ExprApp Expr Expr
+  | ExprLambda Lambda
+  | ExprIf IfThenElse
+  | ExprCase CaseOf
+  | ExprLet LetIn
+  | ExprDo DoBlock
+  | ExprAdo AdoBlock
+derive instance genericExpr :: Generic Expr _
+derive instance eqExpr :: Eq Expr
+derive instance ordExpr :: Ord Expr
+
+type RecordAccessor =
+  { recExpr :: Expr
+  , recPath :: NonEmpty Array Label
+  }
+
+data RecordUpdate
+  = RecordUpdateLeaf Label Expr
+  | RecordUpdateBranch Label (NonEmpty Array RecordUpdate)
+derive instance genericRecordUpdate :: Generic RecordUpdate _
+derive instance eqRecordUpdate :: Eq RecordUpdate
+derive instance ordRecordUpdate :: Ord RecordUpdate
+
+type Lambda =
+  { binders :: NonEmpty Array Binder
+  , body :: Expr
+  }
+
+type IfThenElse =
+  { cond :: Expr
+  , true_ :: Expr
+  , false_ :: Expr
+  }
+
+type CaseOf =
+  { head :: NonEmpty Array Expr
+  , branches :: NonEmpty Array { binders :: NonEmpty Array Binder, body :: Guarded }
+  }
+
+type LetIn =
+  { bindings :: NonEmpty Array LetBinding
+  , body :: Expr
+  }
+
+type DoBlock = NonEmpty Array DoStatement
+
+data DoStatement
+  = DoLet (NonEmpty Array LetBinding)
+  | DoDiscard Expr
+  | DoBind { binder :: Binder, expr :: Expr }
+derive instance genericDoStatement :: Generic DoStatement _
+derive instance eqDoStatement :: Eq DoStatement
+derive instance ordDoStatement :: Ord DoStatement
+
+type AdoBlock =
+  { statements :: Array DoStatement
+  , result :: Expr
+  }
+
+data InstanceBinding
+  = InstanceBindingSignature { ident :: Ident, type_ :: Type }
+  | InstanceBindingName ValueBindingFields
+derive instance genericInstanceBinding :: Generic InstanceBinding _
+derive instance eqInstanceBinding :: Eq InstanceBinding
+derive instance ordInstanceBinding :: Ord InstanceBinding
+
+type Instance =
+  { head :: InstanceHead
+  , body :: Array InstanceBinding
+  }
 
 -- reservedNames :: Set String
 -- reservedNames = Set.fromFoldable

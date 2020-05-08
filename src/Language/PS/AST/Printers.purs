@@ -2,6 +2,7 @@ module Language.PS.AST.Printers where
 
 import Language.PS.AST.Printers.PrintImports
 import Language.PS.AST.Printers.PrintModuleModuleNameAndExports
+import Language.PS.AST.Printers.TypeLevel
 import Language.PS.AST.Printers.Utils
 import Language.PS.AST.Types
 import Prelude
@@ -13,6 +14,7 @@ import Data.Foldable (null)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
+import Data.NonEmpty (NonEmpty(..))
 import Data.Variant (contract)
 import Text.PrettyPrint.Boxes (Box, left, nullBox, punctuateH, text, vcat, vsep, (//), (<<+>>), (<<>>))
 
@@ -46,19 +48,11 @@ printDeclaration (DeclData { head, constructors }) =
 printDeclaration (DeclType { head, type_ }) =
   let
     doWrap :: Type -> Boolean
-    doWrap (TypeVar _) = false
-    doWrap (TypeConstructor _) = false
-    doWrap TypeWildcard = false
-    doWrap (TypeHole _) = false
-    doWrap (TypeString _) = false
-    doWrap (TypeRow _) = false
-    doWrap (TypeRecord _) = false
-    doWrap (TypeApp _ _) = false
     doWrap (TypeForall _ _) = true
     doWrap (TypeArr _ _) = true
-    doWrap (TypeKinded _ _) = false
     doWrap (TypeOp _ _ _) = true
     doWrap (TypeConstrained _ _) = true
+    doWrap _ = false
 
     context = { printType_Style: PrintType_Multiline, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
 
@@ -71,19 +65,12 @@ printDeclaration (DeclType { head, type_ }) =
 printDeclaration (DeclNewtype { head, name, type_ }) =
   let
     doWrap :: Type -> Boolean
-    doWrap (TypeVar _) = false
-    doWrap (TypeConstructor _) = false
-    doWrap TypeWildcard = false
-    doWrap (TypeHole _) = false
-    doWrap (TypeString _) = false
-    doWrap (TypeRow _) = false
-    doWrap (TypeRecord _) = false
     doWrap (TypeApp _ _) = true
     doWrap (TypeForall _ _) = true
     doWrap (TypeArr _ _) = true
-    doWrap (TypeKinded _ _) = false
     doWrap (TypeOp _ _ _) = true
     doWrap (TypeConstrained _ _) = true
+    doWrap _ = false
 
     context = { printType_Style: PrintType_Multiline, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
 
@@ -110,19 +97,12 @@ printDeclaration (DeclForeign foreign_) =
 printDeclaration (DeclDerive deriveType { instName, instConstraints, instClass, instTypes }) =
   let
     doWrap :: Type -> Boolean
-    doWrap (TypeVar _) = false
-    doWrap (TypeConstructor _) = false
-    doWrap TypeWildcard = false
-    doWrap (TypeHole _) = false
-    doWrap (TypeString _) = false
-    doWrap (TypeRow _) = false
-    doWrap (TypeRecord _) = false
     doWrap (TypeApp _ _) = true
     doWrap (TypeForall _ _) = true
     doWrap (TypeArr _ _) = true
-    doWrap (TypeKinded _ _) = false
     doWrap (TypeOp _ _ _) = true
     doWrap (TypeConstrained _ _) = true
+    doWrap _ = false
 
     maybeWrap x = if doWrap x then wrapInParentheses else identity
 
@@ -147,14 +127,18 @@ printDeclaration (DeclClass { head: { name, vars, super, fundeps }, methods }) =
         then nullBox
         else emptyColumn <<>> (punctuateH left emptyColumn $ map printTypeVarBinding vars)
 
-    printedSuper = maybe nullBox (\constraint -> emptyColumn <<>> text "<=" <<+>> printConstraint constraint) super
+    printedSuper =
+      case super of
+        [] -> nullBox
+        [constraint] -> printConstraint constraint <<+>> text "<=" <<>> emptyColumn
+        constraints -> (wrapInParentheses $ punctuateH left (text ", ") $ map printConstraint constraints) <<+>> text "<=" <<>> emptyColumn
 
     printedFundeps =
       if null fundeps
         then nullBox
         else emptyColumn <<>> text "|" <<+>> (fundeps # map printFundep # punctuateH left (text ", "))
 
-    printedHeader = text "class" <<+>> textFromNewtype name <<>> printedVars <<>> printedSuper <<>> printedFundeps
+    printedHeader = text "class" <<+>> printedSuper <<>> textFromNewtype name <<>> printedVars <<>> printedFundeps
    in
     if null methods
       then printedHeader
@@ -165,238 +149,75 @@ printDeclaration (DeclClass { head: { name, vars, super, fundeps }, methods }) =
             <#> (twoSpaceIdentation <<>> _)
             # vcat left
            )
+printDeclaration (DeclInstanceChain _) = nullBox
+printDeclaration (DeclSignature { ident, type_ }) = textFromNewtype ident <<+>> text "::" <<+>> printType (initialPrintType_Context PrintType_OneLine) type_
+printDeclaration (DeclValue { name, binders, guarded }) = textFromNewtype name <<+>> (punctuateH left (text " ") $ map printBinder binders) <<+>> text "=" <<+>> printGuarded guarded
 
-printFundep :: ClassFundep -> Box
-printFundep (FundepDetermines lefts rights) = (punctuateH left emptyColumn $ map textFromNewtype lefts) <<+>> text "->" <<+>> (punctuateH left emptyColumn $ map textFromNewtype rights)
+printBinder :: Binder -> Box
+printBinder BinderWildcard = text "_"
+printBinder (BinderVar ident) = textFromNewtype ident
+printBinder (BinderNamed { ident, binder }) = textFromNewtype ident <<>> text "@" <<>> (wrapInParentheses $ printBinder binder)
+printBinder (BinderConstructor { name, args: [] }) = printQualifiedName_AnyProperNameType name
+printBinder (BinderConstructor { name, args }) = printQualifiedName_AnyProperNameType name <<+>> (punctuateH left (text " ") $ map printBinder args)
+printBinder (BinderBoolean boolean) = text $ show boolean
+printBinder (BinderChar char) = text $ show char
+printBinder (BinderString string) = text $ show string
+printBinder (BinderNumber (Left int)) = text $ show int
+printBinder (BinderNumber (Right number)) = text $ show number
+printBinder (BinderArray binders) = text "[" <<>> (punctuateH left (text ", ") $ map printBinder binders) <<>> text "]"
+printBinder (BinderRecord arrayRecordLabeledBinder) = punctuateH left (text ", ") $ map (printRecordLabeled printBinder) arrayRecordLabeledBinder
+printBinder (BinderParens binder) = wrapInParentheses $ printBinder binder
+printBinder (BinderTyped binder type_) = printBinder binder <<+>> text "::" <<+>> printType (initialPrintType_Context PrintType_OneLine) type_
+printBinder (BinderOp binderLeft operator binderRight) = printBinder binderLeft <<+>> printQualifiedName_AnyOpNameType operator <<+>> printBinder binderRight
 
-printFixity :: Fixity -> Box
-printFixity Infix  = text "infix"
-printFixity Infixl = text "infixl"
-printFixity Infixr = text "infixr"
+printRecordLabeled :: ∀ a . (a -> Box) -> RecordLabeled a -> Box
+printRecordLabeled _ (RecordPun ident) = textFromNewtype ident
+printRecordLabeled print (RecordField label a) = textFromNewtype label <<>> text ":" <<>> print a
 
-printDataCtor :: DataCtor -> Box
-printDataCtor (DataCtor dataCtor) =
+printGuarded :: Guarded -> Box
+printGuarded (Unconditional ({ expr, bindings: [] })) = printExpr expr
+printGuarded (Unconditional ({ expr, bindings })) = printExpr expr // text "where" // (vsep 1 left $ map printLetBinding bindings)
+printGuarded (Guarded guardedExprs) = nullBox
+
+printExpr :: Expr -> Box
+printExpr (ExprHole hole) = text "?" <<>> textFromNewtype hole
+printExpr (ExprIdent qualifiedIdent) = printQualifiedName_Ident qualifiedIdent
+printExpr (ExprConstructor qualifiedPropName) = printQualifiedName_AnyProperNameType qualifiedPropName
+printExpr (ExprBoolean boolean) = text $ show boolean
+printExpr (ExprChar char) = text $ show char
+printExpr (ExprString string) = text $ show string
+printExpr (ExprNumber (Left int)) = text $ show int
+printExpr (ExprNumber (Right num)) = text $ show num
+printExpr (ExprArray array) = text "[" <<>> (punctuateH left (text ", ") $ map printExpr array) <<>> text "]"
+printExpr (ExprRecord arrayRecordLabeled) = punctuateH left (text ", ") $ map (printRecordLabeled printExpr) arrayRecordLabeled
+printExpr (ExprParens expr) = wrapInParentheses $ printExpr expr
+printExpr (ExprTyped expr type_) = printExpr expr <<+>> text "::" <<+>> printType (initialPrintType_Context PrintType_OneLine) type_
+printExpr (ExprInfix exprLeft operator exprRight) = printExpr exprLeft <<+>> printExpr operator <<+>> printExpr exprRight
+printExpr (ExprOp exprLeft operator exprRight) = printExpr exprLeft <<+>> printQualifiedName_AnyOpNameType operator <<+>> printExpr exprRight
+printExpr (ExprOpName opName) = printQualifiedName_AnyOpNameType opName
+printExpr (ExprNegate expr) = text "-" <<>> printExpr expr -- ????
+printExpr (ExprRecordAccessor { recExpr, recPath }) = printExpr recExpr <<>> text "." <<>> (punctuateH left (text ".") $ map textFromNewtype recPath)
+printExpr (ExprRecordUpdate expr recordUpdates) = wrapInParentheses $ printExpr expr <<+>> printRecordUpdates recordUpdates
+printExpr (ExprApp exprLeft exprRight) = printExpr exprLeft <<+>> printExpr exprRight
+printExpr (ExprLambda { binders, body }) = (wrapInParentheses $ punctuateH left (text " ") $ map printBinder binders) <<+>> text "=" <<+>> printExpr body
+printExpr (ExprIf { cond, true_, false_ }) = text "if" <<+>> printExpr cond // text "then" <<+>> printExpr true_ // text "else" <<+>> printExpr false_
+printExpr (ExprCase { head, branches }) =
   let
-    doWrap :: Type -> Boolean
-    doWrap (TypeVar _) = false
-    doWrap (TypeConstructor _) = false
-    doWrap TypeWildcard = false
-    doWrap (TypeHole _) = false
-    doWrap (TypeString _) = false
-    doWrap (TypeRow _) = false
-    doWrap (TypeRecord _) = false
-    doWrap (TypeApp _ _) = true
-    doWrap (TypeForall _ _) = true
-    doWrap (TypeArr _ _) = true
-    doWrap (TypeKinded _ _) = false
-    doWrap (TypeOp _ _ _) = true
-    doWrap (TypeConstrained _ _) = true
+    printBranch :: { binders :: NonEmpty Array Binder, body :: Guarded } -> Box
+    printBranch { binders, body } = nullBox
+  in text "case" <<+>> (punctuateH left (text " ") $ map printExpr head) <<+>> text "of" // (vcat left $ map printBranch branches)
+printExpr (ExprLet { bindings, body }) = nullBox
+printExpr (ExprDo doStatements) = nullBox
+printExpr (ExprAdo { statements, result }) = nullBox
 
-    maybeWrap x = if doWrap x then wrapInParentheses else identity
+printLetBinding :: LetBinding -> Box
+printLetBinding (LetBindingSignature { ident, type_ }) = nullBox
+printLetBinding (LetBindingName { name, binders, guarded }) = nullBox
+printLetBinding (LetBindingPattern { binder, where_ }) = nullBox
 
-    context = { printType_Style: PrintType_Multiline, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
+printRecordUpdates :: NonEmpty Array RecordUpdate -> Box
+printRecordUpdates recordUpdates = text "{" <<+>> (punctuateH left (text ",") $ map printRecordUpdate recordUpdates) <<+>> text "}"
 
-    printType' :: Type -> Box
-    printType' type_ = maybeWrap type_ $ printType context $ type_
-
-    name = textFromNewtype dataCtor.dataCtorName
-
-    fields = dataCtor.dataCtorFields <#> printType'
-
-    printedFields = vcat left fields
-  in
-    name <<+>> printedFields
-
-printDataHead :: Box -> DataHead -> Box
-printDataHead reservedWord (DataHead dataHead) =
-  let
-    head = reservedWord <<+>> textFromNewtype dataHead.dataHdName
-
-    vars = map printTypeVarBinding dataHead.dataHdVars
-  in
-    if null vars then head else head <<+>> punctuateH left (emptyColumn) vars
-
-printTypeVarBinding :: TypeVarBinding -> Box
-printTypeVarBinding (TypeVarName ident) = textFromNewtype ident
-printTypeVarBinding (TypeVarKinded ident kind_) = wrapInParentheses $ textFromNewtype ident <<+>> text "::" <<+>> printKind kind_
-
-printKind :: Kind -> Box
-printKind (KindName qualifiedKindName) = printQualifiedName_AnyProperNameType qualifiedKindName
-printKind (KindArr kindLeft_ kindRight_) =
-  let
-    isComplex :: Kind -> Boolean
-    isComplex (KindName _) = false
-    isComplex (KindArr _ _) = true
-    isComplex (KindRow _) = false
-    isComplex (KindParens _) = false
-
-    printedLeft = printKind kindLeft_
-
-    printedLeft' = if isComplex kindLeft_ then wrapInParentheses printedLeft else printedLeft
-  in
-    printedLeft' <<+>> text "->" <<+>> printKind kindRight_
-printKind (KindRow kind_) = text "#" <<+>> printKind kind_
-printKind (KindParens kind_) = wrapInParentheses $ printKind kind_
-
-printQualifiedName_Ident :: ∀ proxy. QualifiedName Ident -> Box
-printQualifiedName_Ident (QualifiedName qualifiedName) = case qualifiedName.qualModule of
-  Nothing -> textFromNewtype qualifiedName.qualName
-  (Just moduleName) -> printModuleName moduleName <<>> text "." <<>> textFromNewtype qualifiedName.qualName
-
-printQualifiedName_AnyProperNameType :: ∀ proxy. QualifiedName (ProperName proxy) -> Box
-printQualifiedName_AnyProperNameType (QualifiedName qualifiedName) = case qualifiedName.qualModule of
-  Nothing -> textFromNewtype qualifiedName.qualName
-  (Just moduleName) -> printModuleName moduleName <<>> text "." <<>> textFromNewtype qualifiedName.qualName
-
-printQualifiedName_AnyOpNameType :: ∀ proxy. QualifiedName (OpName proxy) -> Box
-printQualifiedName_AnyOpNameType (QualifiedName qualifiedName) = case qualifiedName.qualModule of
-  Nothing -> textFromNewtype qualifiedName.qualName
-  (Just moduleName) -> printModuleName moduleName <<>> text "." <<>> wrapInParentheses (textFromNewtype qualifiedName.qualName)
-
--- Prefer multiline when first enter the rendering function, prefer one line when inside of row extensions (i.e. `MyExt + MyOtherExt` in `( foo :: Bar | MyExt + MyOtherExt )`)
-data PrintType_Style
-  = PrintType_Multiline
-  | PrintType_OneLine
-
--- Am I inside of TypeApp that didn't yet break? (i.e. TypeApp inside TypeApp)
--- used to prevent multiple wraps
--- e.g. prevents `(((Complex A) B) C)`
--- expected `Complex A B C`
-data PrintType_IsInsideOfApp
-  = PrintType_IsInsideOfApp_Yes
-  | PrintType_IsInsideOfApp_No
-
-type PrintType_Context
-  = { printType_Style :: PrintType_Style, printType_IsInsideOfApp :: PrintType_IsInsideOfApp }
-
-initialPrintType_Context :: PrintType_Style -> PrintType_Context
-initialPrintType_Context printType_Style = { printType_Style: printType_Style, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
-
-resetPrintType_IsInsideOfApp :: PrintType_Context -> PrintType_Context
-resetPrintType_IsInsideOfApp printType_Context = printType_Context { printType_IsInsideOfApp = PrintType_IsInsideOfApp_No }
-
-printType :: PrintType_Context -> Type -> Box
-printType printType_Context (TypeVar ident) = textFromNewtype ident
-printType printType_Context (TypeConstructor qualifiedTypeName) = printQualifiedName_AnyProperNameType qualifiedTypeName
-printType printType_Context TypeWildcard = text "_"
-printType printType_Context (TypeHole ident) = text "?" <<>> textFromNewtype ident
-printType printType_Context (TypeString string) = text "\"" <<>> text string <<>> text "\""
-printType printType_Context (TypeRow row) = printRowLikeType (resetPrintType_IsInsideOfApp printType_Context) (text "(") (text ")") row
-printType printType_Context (TypeRecord row) = printRowLikeType (resetPrintType_IsInsideOfApp printType_Context) (text "{") (text "}") row
-printType printType_Context (TypeApp leftType rightType) =
-  let
-    doWrapLeft :: Type -> Boolean
-    doWrapLeft (TypeVar _) = false
-    doWrapLeft (TypeConstructor _) = false
-    doWrapLeft TypeWildcard = false
-    doWrapLeft (TypeHole _) = false
-    doWrapLeft (TypeString _) = false
-    doWrapLeft (TypeRow _) = false
-    doWrapLeft (TypeRecord _) = false
-    doWrapLeft (TypeApp _ _) =
-      case printType_Context.printType_IsInsideOfApp of
-        PrintType_IsInsideOfApp_No -> false
-        PrintType_IsInsideOfApp_Yes -> true
-    doWrapLeft (TypeForall _ _) = true
-    doWrapLeft (TypeArr _ _) = true
-    doWrapLeft (TypeKinded _ _) = false
-    doWrapLeft (TypeOp _ _ _) = true
-    doWrapLeft (TypeConstrained _ _) = true
-
-    newLeftContext :: PrintType_Context
-    newLeftContext = { printType_Style: PrintType_OneLine, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
-
-    newRightContext :: PrintType_Context
-    newRightContext = { printType_Style: PrintType_OneLine, printType_IsInsideOfApp: PrintType_IsInsideOfApp_Yes }
-
-    doWrap :: Boolean
-    doWrap = doWrapLeft leftType
-
-    maybeWrap :: Box -> Box
-    maybeWrap = if doWrap then wrapInParentheses else identity
-
-    printedLeft :: Box
-    printedLeft = printType newLeftContext leftType
-
-    printedRight :: Box
-    printedRight = printType newRightContext rightType
-
-    printed :: Box
-    printed = maybeWrap $ printedLeft <<+>> printedRight
-  in
-    printed
-printType printType_Context (TypeForall typeVarBindings type_) =
-  let
-    newContext = resetPrintType_IsInsideOfApp printType_Context
-  in
-    text "forall" <<+>> punctuateH left (emptyColumn) (map printTypeVarBinding typeVarBindings) <<+>> text "." <<+>> printType newContext type_
-printType printType_Context (TypeArr leftType rightType) =
-  let
-    newContext = resetPrintType_IsInsideOfApp printType_Context
-  in
-    printType newContext leftType <<+>> text "->" <<+>> printType newContext rightType
-printType printType_Context (TypeKinded type_ kind_) =
-  let
-    newContext = resetPrintType_IsInsideOfApp printType_Context
-  in
-    wrapInParentheses $ printType newContext type_ <<+>> text "::" <<+>> printKind kind_
-printType printType_Context (TypeOp leftType qualifiedOpName rightType) =
-  let
-    newContext = resetPrintType_IsInsideOfApp printType_Context
-  in
-    printType newContext leftType <<+>> printQualifiedName_AnyOpNameType qualifiedOpName <<+>> printType newContext rightType
-printType printType_Context (TypeConstrained constraint type_) =
-  let
-    newContext = { printType_Style: PrintType_OneLine, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
-  in
-    printConstraint constraint <<+>> text "=>" <<+>> printType newContext type_
-
-printConstraint :: Constraint -> Box
-printConstraint (Constraint { className, args }) =
-  let
-    context = { printType_Style: PrintType_OneLine, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
-  in
-    if null args
-      then printQualifiedName_AnyProperNameType className
-      else printQualifiedName_AnyProperNameType className <<+>> (punctuateH left (emptyColumn) $ map (printType context) args)
-printConstraint (ConstraintParens constraint) = wrapInParentheses $ printConstraint constraint
-
-printRowLikeType :: PrintType_Context -> Box -> Box -> Row -> Box
-printRowLikeType _ leftWrapper rightWrapper row@(Row { rowLabels: [], rowTail: Nothing }) = leftWrapper <<>> rightWrapper
-printRowLikeType _ leftWrapper rightWrapper row@(Row { rowLabels: [], rowTail: Just rowTail }) =
-  let
-    context = { printType_Style: PrintType_OneLine, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
-  in
-    leftWrapper <<+>> text "|" <<+>> printType context rowTail <<+>> rightWrapper
-printRowLikeType ({ printType_Style: PrintType_OneLine }) leftWrapper rightWrapper row@(Row { rowLabels, rowTail }) =
-  let
-    context = { printType_Style: PrintType_OneLine, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
-
-    printedTail = rowTail <#> printType context <#> (text "|" <<+>> _)
-
-    printedRowLabels =
-      rowLabels
-        <#> printRowLabel context
-        # punctuateH left (text ", ")
-        # maybe identity (\tail rowLine -> rowLine <<+>> tail) printedTail
-        # (\x -> leftWrapper <<+>> x <<+>> rightWrapper)
-  in
-    printedRowLabels
-printRowLikeType ({ printType_Style: PrintType_Multiline }) leftWrapper rightWrapper row@(Row { rowLabels, rowTail }) =
-  let
-    context = { printType_Style: PrintType_Multiline, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
-
-    printedTail = rowTail <#> printType context <#> (text "|" <<+>> _)
-
-    printedRowLabels =
-      rowLabels
-        <#> printRowLabel context
-        # mapWithIndex (\i box -> ifelse (i == 0) leftWrapper (text ",") <<+>> box)
-        # maybe identity (flip Array.snoc) printedTail
-        # flip Array.snoc rightWrapper
-        # vcat left
-  in
-    printedRowLabels
-
-printRowLabel :: PrintType_Context -> { label :: Label, type_ :: Type } -> Box
-printRowLabel printType_Context { label, type_ } = textFromNewtype label <<+>> text "::" <<+>> printType printType_Context type_
+printRecordUpdate :: RecordUpdate -> Box
+printRecordUpdate (RecordUpdateLeaf label expr) = textFromNewtype label <<+>> text "=" <<+>> printExpr expr
+printRecordUpdate (RecordUpdateBranch label recordUpdates) = textFromNewtype label <<+>> text "=" <<+>> printRecordUpdates recordUpdates
