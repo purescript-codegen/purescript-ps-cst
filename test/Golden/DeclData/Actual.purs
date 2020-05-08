@@ -1,4 +1,4 @@
-module Test.Golden.DataType.Actual where
+module Test.Golden.DeclData.Actual where
 
 import Language.PS.AST.Sugar (mkModuleName)
 import Language.PS.AST.Types (DataCtor(..), DataHead(..), Declaration(..), Module(..), ProperName(..))
@@ -8,7 +8,7 @@ import Data.NonEmpty ((:|))
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "DataType" :| []
+  { moduleName: mkModuleName $ "DeclData" :| []
   , imports: []
   , exports: []
   , declarations:

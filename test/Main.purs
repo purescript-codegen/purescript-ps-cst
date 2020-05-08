@@ -18,8 +18,8 @@ import Test.Spec.Reporter as Test.Spec.Reporter
 import Test.Spec.Runner as Test.Spec.Runner
 import Text.PrettyPrint.Boxes (render) as Text.PrettyPrint.Boxes
 
-import Test.Golden.DataType.Actual           as Test.Golden.DataType.Actual
-import Test.Golden.DataTypeComplex.Actual as Test.Golden.DataTypeComplex.Actual
+import Test.Golden.DeclData.Actual           as Test.Golden.DeclData.Actual
+import Test.Golden.DeclDataComplex.Actual as Test.Golden.DeclDataComplex.Actual
 import Test.Golden.Imports.Actual            as Test.Golden.Imports.Actual
 import Test.Golden.Exports.Actual            as Test.Golden.Exports.Actual
 
@@ -38,8 +38,8 @@ goldenTests :: Array GoldenTest
 goldenTests =
   [ { name: "Imports", actualModule: Test.Golden.Imports.Actual.actualModule }
   , { name: "Exports", actualModule: Test.Golden.Exports.Actual.actualModule }
-  , { name: "DataType", actualModule: Test.Golden.DataType.Actual.actualModule }
-  , { name: "DataTypeComplex", actualModule: Test.Golden.DataTypeComplex.Actual.actualModule }
+  , { name: "DeclData", actualModule: Test.Golden.DeclData.Actual.actualModule }
+  , { name: "DeclDataComplex", actualModule: Test.Golden.DeclDataComplex.Actual.actualModule }
   ]
 
 addText :: GoldenTest -> Aff GoldenTestWithExpected

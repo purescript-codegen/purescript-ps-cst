@@ -1,4 +1,4 @@
-module DataType where
+module DeclData where
 
 data Foo
   = Bar

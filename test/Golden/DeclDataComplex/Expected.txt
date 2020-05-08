@@ -1,4 +1,4 @@
-module DataTypeComplex where
+module DeclDataComplex where
 
 data Foo
   = Bar Boolean

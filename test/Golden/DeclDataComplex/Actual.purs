@@ -1,4 +1,4 @@
-module Test.Golden.DataTypeComplex.Actual where
+module Test.Golden.DeclDataComplex.Actual where
 
 import Language.PS.AST.Sugar
 import Language.PS.AST.Types
@@ -10,7 +10,7 @@ import Prelude (map, ($), (<<<))
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "DataTypeComplex" :| []
+  { moduleName: mkModuleName $ "DeclDataComplex" :| []
   , imports: []
   , exports: []
   , declarations:
