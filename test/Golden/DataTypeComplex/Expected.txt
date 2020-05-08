@@ -1,4 +1,4 @@
-module WithEnumWithRecord where
+module DataTypeComplex where
 
 data Foo
   = Bar Boolean

@@ -1,4 +1,4 @@
-module Test.Golden.WithEnumWithRecord.Actual where
+module Test.Golden.DataTypeComplex.Actual where
 
 import Language.PS.AST.Sugar
 import Language.PS.AST.Types
@@ -10,7 +10,7 @@ import Prelude (map, ($), (<<<))
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "WithEnumWithRecord" :| []
+  { moduleName: mkModuleName $ "DataTypeComplex" :| []
   , imports: []
   , exports: []
   , declarations:

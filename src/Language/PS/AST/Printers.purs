@@ -153,9 +153,10 @@ printType printType_Context (TypeApp leftType rightType) =
     doWrapLeft (TypeString _) = false
     doWrapLeft (TypeRow _) = false
     doWrapLeft (TypeRecord _) = false
-    doWrapLeft (TypeApp _ _) = case printType_Context.printType_IsInsideOfApp of
-      PrintType_IsInsideOfApp_No -> false
-      PrintType_IsInsideOfApp_Yes -> true
+    doWrapLeft (TypeApp _ _) =
+      case printType_Context.printType_IsInsideOfApp of
+        PrintType_IsInsideOfApp_No -> false
+        PrintType_IsInsideOfApp_Yes -> true
     doWrapLeft (TypeForall _ _) = true
     doWrapLeft (TypeArr _ _) = true
     doWrapLeft (TypeKinded _ _) = false

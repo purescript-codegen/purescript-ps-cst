@@ -1,4 +1,4 @@
-module WithEnum where
+module DataType where
 
 data Foo
   = Bar
