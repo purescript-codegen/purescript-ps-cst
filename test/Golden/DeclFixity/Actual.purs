@@ -1,4 +1,4 @@
-module Test.Golden.Fixity.Actual where
+module Test.Golden.DeclFixity.Actual where
 
 import Language.PS.AST.Sugar
 import Language.PS.AST.Types
@@ -11,7 +11,7 @@ import Data.Either (Either(..))
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "Fixity" :| []
+  { moduleName: mkModuleName $ "DeclFixity" :| []
   , imports: []
   , exports: []
   , declarations:

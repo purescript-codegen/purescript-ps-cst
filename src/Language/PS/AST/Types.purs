@@ -184,8 +184,6 @@ derive instance ordQualifiedName :: Ord a => Ord (QualifiedName a)
 instance showQualifiedName :: Show a => Show (QualifiedName a) where
   show (QualifiedName { qualModule, qualName }) = "(QualifiedName { qualModule = " <> show qualModule <> ", qualName = " <> show qualName <> " })"
 
--- Mu
-
 data Kind
   = KindName (QualifiedName (ProperName ProperNameType_KindName))
   | KindArr Kind Kind

@@ -1,4 +1,4 @@
-module Fixity where
+module DeclFixity where
 
 infixl 0 compose as <<
 
