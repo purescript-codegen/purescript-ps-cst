@@ -24,6 +24,7 @@ import Test.Golden.DeclData.Actual        as Test.Golden.DeclData.Actual
 import Test.Golden.DeclDataComplex.Actual as Test.Golden.DeclDataComplex.Actual
 import Test.Golden.DeclFixity.Actual      as Test.Golden.DeclFixity.Actual
 import Test.Golden.DeclForeign.Actual     as Test.Golden.DeclForeign.Actual
+import Test.Golden.DeclDerive.Actual      as Test.Golden.DeclDerive.Actual
 import Test.Golden.Imports.Actual         as Test.Golden.Imports.Actual
 import Test.Golden.Exports.Actual         as Test.Golden.Exports.Actual
 
@@ -48,6 +49,7 @@ goldenTests =
   , { name: "DeclNewtype", actualModule: Test.Golden.DeclNewtype.Actual.actualModule }
   , { name: "DeclFixity", actualModule: Test.Golden.DeclFixity.Actual.actualModule }
   , { name: "DeclForeign", actualModule: Test.Golden.DeclForeign.Actual.actualModule }
+  , { name: "DeclDerive", actualModule: Test.Golden.DeclDerive.Actual.actualModule }
   ]
 
 addText :: GoldenTest -> Aff GoldenTestWithExpected

@@ -116,7 +116,7 @@ data Declaration
   | DeclNewtype { head :: DataHead, name :: ProperName ProperNameType_ConstructorName, type_ :: Type }
   -- | DeclClass (ClassHead a) Array (Labeled Ident Type)
   -- | DeclInstanceChain (NonEmpty Array (Instance a))
-  -- | DeclDerive {- (Maybe SourceToken) -} (InstanceHead a)
+  | DeclDerive DeclDeriveType InstanceHead
   -- | DeclSignature (Labeled Ident Type)
   -- | DeclValue (ValueBindingFields a)
   | DeclFixity FixityFields
@@ -125,6 +125,20 @@ derive instance genericDeclaration :: Generic Declaration _
 derive instance eqDeclaration :: Eq Declaration
 derive instance ordDeclaration :: Ord Declaration
 -- instance showDeclaration :: Show Declaration where show = genericShow
+
+data DeclDeriveType
+  = DeclDeriveType_Newtype
+  | DeclDeriveType_Odrinary
+derive instance genericDeclDeriveType :: Generic DeclDeriveType _
+derive instance eqDeclDeriveType :: Eq DeclDeriveType
+derive instance ordDeclDeriveType :: Ord DeclDeriveType
+
+type InstanceHead =
+  { instName :: Ident
+  , instConstraints :: Array Constraint
+  , instClass :: QualifiedName (ProperName ProperNameType_ClassName)
+  , instTypes :: NonEmpty Array Type
+  }
 
 data Foreign
   = ForeignValue { ident :: Ident, type_ :: Type }
@@ -265,13 +279,13 @@ derive instance ordConstraint :: Ord Constraint
 
 data OneOrDelimited a
   = OneOrDelimited_One a
-  | OneOrDelimited_Many { first :: a, second :: a, tail :: Array a }
+  | OneOrDelimited_Many a a (Array a)
 derive instance genericOneOrDelimited :: Generic (OneOrDelimited a) _
 derive instance eqOneOrDelimited :: Eq a => Eq (OneOrDelimited a)
 derive instance ordOneOrDelimited :: Ord a => Ord (OneOrDelimited a)
 instance showOneOrDelimited :: Show a => Show (OneOrDelimited a) where
   show (OneOrDelimited_One a) = "(OneOrDelimited_One " <> show a <> ")"
-  show (OneOrDelimited_Many { first, second, tail }) = "(OneOrDelimited_Many " <> show ([first, second] <> tail) <> ")"
+  show (OneOrDelimited_Many first second tail) = "(OneOrDelimited_Many " <> show ([first, second] <> tail) <> ")"
 
 data ClassFundep
   = FundepDetermined (NonEmpty Array Ident)
@@ -361,17 +375,6 @@ derive instance ordBinder :: Ord Binder
 --   { instHead :: InstanceHead
 --   , instBody :: Array InstanceBinding
 --   }
-
-newtype InstanceHead = InstanceHead
-  { instName :: Ident
-  , instConstraints :: Maybe (OneOrDelimited Constraint)
-  , instClass :: QualifiedName (ProperName ProperNameType_ClassName)
-  , instTypes :: Array Type
-  }
-derive instance genericInstanceHead :: Generic InstanceHead _
-derive instance eqInstanceHead :: Eq InstanceHead
-derive instance ordInstanceHead :: Ord InstanceHead
--- instance showInstanceHead :: Show InstanceHead where show = genericShow
 
 -- reservedNames :: Set String
 -- reservedNames = Set.fromFoldable

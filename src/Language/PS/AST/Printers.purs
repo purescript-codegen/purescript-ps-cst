@@ -12,6 +12,7 @@ import Data.Either.Nested (type (\/), (\/))
 import Data.Foldable (null)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Maybe (Maybe(..), maybe)
+import Data.Variant (contract)
 import Text.PrettyPrint.Boxes (Box, left, nullBox, punctuateH, text, vcat, vsep, (//), (<<+>>), (<<>>))
 
 printModule :: Module -> Box
@@ -105,6 +106,39 @@ printDeclaration (DeclForeign foreign_) =
       (ForeignValue { ident, type_ }) -> textFromNewtype ident <<+>> text "::" <<+>> printType { printType_Style: PrintType_Multiline, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No } type_
       (ForeignData { name, kind_ }) -> text "data" <<+>> textFromNewtype name <<+>> text "::" <<+>> printKind kind_
       (ForeignKind { name }) -> text "kind" <<+>> textFromNewtype name
+printDeclaration (DeclDerive deriveType { instName, instConstraints, instClass, instTypes }) =
+  let
+    doWrap :: Type -> Boolean
+    doWrap (TypeVar _) = false
+    doWrap (TypeConstructor _) = false
+    doWrap TypeWildcard = false
+    doWrap (TypeHole _) = false
+    doWrap (TypeString _) = false
+    doWrap (TypeRow _) = false
+    doWrap (TypeRecord _) = false
+    doWrap (TypeApp _ _) = true
+    doWrap (TypeForall _ _) = true
+    doWrap (TypeArr _ _) = true
+    doWrap (TypeKinded _ _) = false
+    doWrap (TypeOp _ _ _) = true
+    doWrap (TypeConstrained _ _) = true
+
+    maybeWrap x = if doWrap x then wrapInParentheses else identity
+
+    deriveType' =
+      case deriveType of
+        DeclDeriveType_Newtype -> emptyColumn <<>> text "newtype"
+        DeclDeriveType_Odrinary -> nullBox
+
+    constraints' =
+      case instConstraints of
+        [] -> nullBox
+        [constraint] -> emptyColumn <<>> printConstraint constraint <<+>> text "=>"
+        constrainsts -> emptyColumn <<>> (wrapInParentheses $ punctuateH left (text ", ") $ map printConstraint constrainsts) <<+>> text "=>"
+
+    types' = punctuateH left (text " ") $ map (\type_ -> maybeWrap type_ $ printType (initialPrintType_Context PrintType_OneLine) type_) instTypes
+   in
+   text "derive" <<>> deriveType' <<+>> text "instance" <<+>> textFromNewtype instName <<+>> text "::" <<>> constraints' <<+>> printQualifiedName_AnyProperNameType instClass <<+>> types'
 
 printFixity :: Fixity -> Box
 printFixity Infix  = text "infix"
@@ -129,9 +163,9 @@ printDataCtor (DataCtor dataCtor) =
     doWrap (TypeOp _ _ _) = true
     doWrap (TypeConstrained _ _) = true
 
-    context = { printType_Style: PrintType_Multiline, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
-
     maybeWrap x = if doWrap x then wrapInParentheses else identity
+
+    context = { printType_Style: PrintType_Multiline, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
 
     printType' :: Type -> Box
     printType' type_ = maybeWrap type_ $ printType context $ type_
@@ -205,6 +239,9 @@ data PrintType_IsInsideOfApp
 
 type PrintType_Context
   = { printType_Style :: PrintType_Style, printType_IsInsideOfApp :: PrintType_IsInsideOfApp }
+
+initialPrintType_Context :: PrintType_Style -> PrintType_Context
+initialPrintType_Context printType_Style = { printType_Style: printType_Style, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
 
 resetPrintType_IsInsideOfApp :: PrintType_Context -> PrintType_Context
 resetPrintType_IsInsideOfApp printType_Context = printType_Context { printType_IsInsideOfApp = PrintType_IsInsideOfApp_No }
@@ -290,7 +327,9 @@ printConstraint (Constraint { className, args }) =
   let
     context = { printType_Style: PrintType_OneLine, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
   in
-    printQualifiedName_AnyProperNameType className <<+>> (punctuateH left (text " ") $ map (printType context) args)
+    if null args
+      then printQualifiedName_AnyProperNameType className
+      else printQualifiedName_AnyProperNameType className <<+>> (punctuateH left (text " ") $ map (printType context) args)
 printConstraint (ConstraintParens constraint) = wrapInParentheses $ printConstraint constraint
 
 printRowLikeType :: PrintType_Context -> Box -> Box -> Row -> Box
