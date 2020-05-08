@@ -12,6 +12,7 @@ import Data.Either.Nested (type (\/), (\/))
 import Data.Foldable (null)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Maybe (Maybe(..), maybe)
+import Data.Newtype (unwrap)
 import Data.Variant (contract)
 import Text.PrettyPrint.Boxes (Box, left, nullBox, punctuateH, text, vcat, vsep, (//), (<<+>>), (<<>>))
 
@@ -136,9 +137,37 @@ printDeclaration (DeclDerive deriveType { instName, instConstraints, instClass, 
         [constraint] -> emptyColumn <<>> printConstraint constraint <<+>> text "=>"
         constrainsts -> emptyColumn <<>> (wrapInParentheses $ punctuateH left (text ", ") $ map printConstraint constrainsts) <<+>> text "=>"
 
-    types' = punctuateH left (text " ") $ map (\type_ -> maybeWrap type_ $ printType (initialPrintType_Context PrintType_OneLine) type_) instTypes
+    types' = punctuateH left (emptyColumn) $ map (\type_ -> maybeWrap type_ $ printType (initialPrintType_Context PrintType_OneLine) type_) instTypes
    in
    text "derive" <<>> deriveType' <<+>> text "instance" <<+>> textFromNewtype instName <<+>> text "::" <<>> constraints' <<+>> printQualifiedName_AnyProperNameType instClass <<+>> types'
+printDeclaration (DeclClass { head: { name, vars, super, fundeps }, methods }) =
+  let
+    printedVars =
+      if null vars
+        then nullBox
+        else emptyColumn <<>> (punctuateH left emptyColumn $ map printTypeVarBinding vars)
+
+    printedSuper = maybe nullBox (\constraint -> emptyColumn <<>> text "<=" <<+>> printConstraint constraint) super
+
+    printedFundeps =
+      if null fundeps
+        then nullBox
+        else emptyColumn <<>> text "|" <<+>> (fundeps # map printFundep # punctuateH left (text ", "))
+
+    printedHeader = text "class" <<+>> textFromNewtype name <<>> printedVars <<>> printedSuper <<>> printedFundeps
+   in
+    if null methods
+      then printedHeader
+      else
+        printedHeader <<+>> (text "where")
+        // (methods
+            <#> (\({ ident, type_ }) -> textFromNewtype ident <<+>> text "::" <<+>> (printType (initialPrintType_Context PrintType_OneLine) type_))
+            <#> (twoSpaceIdentation <<>> _)
+            # vcat left
+           )
+
+printFundep :: ClassFundep -> Box
+printFundep (FundepDetermines lefts rights) = (punctuateH left emptyColumn $ map textFromNewtype lefts) <<+>> text "->" <<+>> (punctuateH left emptyColumn $ map textFromNewtype rights)
 
 printFixity :: Fixity -> Box
 printFixity Infix  = text "infix"
@@ -185,7 +214,7 @@ printDataHead reservedWord (DataHead dataHead) =
 
     vars = map printTypeVarBinding dataHead.dataHdVars
   in
-    if null vars then head else head <<+>> punctuateH left (text " ") vars
+    if null vars then head else head <<+>> punctuateH left (emptyColumn) vars
 
 printTypeVarBinding :: TypeVarBinding -> Box
 printTypeVarBinding (TypeVarName ident) = textFromNewtype ident
@@ -300,7 +329,7 @@ printType printType_Context (TypeForall typeVarBindings type_) =
   let
     newContext = resetPrintType_IsInsideOfApp printType_Context
   in
-    text "forall" <<+>> punctuateH left (text " ") (map printTypeVarBinding typeVarBindings) <<+>> text "." <<+>> printType newContext type_
+    text "forall" <<+>> punctuateH left (emptyColumn) (map printTypeVarBinding typeVarBindings) <<+>> text "." <<+>> printType newContext type_
 printType printType_Context (TypeArr leftType rightType) =
   let
     newContext = resetPrintType_IsInsideOfApp printType_Context
@@ -329,7 +358,7 @@ printConstraint (Constraint { className, args }) =
   in
     if null args
       then printQualifiedName_AnyProperNameType className
-      else printQualifiedName_AnyProperNameType className <<+>> (punctuateH left (text " ") $ map (printType context) args)
+      else printQualifiedName_AnyProperNameType className <<+>> (punctuateH left (emptyColumn) $ map (printType context) args)
 printConstraint (ConstraintParens constraint) = wrapInParentheses $ printConstraint constraint
 
 printRowLikeType :: PrintType_Context -> Box -> Box -> Row -> Box

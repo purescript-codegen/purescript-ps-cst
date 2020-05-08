@@ -114,11 +114,12 @@ data Declaration
   = DeclData { head :: DataHead, constructors :: Array DataCtor }
   | DeclType { head :: DataHead, type_ :: Type }
   | DeclNewtype { head :: DataHead, name :: ProperName ProperNameType_ConstructorName, type_ :: Type }
-  -- | DeclClass (ClassHead a) Array (Labeled Ident Type)
+  | DeclClass { head :: ClassHead, methods :: Array { ident :: Ident, type_ :: Type } }
   -- | DeclInstanceChain (NonEmpty Array (Instance a))
   | DeclDerive DeclDeriveType InstanceHead
-  -- | DeclSignature (Labeled Ident Type)
-  -- | DeclValue (ValueBindingFields a)
+  -- | DeclSignature { ident :: Ident, type_ :: Type }
+  -- | DeclValue ValueBindingFields
+  -- | DeclSignatureAndValue { signature :: { ident :: Ident, type_ :: Type }, value :: ValueBindingFields }
   | DeclFixity FixityFields
   | DeclForeign Foreign
 derive instance genericDeclaration :: Generic Declaration _
@@ -277,35 +278,21 @@ derive instance eqConstraint :: Eq Constraint
 derive instance ordConstraint :: Ord Constraint
 -- instance showConstraint :: Show Constraint where show = genericShow
 
-data OneOrDelimited a
-  = OneOrDelimited_One a
-  | OneOrDelimited_Many a a (Array a)
-derive instance genericOneOrDelimited :: Generic (OneOrDelimited a) _
-derive instance eqOneOrDelimited :: Eq a => Eq (OneOrDelimited a)
-derive instance ordOneOrDelimited :: Ord a => Ord (OneOrDelimited a)
-instance showOneOrDelimited :: Show a => Show (OneOrDelimited a) where
-  show (OneOrDelimited_One a) = "(OneOrDelimited_One " <> show a <> ")"
-  show (OneOrDelimited_Many first second tail) = "(OneOrDelimited_Many " <> show ([first, second] <> tail) <> ")"
-
 data ClassFundep
-  = FundepDetermined (NonEmpty Array Ident)
-  | FundepDetermines (NonEmpty Array Ident) (NonEmpty Array Ident)
+  = FundepDetermines (NonEmpty Array Ident) (NonEmpty Array Ident)
+  -- | FundepDetermined (NonEmpty Array Ident) -- parser is not allowing it (i.e. `class Foo a | a`)?
 derive instance genericClassFundep :: Generic ClassFundep _
 derive instance eqClassFundep :: Eq ClassFundep
 derive instance ordClassFundep :: Ord ClassFundep
 instance showClassFundep :: Show ClassFundep where show = genericShow
 
 -- Delimeted or separated
-newtype ClassHead = ClassHead
-  { clsSuper :: Maybe (OneOrDelimited Constraint)
-  , clsName :: ProperName ProperNameType_ClassName
-  , clsVars :: Array TypeVarBinding
-  , clsFundeps :: Array ClassFundep
+type ClassHead =
+  { name :: ProperName ProperNameType_ClassName
+  , vars :: Array TypeVarBinding
+  , super :: Maybe Constraint -- TODO: should be an array as in purescript-cst, https://github.com/purescript/purescript/issues/3865
+  , fundeps :: Array ClassFundep
   }
-derive instance genericClassHead :: Generic ClassHead _
-derive instance eqClassHead :: Eq ClassHead
-derive instance ordClassHead :: Ord ClassHead
--- instance showClassHead :: Show ClassHead where show = genericShow
 
 newtype ValueBindingFields = ValueBindingFields
   { valName :: Ident

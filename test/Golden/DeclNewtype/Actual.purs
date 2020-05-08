@@ -133,5 +133,3 @@ actualModule = Module
       (kindNamed "CustomKind" ====>>> KindRow (kindNamed "Type") ====>>> (kindNamed "Type"))
     ]
   }
-
-type Foo = forall a . a -> a
