@@ -9,7 +9,6 @@ import Prelude
 
 import Data.Array (snoc) as Array
 import Data.Either (Either(..))
-import Data.Either.Nested (type (\/), (\/))
 import Data.Foldable (class Foldable, null)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.List (List(..), (:))
