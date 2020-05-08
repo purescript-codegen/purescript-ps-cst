@@ -1,8 +1,8 @@
 module Test.Golden.WithEnumWithRecord.Actual where
 
 import Data.Maybe (Maybe(..))
-import Language.PS.AST.Types (Constraint(..), DataCtor(..), DataHead(..), Declaration(..), Ident(..), Kind(..), Label(..), Module(..), OpName(..), ProperName(..), Row(..), Type(..), TypeVarBinding(..))
-import Language.PS.AST.Sugar (mkModuleName, nonQualifiedName, qualifiedName)
+import Language.PS.AST.Types
+import Language.PS.AST.Sugar
 import Prelude (map, ($), (<<<))
 import Data.Tuple.Nested (type (/\), (/\))
 
@@ -24,17 +24,17 @@ actualModule = Module
         { dataCtorName: ProperName "Bar"
         , dataCtorFields:
           [ boolean
-          , typeRecordWithoutTail
+          , typeRecord
             [ "foo" /\ number
-            , "bar" /\ typeRecordWithoutTail [ "baz" /\ dataMapMap string number ]
-            , "qwe" /\ typeRecordWithoutTail
-              [ "rty" /\ (dataMapMap (typeRecordWithoutTail [ "asd" /\ number ]) (typeRecordWithoutTail [ "foo" /\ number, "bar" /\ (dataMapMap (dataMapMap (dataMapMap number boolean) (dataMapMap number boolean)) boolean) ]))
+            , "bar" /\ typeRecord [ "baz" /\ dataMapMap string number ]
+            , "qwe" /\ typeRecord
+              [ "rty" /\ (dataMapMap (typeRecord [ "asd" /\ number ]) (typeRecord [ "foo" /\ number, "bar" /\ (dataMapMap (dataMapMap (dataMapMap number boolean) (dataMapMap number boolean)) boolean) ]))
               , "uio" /\ (dataMapMap (dataMapMap (dataMapMap number boolean) (dataMapMap number boolean)) boolean)
               ]
             ]
           , TypeVar (Ident "a")
           , array $ TypeVar (Ident "a")
-          , array $ typeRecordWithoutTail [ "foo" /\ number ]
+          , array $ typeRecord [ "foo" /\ number ]
           , TypeWildcard
           , TypeHole $ Ident "myhole"
           , TypeString "PsString"
@@ -51,14 +51,14 @@ actualModule = Module
                                      (nonQualifiedName $ OpName "+")
                                      ((nonQualifiedNameTypeConstructor "MyOtherExtension")
                                       `TypeApp`
-                                      (typeRecordWithoutTail [ "someField" /\ number ])
+                                      (typeRecord [ "someField" /\ number ])
                                      )
             }
-          , TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ (typeRecordWithoutTail [ "foo" /\ number, "bar" /\ (dataMapMap (dataMapMap (dataMapMap number boolean) (dataMapMap number boolean)) boolean) ]) ], rowTail: Nothing }
+          , TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ (typeRecord [ "foo" /\ number, "bar" /\ (dataMapMap (dataMapMap (dataMapMap number boolean) (dataMapMap number boolean)) boolean) ]) ], rowTail: Nothing }
           , TypeForall
             ((typeVarName "a") :| [(TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )])
             (array $ typeVar "a")
-          , TypeArr (array $ typeVar "a") (maybe $ typeVar "a")
+          , (array $ typeVar "a") ====>> (maybe $ typeVar "a")
           , TypeOp (nonQualifiedNameTypeConstructor "Array") (nonQualifiedName $ OpName "~>") (nonQualifiedNameTypeConstructor "Maybe")
           , TypeForall
             ((typeVarName "f") :| [])
@@ -69,14 +69,14 @@ actualModule = Module
           , TypeConstrained
             (Constraint { className: nonQualifiedName $ ProperName "MyClass", args: [typeVar "f", typeVar "g", typeVar "k"] })
             (TypeConstrained
-              (Constraint { className: nonQualifiedName $ ProperName "MyClass2", args: [typeRecordWithoutTail $ [ "foo" /\ number ]] })
+              (Constraint { className: nonQualifiedName $ ProperName "MyClass2", args: [typeRecord $ [ "foo" /\ number ]] })
               (typeVar "f"))
           , TypeKinded
             (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
-            ((kindNamed "CustomKind" `KindArr` KindRow (kindNamed "Type")) `KindArr` (kindNamed "Type"))
+            ((kindNamed "CustomKind" ====>>> KindRow (kindNamed "Type")) ====>>> (kindNamed "Type"))
           , TypeKinded
             (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
-            (kindNamed "CustomKind" `KindArr` (KindRow (kindNamed "Type") `KindArr` (kindNamed "Type")))
+            (kindNamed "CustomKind" ====>>> KindRow (kindNamed "Type") ====>>> (kindNamed "Type"))
           ]
         }
       , DataCtor
@@ -96,31 +96,4 @@ actualModule = Module
       `TypeApp`
       y
 
-    typeRecordWithoutTail :: Array (String /\ Type) -> Type
-    typeRecordWithoutTail labels =
-      TypeRecord $ Row
-        { rowLabels: mkRowLabels labels
-        , rowTail: Nothing
-        }
-
-    mkRowLabels :: Array (String /\ Type) -> Array { label :: Label, type_ :: Type }
-    mkRowLabels = map mkRowLabel
-
-    mkRowLabel :: (String /\ Type) -> { label :: Label, type_ :: Type }
-    mkRowLabel = (\(label /\ type_) -> { label: Label label, type_ })
-
-    nonQualifiedNameTypeConstructor s = TypeConstructor $ nonQualifiedName (ProperName s)
-
-    boolean = nonQualifiedNameTypeConstructor "Boolean"
-    number = nonQualifiedNameTypeConstructor "Number"
-    string = nonQualifiedNameTypeConstructor "String"
-    array = TypeApp (nonQualifiedNameTypeConstructor "Array")
-    maybe = TypeApp (nonQualifiedNameTypeConstructor "Maybe")
-
     myExtension = nonQualifiedNameTypeConstructor "MyExtension"
-
-    -- typeForall = TypeForall (TypeVarName (Ident "a") :| [])
-    typeVarName = TypeVarName <<< Ident
-    typeVar = TypeVar <<< Ident
-
-    kindNamed s = KindName (nonQualifiedName $ ProperName s)

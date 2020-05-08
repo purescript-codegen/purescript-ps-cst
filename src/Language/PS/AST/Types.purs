@@ -356,3 +356,7 @@ derive instance ordInstanceHead :: Ord InstanceHead
 --   , "instance" , "let" , "module" , "newtype"
 --   , "of" , "true" , "type" , "where"
 --   ]
+
+-- infixl 5 ExprArr as ====>
+infixr 5 TypeArr as ====>>
+infixr 5 KindArr as ====>>>

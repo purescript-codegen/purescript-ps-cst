@@ -10,7 +10,7 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (wrap)
 import Data.NonEmpty (NonEmpty(..))
 import Data.String.Extra (camelCase)
-import Matryoshka.Fold (cata)
+import Data.Tuple.Nested (type (/\), (/\))
 
 mkModuleName :: NonEmpty Array String -> ModuleName
 mkModuleName = ModuleName <<< map wrap
@@ -20,6 +20,39 @@ nonQualifiedName a = QualifiedName { qualModule: Nothing, qualName: a }
 
 qualifiedName :: ∀ a . ModuleName -> a -> QualifiedName a
 qualifiedName moduleName a = QualifiedName { qualModule: Just moduleName, qualName: a }
+
+typeRecord :: Array (String /\ Type) -> Type
+typeRecord labels =
+  TypeRecord $ Row
+    { rowLabels: mkRowLabels labels
+    , rowTail: Nothing
+    }
+
+typeRow :: Array (String /\ Type) -> Type
+typeRow labels =
+  TypeRow $ Row
+    { rowLabels: mkRowLabels labels
+    , rowTail: Nothing
+    }
+
+mkRowLabels :: Array (String /\ Type) -> Array { label :: Label, type_ :: Type }
+mkRowLabels = map mkRowLabel
+
+mkRowLabel :: (String /\ Type) -> { label :: Label, type_ :: Type }
+mkRowLabel = (\(label /\ type_) -> { label: Label label, type_ })
+
+nonQualifiedNameTypeConstructor s = TypeConstructor $ nonQualifiedName (ProperName s)
+
+boolean = nonQualifiedNameTypeConstructor "Boolean"
+number = nonQualifiedNameTypeConstructor "Number"
+string = nonQualifiedNameTypeConstructor "String"
+array = TypeApp (nonQualifiedNameTypeConstructor "Array")
+maybe = TypeApp (nonQualifiedNameTypeConstructor "Maybe")
+
+typeVarName = TypeVarName <<< Ident -- for left side of forall
+typeVar = TypeVar <<< Ident -- for right side of forall
+
+kindNamed s = KindName (nonQualifiedName $ ProperName s)
 
 -- emptyRow :: Row
 -- emptyRow = Row { labels: mempty, tail: Nothing }

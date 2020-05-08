@@ -122,7 +122,9 @@ data PrintTypeStyle
   | PreferOneLine
 
 -- Am I inside of TypeApp that didn't yet break? (i.e. TypeApp inside TypeApp)
--- used to determine whether to wrap in parentheses the `Array Int` inside of `Map (Array Int) Other`
+-- used to prevent multiple wraps
+-- e.g. prevents `(((Complex A) B) C)`
+-- expected `Complex A B C`
 data IsAlreadyInsideOfApp
   = IsAlreadyInsideOfApp_Yes
   | IsAlreadyInsideOfApp_No
@@ -161,7 +163,7 @@ printType printTypeContext (TypeApp leftType rightType) =
     doWrapLeft (TypeConstrained _ _) = true
 
     newLeftContext :: PrintTypeContext
-    newLeftContext = { printTypeStyle: PreferOneLine, isAlreadyInsideOfApp: IsAlreadyInsideOfApp_Yes }
+    newLeftContext = { printTypeStyle: PreferOneLine, isAlreadyInsideOfApp: IsAlreadyInsideOfApp_No }
 
     newRightContext :: PrintTypeContext
     newRightContext = { printTypeStyle: PreferOneLine, isAlreadyInsideOfApp: IsAlreadyInsideOfApp_Yes }
