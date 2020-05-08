@@ -87,10 +87,10 @@ actualModule = Module
                     (TypeConstructor $ nonQualifiedName (ProperName "C"))
                   )
                   `TypeApp`
-                  (TypeConstructor $ nonQualifiedName (ProperName "F"))
+                  (TypeConstructor $ nonQualifiedName (ProperName "D"))
                   `TypeApp`
                   (
-                    (TypeConstructor $ nonQualifiedName (ProperName "D"))
+                    (TypeConstructor $ nonQualifiedName (ProperName "F"))
                     `TypeApp`
                     (TypeConstructor $ nonQualifiedName (ProperName "G"))
                     `TypeApp`
