@@ -117,7 +117,7 @@ actualModule = Module
             , TypeOp (nonQualifiedNameTypeConstructor "Array") (nonQualifiedName $ OpName "~>") (nonQualifiedNameTypeConstructor "Maybe")
             , TypeForall
               ((typeVarName "f") :| [])
-              ( TypeConstrained
+              (TypeConstrained
                 (Constraint { className: nonQualifiedName $ ProperName "Functor", args: [typeVar "f"] })
                 (TypeOp (typeVar "f") (nonQualifiedName $ OpName "~>") (nonQualifiedNameTypeConstructor "Maybe"))
               )

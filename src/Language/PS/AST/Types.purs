@@ -37,8 +37,6 @@ derive instance eqIdent :: Eq Ident
 derive instance ordIdent :: Ord Ident
 instance showIdent :: Show Ident where show = genericShow
 
-data DeclDataType = DeclDataTypeData | DeclDataTypeNewtype
-
 newtype ImportDecl = ImportDecl
   { moduleName :: ModuleName
   , names :: Array Import
@@ -122,11 +120,19 @@ data Declaration
   -- | DeclSignature (Labeled Ident Type)
   -- | DeclValue (ValueBindingFields a)
   | DeclFixity FixityFields
-  -- | DeclForeign (Foreign a)
+  | DeclForeign Foreign
 derive instance genericDeclaration :: Generic Declaration _
 derive instance eqDeclaration :: Eq Declaration
 derive instance ordDeclaration :: Ord Declaration
 -- instance showDeclaration :: Show Declaration where show = genericShow
+
+data Foreign
+  = ForeignValue { ident :: Ident, type_ :: Type }
+  | ForeignData { name :: ProperName ProperNameType_TypeName, kind_ :: Kind }
+  | ForeignKind { name :: ProperName ProperNameType_KindName }
+derive instance genericForeign :: Generic Foreign _
+derive instance eqForeign :: Eq Foreign
+derive instance ordForeign :: Ord Foreign
 
 type FixityFields =
   { keyword :: Fixity

@@ -99,6 +99,12 @@ printDeclaration (DeclFixity { keyword, precedence, operator }) =
     printFixityOp (FixityType qualifiedPropName opName) = text "type" <<+>> printQualifiedName_AnyProperNameType qualifiedPropName <<+>> text "as" <<+>> textFromNewtype opName
   in
     printFixity keyword <<+>> text (show precedence) <<+>> printFixityOp operator
+printDeclaration (DeclForeign foreign_) =
+  text "foreign" <<+>> text "import" <<+>>
+    case foreign_ of
+      (ForeignValue { ident, type_ }) -> textFromNewtype ident <<+>> text "::" <<+>> printType { printType_Style: PrintType_Multiline, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No } type_
+      (ForeignData { name, kind_ }) -> text "data" <<+>> textFromNewtype name <<+>> text "::" <<+>> printKind kind_
+      (ForeignKind { name }) -> text "kind" <<+>> textFromNewtype name
 
 printFixity :: Fixity -> Box
 printFixity Infix  = text "infix"
