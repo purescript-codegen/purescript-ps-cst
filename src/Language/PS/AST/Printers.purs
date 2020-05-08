@@ -1,14 +1,17 @@
 module Language.PS.AST.Printers where
 
+import Language.PS.AST.Printers.PrintImports
+import Language.PS.AST.Printers.PrintModuleModuleNameAndExports
+import Language.PS.AST.Printers.Utils
+import Language.PS.AST.Types
+import Prelude
+
 import Data.Array (snoc) as Array
+import Data.Either (Either(..))
+import Data.Either.Nested (type (\/), (\/))
 import Data.Foldable (null)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Maybe (Maybe(..), maybe)
-import Language.PS.AST.Printers.PrintImports (printImports)
-import Language.PS.AST.Printers.PrintModuleModuleNameAndExports (printModuleModuleNameAndExports)
-import Language.PS.AST.Printers.Utils (emptyRow, ifelse, lines, printModuleName, textFromNewtype, twoSpaceIdentation, wrapInParentheses)
-import Language.PS.AST.Types (Constraint(..), DataCtor(..), DataHead(..), Declaration(..), Kind(..), Label, Module(..), OpName, ProperName, QualifiedName(..), Row(..), Type(..), TypeVarBinding(..))
-import Prelude (flip, identity, map, (#), ($), (<#>), (<<<), (==))
 import Text.PrettyPrint.Boxes (Box, left, nullBox, punctuateH, text, vcat, vsep, (//), (<<+>>), (<<>>))
 
 printModule :: Module -> Box
@@ -88,6 +91,19 @@ printDeclaration (DeclNewtype { head, name, type_ }) =
     printType' type_ = maybeWrap type_ $ printType context $ type_
   in
     printDataHead (text "newtype") head <<+>> text "=" <<+>> (textFromNewtype name <<+>> printType' type_)
+printDeclaration (DeclFixity { keyword, precedence, operator }) =
+  let
+    printFixityOp :: FixityOp -> Box
+    printFixityOp (FixityValue (Left qualifiedIdent) opName) = printQualifiedName_Ident qualifiedIdent <<+>> text "as" <<+>> textFromNewtype opName
+    printFixityOp (FixityValue (Right qualifiedPropName) opName) = printQualifiedName_AnyProperNameType qualifiedPropName <<+>> text "as" <<+>> textFromNewtype opName
+    printFixityOp (FixityType qualifiedPropName opName) = text "type" <<+>> printQualifiedName_AnyProperNameType qualifiedPropName <<+>> text "as" <<+>> textFromNewtype opName
+  in
+    printFixity keyword <<+>> text (show precedence) <<+>> printFixityOp operator
+
+printFixity :: Fixity -> Box
+printFixity Infix  = text "infix"
+printFixity Infixl = text "infixl"
+printFixity Infixr = text "infixr"
 
 printDataCtor :: DataCtor -> Box
 printDataCtor (DataCtor dataCtor) =
@@ -152,6 +168,11 @@ printKind (KindArr kindLeft_ kindRight_) =
     printedLeft' <<+>> text "->" <<+>> printKind kindRight_
 printKind (KindRow kind_) = text "#" <<+>> printKind kind_
 printKind (KindParens kind_) = wrapInParentheses $ printKind kind_
+
+printQualifiedName_Ident :: ∀ proxy. QualifiedName Ident -> Box
+printQualifiedName_Ident (QualifiedName qualifiedName) = case qualifiedName.qualModule of
+  Nothing -> textFromNewtype qualifiedName.qualName
+  (Just moduleName) -> printModuleName moduleName <<>> text "." <<>> textFromNewtype qualifiedName.qualName
 
 printQualifiedName_AnyProperNameType :: ∀ proxy. QualifiedName (ProperName proxy) -> Box
 printQualifiedName_AnyProperNameType (QualifiedName qualifiedName) = case qualifiedName.qualModule of

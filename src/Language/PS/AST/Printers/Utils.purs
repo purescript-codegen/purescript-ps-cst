@@ -1,11 +1,12 @@
 module Language.PS.AST.Printers.Utils where
 
-import Prelude
 import Language.PS.AST.Types
+import Prelude
 import Text.PrettyPrint.Boxes
+
 import Data.Array (cons, fromFoldable, null) as Array
 import Data.Char.Unicode (isUpper)
-import Data.Either (Either(..), fromRight)
+import Data.Either (Either(..), either, fromRight)
 import Data.Foldable (class Foldable, foldMap, intercalate, length, null)
 import Data.List (List(..))
 import Data.List (fromFoldable, intercalate) as List

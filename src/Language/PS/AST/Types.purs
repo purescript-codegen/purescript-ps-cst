@@ -12,6 +12,7 @@ import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
 import Data.NonEmpty (NonEmpty)
+import Data.Either.Nested (type (\/), (\/))
 
 -- | No need for imports list as they are collected from declarations
 -- | during final codegen.
@@ -120,12 +121,33 @@ data Declaration
   -- | DeclDerive {- (Maybe SourceToken) -} (InstanceHead a)
   -- | DeclSignature (Labeled Ident Type)
   -- | DeclValue (ValueBindingFields a)
-  -- | DeclFixity FixityFields
+  | DeclFixity FixityFields
   -- | DeclForeign (Foreign a)
 derive instance genericDeclaration :: Generic Declaration _
 derive instance eqDeclaration :: Eq Declaration
 derive instance ordDeclaration :: Ord Declaration
 -- instance showDeclaration :: Show Declaration where show = genericShow
+
+type FixityFields =
+  { keyword :: Fixity
+  , precedence :: Int
+  , operator :: FixityOp
+  }
+
+data Fixity
+  = Infix
+  | Infixl
+  | Infixr
+derive instance genericFixity :: Generic Fixity _
+derive instance eqFixity :: Eq Fixity
+derive instance ordFixity :: Ord Fixity
+
+data FixityOp
+  = FixityValue (QualifiedName Ident \/ QualifiedName (ProperName ProperNameType_ConstructorName)) (OpName OpNameType_ValueOpName)
+  | FixityType (QualifiedName (ProperName ProperNameType_TypeName)) (OpName OpNameType_TypeOpName)
+derive instance genericFixityOp :: Generic FixityOp _
+derive instance eqFixityOp :: Eq FixityOp
+derive instance ordFixityOp :: Ord FixityOp
 
 data Type
   = TypeVar Ident
