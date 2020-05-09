@@ -13,6 +13,7 @@ head =
   , dataHdVars: []
   }
 
+dataMapMap :: Type -> Type -> Type
 dataMapMap x y =
   (TypeConstructor $ qualifiedName (mkModuleName $ "Data" :| ["Map"]) (ProperName "Map"))
   `TypeApp`

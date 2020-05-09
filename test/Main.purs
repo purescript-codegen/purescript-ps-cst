@@ -16,7 +16,6 @@ import Test.Ansidiff (textShouldMatch)
 import Test.Spec as Test.Spec
 import Test.Spec.Reporter as Test.Spec.Reporter
 import Test.Spec.Runner as Test.Spec.Runner
-import Text.PrettyPrint.Boxes (render) as Text.PrettyPrint.Boxes
 
 import Test.Golden.DeclType.Actual        as Test.Golden.DeclType.Actual
 import Test.Golden.DeclNewtype.Actual     as Test.Golden.DeclNewtype.Actual
