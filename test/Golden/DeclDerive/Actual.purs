@@ -30,7 +30,7 @@ actualModule = Module
       { instName: Ident "foo"
       , instConstraints: []
       , instClass: nonQualifiedName $ ProperName "Foo"
-      , instTypes: (TypeConstructor $ nonQualifiedName $ ProperName "Bar") :| [TypeRecord $ Row { rowLabels: mkRowLabels [ "foo" /\ number ], rowTail: Nothing }]
+      , instTypes: (TypeConstructor $ nonQualifiedName $ ProperName "Bar") :| [TypeRecord $ Row { rowLabels: mkRowLabels [ "foo" /\ numberType ], rowTail: Nothing }]
       }
     , DeclDerive DeclDeriveType_Odrinary
       { instName: Ident "foo"

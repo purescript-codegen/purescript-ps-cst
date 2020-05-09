@@ -41,17 +41,31 @@ mkRowLabels = map mkRowLabel
 mkRowLabel :: (String /\ Type) -> { label :: Label, type_ :: Type }
 mkRowLabel = (\(label /\ type_) -> { label: Label label, type_ })
 
+nonQualifiedNameTypeConstructor :: String → Type
 nonQualifiedNameTypeConstructor s = TypeConstructor $ nonQualifiedName (ProperName s)
 
-boolean = nonQualifiedNameTypeConstructor "Boolean"
-number = nonQualifiedNameTypeConstructor "Number"
-string = nonQualifiedNameTypeConstructor "String"
-array = TypeApp (nonQualifiedNameTypeConstructor "Array")
-maybe = TypeApp (nonQualifiedNameTypeConstructor "Maybe")
+booleanType :: Type
+booleanType = nonQualifiedNameTypeConstructor "Boolean"
 
+numberType :: Type
+numberType = nonQualifiedNameTypeConstructor "Number"
+
+stringType :: Type
+stringType = nonQualifiedNameTypeConstructor "String"
+
+arrayType :: Type -> Type
+arrayType = TypeApp (nonQualifiedNameTypeConstructor "Array")
+
+maybeType :: Type -> Type
+maybeType = TypeApp (nonQualifiedNameTypeConstructor "Maybe")
+
+typeVarName :: String → TypeVarBinding
 typeVarName = TypeVarName <<< Ident -- for left side of forall
+
+typeVar :: String → Type
 typeVar = TypeVar <<< Ident -- for right side of forall
 
+kindNamed :: String → Kind
 kindNamed s = KindName (nonQualifiedName $ ProperName s)
 
 -- emptyRow :: Row

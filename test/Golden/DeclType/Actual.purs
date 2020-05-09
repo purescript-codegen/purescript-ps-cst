@@ -30,43 +30,43 @@ actualModule = Module
   , imports: []
   , exports: []
   , declarations:
-    [ declFooType boolean
+    [ declFooType booleanType
     , declFooType $
         typeRecord
-        [ "foo" /\ number
-        , "bar" /\ typeRecord [ "baz" /\ dataMapMap string number ]
+        [ "foo" /\ numberType
+        , "bar" /\ typeRecord [ "baz" /\ dataMapMap stringType numberType ]
         , "qwe" /\ typeRecord
-          [ "rty" /\ (dataMapMap (typeRecord [ "asd" /\ number ]) (typeRecord [ "foo" /\ number, "bar" /\ (dataMapMap (dataMapMap (dataMapMap number boolean) (dataMapMap number boolean)) boolean) ]))
-          , "uio" /\ (dataMapMap (dataMapMap (dataMapMap number boolean) (dataMapMap number boolean)) boolean)
+          [ "rty" /\ (dataMapMap (typeRecord [ "asd" /\ numberType ]) (typeRecord [ "foo" /\ numberType, "bar" /\ (dataMapMap (dataMapMap (dataMapMap numberType booleanType) (dataMapMap numberType booleanType)) booleanType) ]))
+          , "uio" /\ (dataMapMap (dataMapMap (dataMapMap numberType booleanType) (dataMapMap numberType booleanType)) booleanType)
           ]
         ]
     , declFooType $ TypeVar (Ident "a")
-    , declFooType $ array $ TypeVar (Ident "a")
-    , declFooType $ array $ typeRecord [ "foo" /\ number ]
+    , declFooType $ arrayType $ TypeVar (Ident "a")
+    , declFooType $ arrayType $ typeRecord [ "foo" /\ numberType ]
     , declFooType $ TypeWildcard
     , declFooType $ TypeHole $ Ident "myhole"
     , declFooType $ TypeString "PsString"
     , declFooType $ TypeRow $ Row { rowLabels: [], rowTail: Nothing }
     , declFooType $ TypeRow $ Row { rowLabels: [], rowTail: Just myExtension }
-    , declFooType $ TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ number ], rowTail: Nothing }
-    , declFooType $ TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ number ], rowTail: Just myExtension }
-    , declFooType $ TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ number, "rowField2" /\ number ], rowTail: Nothing }
-    , declFooType $ TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ number, "rowField2" /\ number ], rowTail: Just myExtension }
-    , declFooType $ TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ number, "rowField2" /\ number ], rowTail: Just $ TypeOp myExtension (nonQualifiedName $ OpName "+") (nonQualifiedNameTypeConstructor "MyOtherExtension") }
+    , declFooType $ TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType ], rowTail: Nothing }
+    , declFooType $ TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType ], rowTail: Just myExtension }
+    , declFooType $ TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Nothing }
+    , declFooType $ TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just myExtension }
+    , declFooType $ TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just $ TypeOp myExtension (nonQualifiedName $ OpName "+") (nonQualifiedNameTypeConstructor "MyOtherExtension") }
     , declFooType $ TypeRow $ Row
-      { rowLabels: mkRowLabels [ "rowField" /\ number, "rowField2" /\ number ]
+      { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ]
       , rowTail: Just $ TypeOp myExtension
                                 (nonQualifiedName $ OpName "+")
                                 ((nonQualifiedNameTypeConstructor "MyOtherExtension")
                                 `TypeApp`
-                                (typeRecord [ "someField" /\ number ])
+                                (typeRecord [ "someField" /\ numberType ])
                                 )
       }
     , declFooType $ TypeRow $ Row
       { rowLabels: mkRowLabels
         [ "rowField" /\ (typeRecord
-          [ "foo" /\ number
-          , "bar" /\ (dataMapMap (dataMapMap (dataMapMap number boolean) (dataMapMap number boolean)) boolean)
+          [ "foo" /\ numberType
+          , "bar" /\ (dataMapMap (dataMapMap (dataMapMap numberType booleanType) (dataMapMap numberType booleanType)) booleanType)
           , "baz" /\ (
             (TypeConstructor $ nonQualifiedName (ProperName "Complex"))
             `TypeApp`
@@ -111,8 +111,8 @@ actualModule = Module
       }
     , declFooType $ TypeForall
       ((typeVarName "a") :| [(TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )])
-      (array $ typeVar "a")
-    , declFooType $ (array $ typeVar "a") ====>> (maybe $ typeVar "a")
+      (arrayType $ typeVar "a")
+    , declFooType $ (arrayType $ typeVar "a") ====>> (maybeType $ typeVar "a")
     , declFooType $ TypeOp (nonQualifiedNameTypeConstructor "Array") (nonQualifiedName $ OpName "~>") (nonQualifiedNameTypeConstructor "Maybe")
     , declFooType $ TypeForall
       ((typeVarName "f") :| [])
@@ -123,7 +123,7 @@ actualModule = Module
     , declFooType $ TypeConstrained
       (Constraint { className: nonQualifiedName $ ProperName "MyClass", args: [typeVar "f", typeVar "g", typeVar "k"] })
       (TypeConstrained
-        (Constraint { className: nonQualifiedName $ ProperName "MyClass2", args: [typeRecord $ [ "foo" /\ number ]] })
+        (Constraint { className: nonQualifiedName $ ProperName "MyClass2", args: [typeRecord $ [ "foo" /\ numberType ]] })
         (typeVar "f"))
     , declFooType $ TypeKinded
       (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")

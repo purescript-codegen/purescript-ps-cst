@@ -5,7 +5,7 @@ import Language.PS.AST.Types
 import Data.Maybe (Maybe(..))
 import Data.Newtype (wrap)
 import Data.NonEmpty ((:|))
-import Language.PS.AST.Sugar (boolean, mkModuleName, nonQualifiedName)
+import Language.PS.AST.Sugar (booleanType, mkModuleName, nonQualifiedName)
 import Prelude (map, ($))
 
 actualModule :: Module
@@ -32,7 +32,7 @@ actualModule = Module
       }
     , DeclSignature
       { ident: Ident "y"
-      , type_: boolean
+      , type_: booleanType
       }
     , DeclValue
       { name: Ident "y"
@@ -44,7 +44,7 @@ actualModule = Module
       }
     , DeclSignature
       { ident: Ident "z"
-      , type_: boolean ====>> boolean
+      , type_: booleanType ====>> booleanType
       }
     , DeclValue
       { name: Ident "z"
