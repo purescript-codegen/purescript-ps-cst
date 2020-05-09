@@ -1,4 +1,4 @@
-module Value where
+module Foo where
 
 x = true
 x = true

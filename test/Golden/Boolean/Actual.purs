@@ -1,4 +1,4 @@
-module Test.Golden.Value.Actual where
+module Test.Golden.Boolean.Actual where
 
 import Language.PS.AST.Types
 
@@ -10,7 +10,7 @@ import Prelude (map, ($))
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "Value" :| []
+  { moduleName: mkModuleName $ "Foo" :| []
   , imports: []
   , exports: []
   , declarations:

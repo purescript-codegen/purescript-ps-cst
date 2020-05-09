@@ -68,6 +68,9 @@ typeVar = TypeVar <<< Ident -- for right side of forall
 kindNamed :: String → Kind
 kindNamed s = KindName (nonQualifiedName $ ProperName s)
 
+nonQualifiedExprIdent :: String → Expr
+nonQualifiedExprIdent s = ExprIdent $ nonQualifiedName (Ident s)
+
 -- emptyRow :: Row
 -- emptyRow = Row { labels: mempty, tail: Nothing }
 

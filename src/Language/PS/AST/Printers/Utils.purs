@@ -8,7 +8,7 @@ import Data.Array (cons, fromFoldable, null) as Array
 import Data.Char.Unicode (isUpper)
 import Data.Either (Either(..), either, fromRight)
 import Data.Foldable (class Foldable, foldMap, intercalate, length, null)
-import Data.List (List(..))
+import Data.List (List(..), (:))
 import Data.List (fromFoldable, intercalate) as List
 import Data.Map (toUnfoldable) as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
@@ -45,6 +45,9 @@ printModuleName (ModuleName nonEmptyArray) =
 wrapInParentheses :: Box -> Box
 wrapInParentheses x = text "(" <<>> x <<>> text ")"
 
+wrapInDoubleQuotes :: Box -> Box
+wrapInDoubleQuotes x = text "\"" <<>> x <<>> text "\""
+
 punctuateWithComma :: ∀ f. Foldable f ⇒ f Box → Box
 punctuateWithComma = punctuateH left (text ", ")
 
@@ -59,3 +62,9 @@ printConstructors = punctuateWithComma <<< map textFromNewtype
 
 ifelse :: forall a. Boolean -> a -> a -> a
 ifelse p a b = if p then a else b
+
+foldWithPrev :: ∀ a b . (b -> Maybe a -> a -> b) -> b -> List a -> b
+foldWithPrev _   default' Nil   = default'
+foldWithPrev fun default' list = foo default' Nothing list
+    where foo acc _    Nil     = acc
+          foo acc prev (x : xs) = foo (fun acc prev x) (Just x) xs

@@ -1,0 +1,14 @@
+module MultilinePatternMatchingInLet2 where
+
+myfunc :: Int -> Int
+myfunc 1 =
+  let
+    psModuleFile :: ModulePath -> Int
+    psModuleFile Path = 1
+    psModuleFile Name = 2
+
+    psModuleFile2 :: ModulePath -> Int
+    psModuleFile2 Path = 1
+    psModuleFile2 Name = 2
+  in
+    psModuleFile 1

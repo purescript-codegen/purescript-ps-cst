@@ -32,12 +32,6 @@ printModule (Module { moduleName, imports, exports, declarations }) =
       , emptyRow
       ]
 
-foldWithPrev :: ∀ a b . (b -> Maybe a -> a -> b) -> b -> List a -> b
-foldWithPrev _   default' Nil   = default'
-foldWithPrev fun default' list = foo default' Nothing list
-    where foo acc _    Nil     = acc
-          foo acc prev (x : xs) = foo (fun acc prev x) (Just x) xs
-
 printDeclarations :: Array Declaration -> Box
 printDeclarations [] = nullBox
 printDeclarations declarations =
