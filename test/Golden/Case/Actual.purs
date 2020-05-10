@@ -31,7 +31,31 @@ actualModule = Module
                 , body: Unconditional { expr: ExprBoolean false, whereBindings: [] }
                 }
               , { binders: BinderString "FOO" :| []
-                , body: Unconditional { expr: ExprBoolean true, whereBindings: [] }
+                , body: Unconditional
+                  { expr:
+                    ExprCase
+                    { head:
+                      ExprIf
+                      { cond: ExprBoolean true
+                      , true_: ExprBoolean true
+                      , false_: ExprBoolean false
+                      }
+                      :|
+                      [ ExprIf
+                        { cond: ExprBoolean true
+                        , true_: ExprBoolean true
+                        , false_: ExprBoolean false
+                        }
+                      ]
+                    , branches:
+                      { binders: BinderConstructor { name: nonQualifiedName (ProperName "Just"), args: [BinderVar (Ident "a")] } :| []
+                      , body: Unconditional { expr: ExprBoolean true, whereBindings: [] }
+                      }
+                      :|
+                      []
+                    }
+                  , whereBindings: []
+                  }
                 }
               , { binders: BinderNumber (Right 1.1) :| []
                 , body: Unconditional
@@ -66,7 +90,16 @@ actualModule = Module
                 }
               ]
             }
-          , whereBindings: []
+          , whereBindings:
+            [ LetBindingName
+                { name: Ident "foo"
+                , binders: []
+                , guarded: Unconditional
+                  { expr: ExprNumber (Left 1)
+                  , whereBindings: []
+                  }
+                }
+            ]
           }
       }
     ]

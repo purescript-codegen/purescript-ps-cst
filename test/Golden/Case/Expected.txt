@@ -4,8 +4,23 @@ x =
   case foo of
     Just a -> true
     Nothing -> false
-    "FOO" -> true
-    1.1 ->
-      case if true then true else false of
+    "FOO" ->
+      case
+        if true
+          then true
+          else false
+      , if true
+          then true
+          else false
+      of
         Just a -> true
+    1.1 ->
+      case
+        if true
+          then true
+          else false
+      of
+        Just a -> true
+      where
+        foo = 1
     a@(Just a) -> false

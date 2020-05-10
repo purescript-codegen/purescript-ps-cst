@@ -9,7 +9,7 @@ import Prelude
 
 import Data.Array (fromFoldable, snoc) as Array
 import Data.Either (Either(..))
-import Data.Foldable (class Foldable, null)
+import Data.Foldable (class Foldable, any, null)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.List (List(..), (:))
 import Data.List (fromFoldable) as List
@@ -17,7 +17,7 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
 import Data.NonEmpty (NonEmpty(..))
 import Data.Variant (contract)
-import Text.PrettyPrint.Boxes (Box, left, nullBox, punctuateH, text, vcat, vsep, (/+/), (//), (<<+>>), (<<>>))
+import Text.PrettyPrint.Boxes (Box, left, nullBox, punctuateH, punctuateV, text, vcat, vsep, (/+/), (//), (<<+>>), (<<>>))
 import Text.PrettyPrint.Boxes (render) as Text.PrettyPrint.Boxes
 
 printModuleToString :: Module -> String
@@ -248,7 +248,10 @@ printExpr (ExprApp exprLeft exprRight) =
   in
     printed
 printExpr (ExprLambda { binders, body }) = (wrapInParentheses $ punctuateH left emptyColumn $ map printBinder binders) <<+>> text "=" <<+>> printExpr body
-printExpr (ExprIf { cond, true_, false_ }) = text "if" <<+>> printExpr cond // text "then" <<+>> printExpr true_ // text "else" <<+>> printExpr false_
+printExpr (ExprIf { cond, true_, false_ }) =
+  (text "if" <<+>> printExpr cond)
+  // (twoSpaceIdentation <<>> text "then" <<+>> printExpr true_)
+  // (twoSpaceIdentation <<>> text "else" <<+>> printExpr false_)
 printExpr (ExprCase { head, branches }) =
   let
     printBranch :: { binders :: NonEmpty Array Binder, body :: Guarded } -> Box
@@ -256,7 +259,30 @@ printExpr (ExprCase { head, branches }) =
       let
         printedHead = (punctuateH left (text ", ") $ map printBinder binders) <<+>> text "->"
        in printGuarded printedHead body
-  in text "case" <<+>> (punctuateH left emptyColumn $ map printExpr head) <<+>> text "of" // (twoSpaceIdentation <<>> (vcat left $ map printBranch branches))
+
+    headShouldBeMultiline =
+      head `flip any` (
+        case _ of
+          ExprIf _ -> true
+          ExprCase _ -> true
+          ExprLet _ -> true
+          ExprDo _ -> true
+          ExprAdo _ -> true
+          _ -> false
+      )
+  in
+    if headShouldBeMultiline
+      then text "case"
+      // (
+        head
+        # List.fromFoldable
+        <#> printExpr
+        # mapWithIndex (\i box -> ifelse (i == 0) (twoSpaceIdentation <<>> box) (text ", " <<>> box))
+        # vcat left
+      )
+      // text "of"
+      // (twoSpaceIdentation <<>> (vcat left $ map printBranch branches))
+      else text "case" <<+>> (punctuateH left (text ", ") $ map printExpr head) <<+>> text "of" // (twoSpaceIdentation <<>> (vcat left $ map printBranch branches))
 printExpr (ExprLet { bindings, body }) =
   let
     printedBindings = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenLetBindings printLetBinding bindings
