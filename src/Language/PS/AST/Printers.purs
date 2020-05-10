@@ -37,6 +37,11 @@ shouldBeNoNewlineBetweenDeclarations (DeclSignature { ident }) (DeclValue { name
 shouldBeNoNewlineBetweenDeclarations (DeclValue { name }) (DeclValue { name: nameNext }) = name == nameNext
 shouldBeNoNewlineBetweenDeclarations _ _ = false
 
+shouldBeNoNewlineBetweenLetBindings :: LetBinding -> LetBinding -> Boolean
+shouldBeNoNewlineBetweenLetBindings (LetBindingSignature { ident }) (LetBindingName { name }) = ident == name
+shouldBeNoNewlineBetweenLetBindings (LetBindingName { name }) (LetBindingName { name: nameNext }) = name == nameNext
+shouldBeNoNewlineBetweenLetBindings _ _ = false
+
 printDeclarations :: Array Declaration -> Box
 printDeclarations [] = nullBox
 printDeclarations declarations = emptyRow // printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenDeclarations printDeclaration declarations
@@ -170,7 +175,7 @@ printValueBindingFields { name, binders, guarded } =
               else printedHead <<+>> printExpr expr
           { expr, bindings } ->
             let
-              printedBindings = twoSpaceIdentation <<>> (text "where" // (vcat left $ map printLetBinding bindings))
+              printedBindings = twoSpaceIdentation <<>> (text "where" // (printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenLetBindings printLetBinding bindings))
             in
               if exprShouldBeOnNextLine expr
                 then printedHead // (twoSpaceIdentation <<>> printExpr expr) // printedBindings
@@ -247,11 +252,6 @@ printExpr (ExprCase { head, branches }) =
   in text "case" <<+>> (punctuateH left emptyColumn $ map printExpr head) <<+>> text "of" // (vcat left $ map printBranch branches)
 printExpr (ExprLet { bindings, body }) =
   let
-    shouldBeNoNewlineBetweenLetBindings :: LetBinding -> LetBinding -> Boolean
-    shouldBeNoNewlineBetweenLetBindings (LetBindingSignature { ident }) (LetBindingName { name }) = ident == name
-    shouldBeNoNewlineBetweenLetBindings (LetBindingName { name }) (LetBindingName { name: nameNext }) = name == nameNext
-    shouldBeNoNewlineBetweenLetBindings _ _ = false
-
     printedBindings = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenLetBindings printLetBinding bindings
 
     printedBody = printExpr body
