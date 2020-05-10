@@ -21,6 +21,7 @@ import Data.String.Regex (test) as Regex
 import Data.String.Regex.Flags (noFlags) as Regex.Flags
 import Data.Tuple (Tuple(..))
 import Data.Unfoldable (replicate)
+import Debug.Trace (trace)
 import Matryoshka (Algebra, cata)
 import Partial.Unsafe (unsafePartial)
 
@@ -71,3 +72,20 @@ foldWithPrev fun default' list = foo default' Nothing list
 
 maybeWrapInParentheses :: Boolean -> Box -> Box
 maybeWrapInParentheses b = if b then wrapInParentheses else identity
+
+printAndConditionallyAddNewlinesBetween :: ∀ a f . Foldable f => (a -> a -> Boolean) -> (a -> Box) -> f a -> Box
+printAndConditionallyAddNewlinesBetween shouldBeNoNewlines print xs =
+  let
+    xs' :: List a
+    xs' = List.fromFoldable xs
+
+    foldDeclaration :: Box -> Maybe a -> a -> Box
+    foldDeclaration accum Nothing current = accum // print current -- nullBox deactivates //
+    foldDeclaration accum (Just prev) current = accum //
+                                                if shouldBeNoNewlines prev current
+                                                  then print current
+                                                  else emptyRow // print current
+   in
+    foldWithPrev foldDeclaration nullBox xs'
+
+traceId a = trace a (const a)

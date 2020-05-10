@@ -7,7 +7,7 @@ import Language.PS.AST.Printers.Utils
 import Language.PS.AST.Types
 import Prelude
 
-import Data.Array (snoc) as Array
+import Data.Array (fromFoldable, snoc) as Array
 import Data.Either (Either(..))
 import Data.Foldable (class Foldable, null)
 import Data.FunctorWithIndex (mapWithIndex)
@@ -32,27 +32,14 @@ printModule (Module { moduleName, imports, exports, declarations }) =
       , emptyRow
       ]
 
+shouldBeNoNewlineBetweenDeclarations :: Declaration -> Declaration -> Boolean
+shouldBeNoNewlineBetweenDeclarations (DeclSignature { ident }) (DeclValue { name }) = ident == name
+shouldBeNoNewlineBetweenDeclarations (DeclValue { name }) (DeclValue { name: nameNext }) = name == nameNext
+shouldBeNoNewlineBetweenDeclarations _ _ = false
+
 printDeclarations :: Array Declaration -> Box
 printDeclarations [] = nullBox
-printDeclarations declarations =
-  let
-    declarations' = List.fromFoldable declarations
-
-    shouldBeNoNewlineBetweenDeclarations :: Declaration -> Declaration -> Boolean
-    shouldBeNoNewlineBetweenDeclarations (DeclSignature { ident }) (DeclValue { name }) = ident == name
-    shouldBeNoNewlineBetweenDeclarations (DeclValue { name }) (DeclValue { name: nameNext }) = name == nameNext
-    shouldBeNoNewlineBetweenDeclarations _ _ = false
-
-    foldDeclaration accum Nothing current = accum // printDeclaration current
-    foldDeclaration accum (Just prev) current = accum //
-                                                if shouldBeNoNewlineBetweenDeclarations prev current
-                                                  then printDeclaration current
-                                                  else emptyRow // printDeclaration current
-
-    printedDeclarations = foldWithPrev foldDeclaration emptyRow declarations'
-  in
-    printedDeclarations
-
+printDeclarations declarations = emptyRow // printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenDeclarations printDeclaration declarations
 
 printDeclaration :: Declaration -> Box
 printDeclaration (DeclData { head, constructors: [] }) = printDataHead (text "data") head
@@ -170,7 +157,7 @@ printValueBindingFields { name, binders, guarded } =
     printedBinders =
       if null binders
         then nullBox
-        else (punctuateH left (text " ") $ map printBinder binders) <<>> emptyColumn
+        else (punctuateH left emptyColumn $ map printBinder binders) <<>> emptyColumn
 
     printedHead = textFromNewtype name <<+>> printedBinders <<>> text "="
    in
@@ -193,7 +180,7 @@ printBinder BinderWildcard = text "_"
 printBinder (BinderVar ident) = textFromNewtype ident
 printBinder (BinderNamed { ident, binder }) = textFromNewtype ident <<>> text "@" <<>> (wrapInParentheses $ printBinder binder)
 printBinder (BinderConstructor { name, args: [] }) = printQualifiedName_AnyProperNameType name
-printBinder (BinderConstructor { name, args }) = printQualifiedName_AnyProperNameType name <<+>> (punctuateH left (text " ") $ map printBinder args)
+printBinder (BinderConstructor { name, args }) = printQualifiedName_AnyProperNameType name <<+>> (punctuateH left emptyColumn $ map printBinder args)
 printBinder (BinderBoolean boolean) = text $ show boolean
 printBinder (BinderChar char) = text $ show char
 printBinder (BinderString string) = text $ show string
@@ -245,19 +232,21 @@ printExpr (ExprApp exprLeft exprRight) =
     printed = printedLeft <<+>> maybeWrapInParentheses doWrapRight printedRight
   in
     printed
-printExpr (ExprLambda { binders, body }) = (wrapInParentheses $ punctuateH left (text " ") $ map printBinder binders) <<+>> text "=" <<+>> printExpr body
+printExpr (ExprLambda { binders, body }) = (wrapInParentheses $ punctuateH left emptyColumn $ map printBinder binders) <<+>> text "=" <<+>> printExpr body
 printExpr (ExprIf { cond, true_, false_ }) = text "if" <<+>> printExpr cond // text "then" <<+>> printExpr true_ // text "else" <<+>> printExpr false_
 printExpr (ExprCase { head, branches }) =
   let
     printBranch :: { binders :: NonEmpty Array Binder, body :: Guarded } -> Box
     printBranch { binders, body } = nullBox
-  in text "case" <<+>> (punctuateH left (text " ") $ map printExpr head) <<+>> text "of" // (vcat left $ map printBranch branches)
+  in text "case" <<+>> (punctuateH left emptyColumn $ map printExpr head) <<+>> text "of" // (vcat left $ map printBranch branches)
 printExpr (ExprLet { bindings, body }) =
   let
-    printedBindings =
-      bindings
-      <#> printLetBinding
-      # vcat left
+    shouldBeNoNewlineBetweenLetBindings :: LetBinding -> LetBinding -> Boolean
+    shouldBeNoNewlineBetweenLetBindings (LetBindingSignature { ident }) (LetBindingName { name }) = ident == name
+    shouldBeNoNewlineBetweenLetBindings (LetBindingName { name }) (LetBindingName { name: nameNext }) = name == nameNext
+    shouldBeNoNewlineBetweenLetBindings _ _ = false
+
+    printedBindings = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenLetBindings printLetBinding bindings
 
     printedBody = printExpr body
 
