@@ -24,7 +24,7 @@ actualModule = Module
       , binders: [BinderNumber (Left 1)]
       , guarded: Unconditional
           { expr: nonQualifiedExprIdent "psModuleFile" `ExprApp` ExprNumber (Left 1)
-          , bindings:
+          , whereBindings:
             [ LetBindingSignature
               { ident: Ident "psModuleFile"
               , type_: nonQualifiedNameTypeConstructor "ModulePath" ====>> nonQualifiedNameTypeConstructor "Int"
@@ -36,7 +36,7 @@ actualModule = Module
                 ]
               , guarded: Unconditional
                 { expr: ExprNumber (Left 1)
-                , bindings: []
+                , whereBindings: []
                 }
               }
             , LetBindingName
@@ -46,7 +46,7 @@ actualModule = Module
                 ]
               , guarded: Unconditional
                 { expr: ExprNumber (Left 2)
-                , bindings: []
+                , whereBindings: []
                 }
               }
             , LetBindingSignature
@@ -60,7 +60,7 @@ actualModule = Module
                 ]
               , guarded: Unconditional
                 { expr: ExprNumber (Left 1)
-                , bindings: []
+                , whereBindings: []
                 }
               }
             , LetBindingName
@@ -70,7 +70,7 @@ actualModule = Module
                 ]
               , guarded: Unconditional
                 { expr: ExprNumber (Left 2)
-                , bindings: []
+                , whereBindings: []
                 }
               }
             ]

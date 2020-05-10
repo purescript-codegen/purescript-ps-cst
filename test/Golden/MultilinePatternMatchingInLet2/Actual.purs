@@ -38,7 +38,7 @@ actualModule = Module
                   ]
                 , guarded: Unconditional
                   { expr: ExprNumber (Left 1)
-                  , bindings: []
+                  , whereBindings: []
                   }
                 }
               , LetBindingName
@@ -48,7 +48,7 @@ actualModule = Module
                   ]
                 , guarded: Unconditional
                   { expr: ExprNumber (Left 2)
-                  , bindings: []
+                  , whereBindings: []
                   }
                 }
               , LetBindingSignature
@@ -62,7 +62,7 @@ actualModule = Module
                   ]
                 , guarded: Unconditional
                   { expr: ExprNumber (Left 1)
-                  , bindings: []
+                  , whereBindings: []
                   }
                 }
               , LetBindingName
@@ -72,13 +72,13 @@ actualModule = Module
                   ]
                 , guarded: Unconditional
                   { expr: ExprNumber (Left 2)
-                  , bindings: []
+                  , whereBindings: []
                   }
                 }
               ]
             , body: nonQualifiedExprIdent "psModuleFile" `ExprApp` ExprNumber (Left 1)
             }
-          , bindings: []
+          , whereBindings: []
           }
       }
     ]

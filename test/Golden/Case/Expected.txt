@@ -1,0 +1,15 @@
+module Foo where
+
+x =
+  case foo of
+    Just a -> true
+    Nothing -> false
+    "FOO" -> true
+    1.1 ->
+      case
+        if true
+          then true
+          else false
+      of
+        Just a -> true
+    a@(Just a) -> false

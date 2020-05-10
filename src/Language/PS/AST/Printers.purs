@@ -169,13 +169,13 @@ printValueBindingFields { name, binders, guarded } =
     case guarded of
       (Unconditional where_) ->
         case where_ of
-          { expr, bindings: [] } ->
+          { expr, whereBindings: [] } ->
             if exprShouldBeOnNextLine expr
               then printedHead // (twoSpaceIdentation <<>> printExpr expr)
               else printedHead <<+>> printExpr expr
-          { expr, bindings } ->
+          { expr, whereBindings } ->
             let
-              printedBindings = twoSpaceIdentation <<>> (text "where" // (printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenLetBindings printLetBinding bindings))
+              printedBindings = twoSpaceIdentation <<>> (text "where" // (printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenLetBindings printLetBinding whereBindings))
             in
               if exprShouldBeOnNextLine expr
                 then printedHead // (twoSpaceIdentation <<>> printExpr expr) // printedBindings
@@ -221,7 +221,7 @@ printExpr (ExprTyped expr type_) = printExpr expr <<+>> text "::" <<+>> printTyp
 printExpr (ExprInfix exprLeft operator exprRight) = printExpr exprLeft <<+>> printExpr operator <<+>> printExpr exprRight
 printExpr (ExprOp exprLeft operator exprRight) = printExpr exprLeft <<+>> printQualifiedName_AnyOpNameType operator <<+>> printExpr exprRight
 printExpr (ExprOpName opName) = printQualifiedName_AnyOpNameType opName
-printExpr (ExprNegate expr) = text "-" <<>> printExpr expr -- ????
+printExpr (ExprNegate expr) = text "-" <<>> printExpr expr
 printExpr (ExprRecordAccessor { recExpr, recPath }) = printExpr recExpr <<>> text "." <<>> (punctuateH left (text ".") $ map textFromNewtype recPath)
 printExpr (ExprRecordUpdate expr recordUpdates) = wrapInParentheses $ printExpr expr <<+>> printRecordUpdates recordUpdates
 printExpr (ExprApp exprLeft exprRight) =
@@ -269,7 +269,7 @@ printExpr (ExprAdo { statements, result }) = nullBox
 printLetBinding :: LetBinding -> Box
 printLetBinding (LetBindingSignature { ident, type_ }) = textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
 printLetBinding (LetBindingName valueBindingFields) = printValueBindingFields valueBindingFields
-printLetBinding (LetBindingPattern { binder, where_: { expr, bindings } }) = printBinder binder /+/ printExpr expr // text "where" // (vsep 1 left $ map printLetBinding bindings)
+printLetBinding (LetBindingPattern { binder, where_: { expr, whereBindings } }) = printBinder binder /+/ printExpr expr // text "where" // (vsep 1 left $ map printLetBinding whereBindings)
 
 printRecordUpdates :: NonEmpty Array RecordUpdate -> Box
 printRecordUpdates recordUpdates = text "{" <<+>> (punctuateH left (text ",") $ map printRecordUpdate recordUpdates) <<+>> text "}"

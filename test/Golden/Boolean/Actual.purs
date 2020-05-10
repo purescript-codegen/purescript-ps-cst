@@ -19,7 +19,7 @@ actualModule = Module
       , binders: []
       , guarded: Unconditional
           { expr: ExprBoolean true
-          , bindings: []
+          , whereBindings: []
           }
       }
     , DeclValue
@@ -27,7 +27,7 @@ actualModule = Module
       , binders: []
       , guarded: Unconditional
           { expr: ExprBoolean true
-          , bindings: []
+          , whereBindings: []
           }
       }
     , DeclSignature
@@ -39,7 +39,7 @@ actualModule = Module
       , binders: []
       , guarded: Unconditional
           { expr: ExprBoolean true
-          , bindings: []
+          , whereBindings: []
           }
       }
     , DeclSignature
@@ -51,7 +51,7 @@ actualModule = Module
       , binders: [(BinderBoolean false)]
       , guarded: Unconditional
           { expr: ExprBoolean true
-          , bindings: []
+          , whereBindings: []
           }
       }
     ]

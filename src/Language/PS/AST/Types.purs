@@ -337,7 +337,7 @@ derive instance ordGuarded :: Ord Guarded
 
 type Where =
   { expr :: Expr
-  , bindings :: Array LetBinding
+  , whereBindings :: Array LetBinding
   }
 
 data LetBinding
@@ -417,8 +417,8 @@ type CaseOf =
   }
 
 type LetIn =
-  { bindings :: NonEmpty Array LetBinding
-  , body :: Expr
+  { body :: Expr
+  , bindings :: NonEmpty Array LetBinding
   }
 
 type DoBlock = NonEmpty Array DoStatement

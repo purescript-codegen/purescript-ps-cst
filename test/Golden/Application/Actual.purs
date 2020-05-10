@@ -34,7 +34,7 @@ actualModule = Module
             nonQualifiedExprIdent "g"
             `ExprApp`
             nonQualifiedExprIdent "h"
-          , bindings: []
+          , whereBindings: []
           }
       }
     , DeclValue
@@ -61,7 +61,7 @@ actualModule = Module
             )
             `ExprApp`
             nonQualifiedExprIdent "h"
-          , bindings: []
+          , whereBindings: []
           }
       }
     ]
