@@ -44,6 +44,9 @@ mkRowLabel = (\(label /\ type_) -> { label: Label label, type_ })
 nonQualifiedNameTypeConstructor :: String → Type
 nonQualifiedNameTypeConstructor s = TypeConstructor $ nonQualifiedName (ProperName s)
 
+nonQualifiedNameExprConstructor :: String → Expr
+nonQualifiedNameExprConstructor s = ExprConstructor $ nonQualifiedName (ProperName s)
+
 booleanType :: Type
 booleanType = nonQualifiedNameTypeConstructor "Boolean"
 

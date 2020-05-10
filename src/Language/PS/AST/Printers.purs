@@ -165,25 +165,29 @@ printValueBindingFields { name, binders, guarded } =
         else (punctuateH left emptyColumn $ map printBinder binders) <<>> emptyColumn
 
     printedHead = textFromNewtype name <<+>> printedBinders <<>> text "="
-   in
-    case guarded of
-      (Unconditional where_) ->
-        case where_ of
-          { expr, whereBindings: [] } ->
+   in printGuarded printedHead guarded
+
+printGuarded printedHead guarded =
+  case guarded of
+    (Unconditional where_) ->
+      case where_ of
+        { expr, whereBindings: [] } ->
+          if exprShouldBeOnNextLine expr
+            then printedHead // (twoSpaceIdentation <<>> printExpr expr)
+            else printedHead <<+>> printExpr expr
+        { expr, whereBindings } ->
+          let
+            printedBindings = twoSpaceIdentation <<>> (text "where" // (printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenLetBindings printLetBinding whereBindings))
+          in
             if exprShouldBeOnNextLine expr
-              then printedHead // (twoSpaceIdentation <<>> printExpr expr)
-              else printedHead <<+>> printExpr expr
-          { expr, whereBindings } ->
-            let
-              printedBindings = twoSpaceIdentation <<>> (text "where" // (printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenLetBindings printLetBinding whereBindings))
-            in
-              if exprShouldBeOnNextLine expr
-                then printedHead // (twoSpaceIdentation <<>> printExpr expr) // printedBindings
-                else printedHead <<+>> printExpr expr // printedBindings
-      (Guarded _) -> nullBox
+              then printedHead // (twoSpaceIdentation <<>> printExpr expr) // printedBindings
+              else printedHead <<+>> printExpr expr // printedBindings
+    (Guarded _) -> nullBox
 
 exprShouldBeOnNextLine :: Expr -> Boolean
 exprShouldBeOnNextLine (ExprLet _) = true
+exprShouldBeOnNextLine (ExprCase _) = true
+exprShouldBeOnNextLine (ExprIf _) = true
 exprShouldBeOnNextLine _ = false
 
 printBinder :: Binder -> Box
@@ -248,8 +252,11 @@ printExpr (ExprIf { cond, true_, false_ }) = text "if" <<+>> printExpr cond // t
 printExpr (ExprCase { head, branches }) =
   let
     printBranch :: { binders :: NonEmpty Array Binder, body :: Guarded } -> Box
-    printBranch { binders, body } = nullBox
-  in text "case" <<+>> (punctuateH left emptyColumn $ map printExpr head) <<+>> text "of" // (vcat left $ map printBranch branches)
+    printBranch { binders, body } =
+      let
+        printedHead = (punctuateH left (text ", ") $ map printBinder binders) <<+>> text "->"
+       in printGuarded printedHead body
+  in text "case" <<+>> (punctuateH left emptyColumn $ map printExpr head) <<+>> text "of" // (twoSpaceIdentation <<>> (vcat left $ map printBranch branches))
 printExpr (ExprLet { bindings, body }) =
   let
     printedBindings = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenLetBindings printLetBinding bindings
