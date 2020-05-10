@@ -162,13 +162,31 @@ printDeclaration (DeclClass { head: { name, vars, super, fundeps }, methods }) =
            )
 printDeclaration (DeclInstanceChain _) = nullBox
 printDeclaration (DeclSignature { ident, type_ }) = textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
-printDeclaration (DeclValue { name, binders, guarded }) =
+printDeclaration (DeclValue valueBindingFields) = printValueBindingFields valueBindingFields
+
+printValueBindingFields :: ValueBindingFields -> Box
+printValueBindingFields { name, binders, guarded } =
   let
     printedBinders =
       if null binders
         then nullBox
         else (punctuateH left (text " ") $ map printBinder binders) <<>> emptyColumn
-   in textFromNewtype name <<+>> printedBinders <<>> text "=" <<+>> printGuarded guarded
+
+    printedHead = textFromNewtype name <<+>> printedBinders <<>> text "="
+   in
+    if guardedShouldBeOnNextLine guarded
+      then printedHead // (twoSpaceIdentation <<>> printGuarded guarded)
+      else printedHead <<+>> printGuarded guarded
+
+guardedShouldBeOnNextLine :: Guarded -> Boolean
+guardedShouldBeOnNextLine (Unconditional ({ expr: ExprLet _, bindings })) = true
+guardedShouldBeOnNextLine (Unconditional ({ expr, bindings })) = false
+guardedShouldBeOnNextLine (Guarded guardedExprs) = false
+
+printGuarded :: Guarded -> Box
+printGuarded (Unconditional ({ expr, bindings: [] })) = printExpr expr
+printGuarded (Unconditional ({ expr, bindings })) = printExpr expr // text "where" // (vsep 1 left $ map printLetBinding bindings)
+printGuarded (Guarded guardedExprs) = nullBox
 
 printBinder :: Binder -> Box
 printBinder BinderWildcard = text "_"
@@ -189,11 +207,6 @@ printBinder (BinderOp binderLeft operator binderRight) = printBinder binderLeft 
 printRecordLabeled :: ∀ a . (a -> Box) -> RecordLabeled a -> Box
 printRecordLabeled _ (RecordPun ident) = textFromNewtype ident
 printRecordLabeled print (RecordField label a) = textFromNewtype label <<>> text ":" <<>> print a
-
-printGuarded :: Guarded -> Box
-printGuarded (Unconditional ({ expr, bindings: [] })) = printExpr expr
-printGuarded (Unconditional ({ expr, bindings })) = printExpr expr // text "where" // (vsep 1 left $ map printLetBinding bindings)
-printGuarded (Guarded guardedExprs) = nullBox
 
 printExpr :: Expr -> Box
 printExpr (ExprHole hole) = text "?" <<>> textFromNewtype hole
@@ -239,13 +252,28 @@ printExpr (ExprCase { head, branches }) =
     printBranch :: { binders :: NonEmpty Array Binder, body :: Guarded } -> Box
     printBranch { binders, body } = nullBox
   in text "case" <<+>> (punctuateH left (text " ") $ map printExpr head) <<+>> text "of" // (vcat left $ map printBranch branches)
-printExpr (ExprLet { bindings, body }) = nullBox
+printExpr (ExprLet { bindings, body }) =
+  let
+    printedBindings =
+      bindings
+      <#> printLetBinding
+      # vcat left
+
+    printedBody = printExpr body
+
+    printed =
+      text "let"
+      // (twoSpaceIdentation <<>> printedBindings)
+      // text "in"
+      // (twoSpaceIdentation <<>> printedBody)
+   in
+    printed
 printExpr (ExprDo doStatements) = nullBox
 printExpr (ExprAdo { statements, result }) = nullBox
 
 printLetBinding :: LetBinding -> Box
-printLetBinding (LetBindingSignature { ident, type_ }) = nullBox
-printLetBinding (LetBindingName { name, binders, guarded }) = nullBox
+printLetBinding (LetBindingSignature { ident, type_ }) = textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
+printLetBinding (LetBindingName valueBindingFields) = printValueBindingFields valueBindingFields
 printLetBinding (LetBindingPattern { binder, where_ }) = nullBox
 
 printRecordUpdates :: NonEmpty Array RecordUpdate -> Box

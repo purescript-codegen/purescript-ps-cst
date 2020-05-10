@@ -1,5 +1,0 @@
-module MultilinePatternMatchingInArgument where
-
-psModuleFile :: ModulePath -> Int
-psModuleFile Path = 1
-psModuleFile Name = 2
