@@ -17,22 +17,23 @@ import Test.Spec as Test.Spec
 import Test.Spec.Reporter as Test.Spec.Reporter
 import Test.Spec.Runner as Test.Spec.Runner
 
-import Test.Golden.DeclType.Actual                         as Test.Golden.DeclType.Actual
-import Test.Golden.DeclNewtype.Actual                      as Test.Golden.DeclNewtype.Actual
-import Test.Golden.DeclData.Actual                         as Test.Golden.DeclData.Actual
-import Test.Golden.DeclDataComplex.Actual                  as Test.Golden.DeclDataComplex.Actual
-import Test.Golden.DeclFixity.Actual                       as Test.Golden.DeclFixity.Actual
-import Test.Golden.DeclForeign.Actual                      as Test.Golden.DeclForeign.Actual
-import Test.Golden.DeclDerive.Actual                       as Test.Golden.DeclDerive.Actual
-import Test.Golden.DeclClass.Actual                        as Test.Golden.DeclClass.Actual
-import Test.Golden.Imports.Actual                          as Test.Golden.Imports.Actual
-import Test.Golden.Exports.Actual                          as Test.Golden.Exports.Actual
-import Test.Golden.Boolean.Actual                          as Test.Golden.Boolean.Actual
-import Test.Golden.Application.Actual                      as Test.Golden.Application.Actual
-import Test.Golden.MultilinePatternMatchingInLet.Actual    as Test.Golden.MultilinePatternMatchingInLet.Actual
-import Test.Golden.MultilinePatternMatchingInLet2.Actual   as Test.Golden.MultilinePatternMatchingInLet2.Actual
-import Test.Golden.MultilinePatternMatchingInWhere.Actual  as Test.Golden.MultilinePatternMatchingInWhere.Actual
-import Test.Golden.MultilinePatternMatchingInWhere2.Actual as Test.Golden.MultilinePatternMatchingInWhere2.Actual
+import Test.Golden.DeclType.Actual                               as Test.Golden.DeclType.Actual
+import Test.Golden.DeclNewtype.Actual                            as Test.Golden.DeclNewtype.Actual
+import Test.Golden.DeclData.Actual                               as Test.Golden.DeclData.Actual
+import Test.Golden.DeclDataComplex.Actual                        as Test.Golden.DeclDataComplex.Actual
+import Test.Golden.DeclFixity.Actual                             as Test.Golden.DeclFixity.Actual
+import Test.Golden.DeclForeign.Actual                            as Test.Golden.DeclForeign.Actual
+import Test.Golden.DeclDerive.Actual                             as Test.Golden.DeclDerive.Actual
+import Test.Golden.DeclClass.Actual                              as Test.Golden.DeclClass.Actual
+import Test.Golden.Imports.Actual                                as Test.Golden.Imports.Actual
+import Test.Golden.Exports.Actual                                as Test.Golden.Exports.Actual
+import Test.Golden.Boolean.Actual                                as Test.Golden.Boolean.Actual
+import Test.Golden.Application.Actual                            as Test.Golden.Application.Actual
+import Test.Golden.MultilinePatternMatchingInLet.Actual          as Test.Golden.MultilinePatternMatchingInLet.Actual
+import Test.Golden.MultilinePatternMatchingInLet2.Actual         as Test.Golden.MultilinePatternMatchingInLet2.Actual
+import Test.Golden.MultilinePatternMatchingInWhere.Actual        as Test.Golden.MultilinePatternMatchingInWhere.Actual
+import Test.Golden.MultilinePatternMatchingInWhere2.Actual       as Test.Golden.MultilinePatternMatchingInWhere2.Actual
+import Test.Golden.MultilinePatternMatchingInWhereAndLet2.Actual as Test.Golden.MultilinePatternMatchingInWhereAndLet2.Actual
 
 type GoldenTest =
   { name :: String
@@ -63,6 +64,7 @@ goldenTests =
   , { name: "MultilinePatternMatchingInLet2", actualModule: Test.Golden.MultilinePatternMatchingInLet2.Actual.actualModule }
   , { name: "MultilinePatternMatchingInWhere", actualModule: Test.Golden.MultilinePatternMatchingInWhere.Actual.actualModule }
   , { name: "MultilinePatternMatchingInWhere2", actualModule: Test.Golden.MultilinePatternMatchingInWhere2.Actual.actualModule }
+  , { name: "MultilinePatternMatchingInWhereAndLet2", actualModule: Test.Golden.MultilinePatternMatchingInWhereAndLet2.Actual.actualModule }
   ]
 
 addText :: GoldenTest -> Aff GoldenTestWithExpected
