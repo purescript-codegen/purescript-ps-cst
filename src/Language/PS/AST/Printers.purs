@@ -17,7 +17,7 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
 import Data.NonEmpty (NonEmpty(..))
 import Data.Variant (contract)
-import Text.PrettyPrint.Boxes (Box, left, nullBox, punctuateH, text, vcat, vsep, (//), (<<+>>), (<<>>))
+import Text.PrettyPrint.Boxes (Box, left, nullBox, punctuateH, text, vcat, vsep, (/+/), (//), (<<+>>), (<<>>))
 import Text.PrettyPrint.Boxes (render) as Text.PrettyPrint.Boxes
 
 printModuleToString :: Module -> String
@@ -161,19 +161,25 @@ printValueBindingFields { name, binders, guarded } =
 
     printedHead = textFromNewtype name <<+>> printedBinders <<>> text "="
    in
-    if guardedShouldBeOnNextLine guarded
-      then printedHead // (twoSpaceIdentation <<>> printGuarded guarded)
-      else printedHead <<+>> printGuarded guarded
+    case guarded of
+      (Unconditional where_) ->
+        case where_ of
+          { expr, bindings: [] } ->
+            if exprShouldBeOnNextLine expr
+              then printedHead // (twoSpaceIdentation <<>> printExpr expr)
+              else printedHead <<+>> printExpr expr
+          { expr, bindings } ->
+            let
+              printedBindings = twoSpaceIdentation <<>> (text "where" // (vcat left $ map printLetBinding bindings))
+            in
+              if exprShouldBeOnNextLine expr
+                then printedHead // (twoSpaceIdentation <<>> printExpr expr) // printedBindings
+                else printedHead <<+>> printExpr expr // printedBindings
+      (Guarded _) -> nullBox
 
-guardedShouldBeOnNextLine :: Guarded -> Boolean
-guardedShouldBeOnNextLine (Unconditional ({ expr: ExprLet _, bindings })) = true
-guardedShouldBeOnNextLine (Unconditional ({ expr, bindings })) = false
-guardedShouldBeOnNextLine (Guarded guardedExprs) = false
-
-printGuarded :: Guarded -> Box
-printGuarded (Unconditional ({ expr, bindings: [] })) = printExpr expr
-printGuarded (Unconditional ({ expr, bindings })) = printExpr expr // text "where" // (vsep 1 left $ map printLetBinding bindings)
-printGuarded (Guarded guardedExprs) = nullBox
+exprShouldBeOnNextLine :: Expr -> Boolean
+exprShouldBeOnNextLine (ExprLet _) = true
+exprShouldBeOnNextLine _ = false
 
 printBinder :: Binder -> Box
 printBinder BinderWildcard = text "_"
@@ -263,7 +269,7 @@ printExpr (ExprAdo { statements, result }) = nullBox
 printLetBinding :: LetBinding -> Box
 printLetBinding (LetBindingSignature { ident, type_ }) = textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
 printLetBinding (LetBindingName valueBindingFields) = printValueBindingFields valueBindingFields
-printLetBinding (LetBindingPattern { binder, where_ }) = nullBox
+printLetBinding (LetBindingPattern { binder, where_: { expr, bindings } }) = printBinder binder /+/ printExpr expr // text "where" // (vsep 1 left $ map printLetBinding bindings)
 
 printRecordUpdates :: NonEmpty Array RecordUpdate -> Box
 printRecordUpdates recordUpdates = text "{" <<+>> (punctuateH left (text ",") $ map printRecordUpdate recordUpdates) <<+>> text "}"
