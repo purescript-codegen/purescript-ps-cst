@@ -208,7 +208,7 @@ data Kind
   = KindName (QualifiedName (ProperName ProperNameType_KindName))
   | KindArr Kind Kind
   | KindRow Kind
-  | KindParens Kind
+  -- | KindParens Kind -- no need
 derive instance genericKind :: Generic Kind _
 derive instance eqKind :: Eq Kind
 derive instance ordKind :: Ord Kind
@@ -266,12 +266,12 @@ derive instance eqRow :: Eq Row
 derive instance ordRow :: Ord Row
 -- instance showRow :: Show Row where show = genericShow
 
-data Constraint
+newtype Constraint
   = Constraint
     { className :: QualifiedName (ProperName ProperNameType_ClassName)
     , args :: Array Type
     }
-  | ConstraintParens Constraint
+  -- | ConstraintParens Constraint
 derive instance genericConstraint :: Generic Constraint _
 derive instance eqConstraint :: Eq Constraint
 derive instance ordConstraint :: Ord Constraint
@@ -320,7 +320,7 @@ data Binder
   | BinderNumber (Either Int Number)
   | BinderArray (Array Binder)
   | BinderRecord (Array (RecordLabeled Binder))
-  | BinderParens Binder
+  -- | BinderParens Binder -- no need
   | BinderTyped Binder Type
   | BinderOp Binder (QualifiedName (OpName OpNameType_ValueOpName)) Binder
 derive instance genericBinder :: Generic Binder _
@@ -369,7 +369,7 @@ data Expr
   | ExprNumber (Either Int Number)
   | ExprArray (Array Expr)
   | ExprRecord (Array (RecordLabeled Expr))
-  | ExprParens Expr
+  -- | ExprParens Expr -- no need
   | ExprTyped Expr Type
   | ExprInfix Expr Expr Expr -- e.g. `1 : 2 : Nil`
   | ExprOp Expr (QualifiedName (OpName OpNameType_ValueOpName)) Expr

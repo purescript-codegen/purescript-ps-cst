@@ -6,3 +6,6 @@ TODO:
 - what algebra allows to peek at next child? prettify doWrap
 - use https://pursuit.purescript.org/packages/purescript-optparse/3.0.0/docs/Text.PrettyPrint.Leijen instead of Boxes
 
+Objectives:
+- types are copy of purescript-cst
+- paranthesis are added automatically, there is no need to use ExprParens or TypeParens (they are added by purescript parser on parsing phase)

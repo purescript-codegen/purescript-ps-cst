@@ -193,7 +193,6 @@ printBinder (BinderNumber (Left int)) = text $ show int
 printBinder (BinderNumber (Right number)) = text $ show number
 printBinder (BinderArray binders) = text "[" <<>> (punctuateH left (text ", ") $ map printBinder binders) <<>> text "]"
 printBinder (BinderRecord arrayRecordLabeledBinder) = punctuateH left (text ", ") $ map (printRecordLabeled printBinder) arrayRecordLabeledBinder
-printBinder (BinderParens binder) = wrapInParentheses $ printBinder binder
 printBinder (BinderTyped binder type_) = printBinder binder <<+>> text "::" <<+>> printType (initialPrintType_Context PrintType_OneLine) type_
 printBinder (BinderOp binderLeft operator binderRight) = printBinder binderLeft <<+>> printQualifiedName_AnyOpNameType operator <<+>> printBinder binderRight
 
@@ -202,40 +201,73 @@ printRecordLabeled _ (RecordPun ident) = textFromNewtype ident
 printRecordLabeled print (RecordField label a) = textFromNewtype label <<>> text ":" <<>> print a
 
 printGuarded :: Guarded -> Box
-printGuarded (Unconditional ({ expr, bindings: [] })) = printExpr expr
-printGuarded (Unconditional ({ expr, bindings })) = printExpr expr // text "where" // (vsep 1 left $ map printLetBinding bindings)
+printGuarded (Unconditional ({ expr, bindings: [] })) = (printExpr PrintExpr_IsInsideOfApp_No) expr
+printGuarded (Unconditional ({ expr, bindings })) = (printExpr PrintExpr_IsInsideOfApp_No) expr // text "where" // (vsep 1 left $ map printLetBinding bindings)
 printGuarded (Guarded guardedExprs) = nullBox
 
-printExpr :: Expr -> Box
-printExpr (ExprHole hole) = text "?" <<>> textFromNewtype hole
-printExpr (ExprIdent qualifiedIdent) = printQualifiedName_Ident qualifiedIdent
-printExpr (ExprConstructor qualifiedPropName) = printQualifiedName_AnyProperNameType qualifiedPropName
-printExpr (ExprBoolean boolean) = text $ show boolean
-printExpr (ExprChar char) = text $ show char
-printExpr (ExprString string) = text $ show string
-printExpr (ExprNumber (Left int)) = text $ show int
-printExpr (ExprNumber (Right num)) = text $ show num
-printExpr (ExprArray array) = text "[" <<>> (punctuateH left (text ", ") $ map printExpr array) <<>> text "]"
-printExpr (ExprRecord arrayRecordLabeled) = punctuateH left (text ", ") $ map (printRecordLabeled printExpr) arrayRecordLabeled
-printExpr (ExprParens expr) = wrapInParentheses $ printExpr expr
-printExpr (ExprTyped expr type_) = printExpr expr <<+>> text "::" <<+>> printType (initialPrintType_Context PrintType_OneLine) type_
-printExpr (ExprInfix exprLeft operator exprRight) = printExpr exprLeft <<+>> printExpr operator <<+>> printExpr exprRight
-printExpr (ExprOp exprLeft operator exprRight) = printExpr exprLeft <<+>> printQualifiedName_AnyOpNameType operator <<+>> printExpr exprRight
-printExpr (ExprOpName opName) = printQualifiedName_AnyOpNameType opName
-printExpr (ExprNegate expr) = text "-" <<>> printExpr expr -- ????
-printExpr (ExprRecordAccessor { recExpr, recPath }) = printExpr recExpr <<>> text "." <<>> (punctuateH left (text ".") $ map textFromNewtype recPath)
-printExpr (ExprRecordUpdate expr recordUpdates) = wrapInParentheses $ printExpr expr <<+>> printRecordUpdates recordUpdates
-printExpr (ExprApp exprLeft exprRight) = printExpr exprLeft <<+>> printExpr exprRight
-printExpr (ExprLambda { binders, body }) = (wrapInParentheses $ punctuateH left (text " ") $ map printBinder binders) <<+>> text "=" <<+>> printExpr body
-printExpr (ExprIf { cond, true_, false_ }) = text "if" <<+>> printExpr cond // text "then" <<+>> printExpr true_ // text "else" <<+>> printExpr false_
-printExpr (ExprCase { head, branches }) =
+-- Am I inside of ExprApp that didn't yet break? (i.e. ExprApp inside ExprApp)
+-- used to prevent multiple wraps
+data PrintExpr_IsInsideOfApp
+  = PrintExpr_IsInsideOfApp_Yes
+  | PrintExpr_IsInsideOfApp_No
+
+printExpr :: PrintExpr_IsInsideOfApp -> Expr -> Box
+printExpr _ (ExprHole hole) = text "?" <<>> textFromNewtype hole
+printExpr _ (ExprIdent qualifiedIdent) = printQualifiedName_Ident qualifiedIdent
+printExpr _ (ExprConstructor qualifiedPropName) = printQualifiedName_AnyProperNameType qualifiedPropName
+printExpr _ (ExprBoolean boolean) = text $ show boolean
+printExpr _ (ExprChar char) = text $ show char
+printExpr _ (ExprString string) = text $ show string
+printExpr _ (ExprNumber (Left int)) = text $ show int
+printExpr _ (ExprNumber (Right num)) = text $ show num
+printExpr _ (ExprArray array) = text "[" <<>> (punctuateH left (text ", ") $ map (printExpr PrintExpr_IsInsideOfApp_No) array) <<>> text "]"
+printExpr _ (ExprRecord arrayRecordLabeled) = punctuateH left (text ", ") $ map (printRecordLabeled (printExpr PrintExpr_IsInsideOfApp_No)) arrayRecordLabeled
+printExpr _ (ExprTyped expr type_) = (printExpr PrintExpr_IsInsideOfApp_No) expr <<+>> text "::" <<+>> printType (initialPrintType_Context PrintType_OneLine) type_
+printExpr _ (ExprInfix exprLeft operator exprRight) = (printExpr PrintExpr_IsInsideOfApp_No) exprLeft <<+>> (printExpr PrintExpr_IsInsideOfApp_No) operator <<+>> (printExpr PrintExpr_IsInsideOfApp_No) exprRight
+printExpr _ (ExprOp exprLeft operator exprRight) = (printExpr PrintExpr_IsInsideOfApp_No) exprLeft <<+>> printQualifiedName_AnyOpNameType operator <<+>> (printExpr PrintExpr_IsInsideOfApp_No) exprRight
+printExpr _ (ExprOpName opName) = printQualifiedName_AnyOpNameType opName
+printExpr _ (ExprNegate expr) = text "-" <<>> (printExpr PrintExpr_IsInsideOfApp_No) expr -- ????
+printExpr _ (ExprRecordAccessor { recExpr, recPath }) = (printExpr PrintExpr_IsInsideOfApp_No) recExpr <<>> text "." <<>> (punctuateH left (text ".") $ map textFromNewtype recPath)
+printExpr _ (ExprRecordUpdate expr recordUpdates) = wrapInParentheses $ (printExpr PrintExpr_IsInsideOfApp_No) expr <<+>> printRecordUpdates recordUpdates
+printExpr printExpr_IsInsideOfApp (ExprApp exprLeft exprRight) =
+  let
+    doWrap :: Expr -> Boolean
+    doWrap (ExprApp _ _) =
+      case printExpr_IsInsideOfApp of
+        PrintExpr_IsInsideOfApp_No -> false
+        PrintExpr_IsInsideOfApp_Yes -> true
+    doWrap (ExprOp _ _ _) = true
+    doWrap _ = false
+
+    newLeftContext :: PrintExpr_IsInsideOfApp
+    newLeftContext = PrintExpr_IsInsideOfApp_No
+
+    newRightContext :: PrintExpr_IsInsideOfApp
+    newRightContext = PrintExpr_IsInsideOfApp_Yes
+
+    maybeWrap :: Box -> Box
+    maybeWrap = if doWrap exprLeft then wrapInParentheses else identity
+
+    printedLeft :: Box
+    printedLeft = printExpr newLeftContext exprLeft
+
+    printedRight :: Box
+    printedRight = printExpr newRightContext exprRight
+
+    printed :: Box
+    printed = maybeWrap $ printedLeft <<+>> printedRight
+  in
+    printed
+printExpr _ (ExprLambda { binders, body }) = (wrapInParentheses $ punctuateH left (text " ") $ map printBinder binders) <<+>> text "=" <<+>> (printExpr PrintExpr_IsInsideOfApp_No) body
+printExpr _ (ExprIf { cond, true_, false_ }) = text "if" <<+>> (printExpr PrintExpr_IsInsideOfApp_No) cond // text "then" <<+>> (printExpr PrintExpr_IsInsideOfApp_No) true_ // text "else" <<+>> (printExpr PrintExpr_IsInsideOfApp_No) false_
+printExpr _ (ExprCase { head, branches }) =
   let
     printBranch :: { binders :: NonEmpty Array Binder, body :: Guarded } -> Box
     printBranch { binders, body } = nullBox
-  in text "case" <<+>> (punctuateH left (text " ") $ map printExpr head) <<+>> text "of" // (vcat left $ map printBranch branches)
-printExpr (ExprLet { bindings, body }) = nullBox
-printExpr (ExprDo doStatements) = nullBox
-printExpr (ExprAdo { statements, result }) = nullBox
+  in text "case" <<+>> (punctuateH left (text " ") $ map (printExpr PrintExpr_IsInsideOfApp_No) head) <<+>> text "of" // (vcat left $ map printBranch branches)
+printExpr _ (ExprLet { bindings, body }) = nullBox
+printExpr _ (ExprDo doStatements) = nullBox
+printExpr _ (ExprAdo { statements, result }) = nullBox
 
 printLetBinding :: LetBinding -> Box
 printLetBinding (LetBindingSignature { ident, type_ }) = nullBox
@@ -246,5 +278,5 @@ printRecordUpdates :: NonEmpty Array RecordUpdate -> Box
 printRecordUpdates recordUpdates = text "{" <<+>> (punctuateH left (text ",") $ map printRecordUpdate recordUpdates) <<+>> text "}"
 
 printRecordUpdate :: RecordUpdate -> Box
-printRecordUpdate (RecordUpdateLeaf label expr) = textFromNewtype label <<+>> text "=" <<+>> printExpr expr
+printRecordUpdate (RecordUpdateLeaf label expr) = textFromNewtype label <<+>> text "=" <<+>> (printExpr PrintExpr_IsInsideOfApp_No) expr
 printRecordUpdate (RecordUpdateBranch label recordUpdates) = textFromNewtype label <<+>> text "=" <<+>> printRecordUpdates recordUpdates

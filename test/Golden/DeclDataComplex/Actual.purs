@@ -79,6 +79,8 @@ actualModule = Module
                     `TypeApp`
                     (TypeConstructor $ nonQualifiedName (ProperName "D"))
                     `TypeApp`
+                    (TypeConstructor $ nonQualifiedName (ProperName "E"))
+                    `TypeApp`
                     (TypeConstructor $ nonQualifiedName (ProperName "F"))
                     `TypeApp`
                     (TypeConstructor $ nonQualifiedName (ProperName "G"))
@@ -98,6 +100,8 @@ actualModule = Module
                     `TypeApp`
                     (TypeConstructor $ nonQualifiedName (ProperName "D"))
                     `TypeApp`
+                    (TypeConstructor $ nonQualifiedName (ProperName "E"))
+                    `TypeApp`
                     (
                       (TypeConstructor $ nonQualifiedName (ProperName "F"))
                       `TypeApp`
@@ -105,6 +109,29 @@ actualModule = Module
                       `TypeApp`
                       (TypeConstructor $ nonQualifiedName (ProperName "H"))
                     )
+                  )
+                  , "asd" /\ (
+                    (TypeConstructor $ nonQualifiedName (ProperName "Complex"))
+                    `TypeApp`
+                    (TypeConstructor $ nonQualifiedName (ProperName "A"))
+                    `TypeApp`
+                    (TypeConstructor $ nonQualifiedName (ProperName "B"))
+                    `TypeApp`
+                    (
+                      (TypeConstructor $ nonQualifiedName (ProperName "C"))
+                      `TypeApp`
+                      (
+                        (TypeConstructor $ nonQualifiedName (ProperName "D"))
+                        `TypeApp`
+                        (TypeConstructor $ nonQualifiedName (ProperName "E"))
+                      )
+                      `TypeApp`
+                      (TypeConstructor $ nonQualifiedName (ProperName "F"))
+                      `TypeApp`
+                      (TypeConstructor $ nonQualifiedName (ProperName "G"))
+                    )
+                    `TypeApp`
+                    (TypeConstructor $ nonQualifiedName (ProperName "H"))
                   )
                   ])
                 ]

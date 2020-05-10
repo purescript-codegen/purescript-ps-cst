@@ -76,7 +76,6 @@ printKind (KindArr kindLeft_ kindRight_) =
   in
     printedLeft' <<+>> text "->" <<+>> printKind kindRight_
 printKind (KindRow kind_) = text "#" <<+>> printKind kind_
-printKind (KindParens kind_) = wrapInParentheses $ printKind kind_
 
 printQualifiedName_Ident :: ∀ proxy. QualifiedName Ident -> Box
 printQualifiedName_Ident (QualifiedName qualifiedName) = case qualifiedName.qualModule of
@@ -189,7 +188,6 @@ printConstraint (Constraint { className, args }) =
     if null args
       then printQualifiedName_AnyProperNameType className
       else printQualifiedName_AnyProperNameType className <<+>> (punctuateH left (emptyColumn) $ map (printType context) args)
-printConstraint (ConstraintParens constraint) = wrapInParentheses $ printConstraint constraint
 
 printRowLikeType :: PrintType_Context -> Box -> Box -> Row -> Box
 printRowLikeType _ leftWrapper rightWrapper row@(Row { rowLabels: [], rowTail: Nothing }) = leftWrapper <<>> rightWrapper
