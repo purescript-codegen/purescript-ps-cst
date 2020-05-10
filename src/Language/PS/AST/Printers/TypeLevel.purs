@@ -10,9 +10,11 @@ import Data.Array (snoc) as Array
 import Data.Either (Either(..))
 import Data.Foldable (null)
 import Data.FunctorWithIndex (mapWithIndex)
+import Data.Identity (Identity(..))
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
 import Data.Variant (contract)
+import Debug.Trace (traceM)
 import Text.PrettyPrint.Boxes (Box, left, nullBox, punctuateH, text, vcat, vsep, (//), (<<+>>), (<<>>))
 
 printFundep :: ClassFundep -> Box
@@ -124,36 +126,43 @@ printType printType_Context (TypeRow row) = printRowLikeType (resetPrintType_IsI
 printType printType_Context (TypeRecord row) = printRowLikeType (resetPrintType_IsInsideOfApp printType_Context) (text "{") (text "}") row
 printType printType_Context (TypeApp leftType rightType) =
   let
-    doWrap :: Type -> Boolean
-    doWrap (TypeApp _ _) =
-      case printType_Context.printType_IsInsideOfApp of
-        PrintType_IsInsideOfApp_No -> false
-        PrintType_IsInsideOfApp_Yes -> true
-    doWrap (TypeForall _ _) = true
-    doWrap (TypeArr _ _) = true
-    doWrap (TypeOp _ _ _) = true
-    doWrap (TypeConstrained _ _) = true
-    doWrap _ = false
+    doWrapRight =
+      case rightType of
+        (TypeApp _ _) -> true
+        (TypeForall _ _) -> true
+        (TypeArr _ _) -> true
+        (TypeOp _ _ _) -> true
+        (TypeConstrained _ _) -> true
+        _ -> false
+
+    maybeWrap :: Boolean -> Box -> Box
+    maybeWrap b = if b then wrapInParentheses else identity
 
     newLeftContext :: PrintType_Context
-    newLeftContext = { printType_Style: PrintType_OneLine, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
+    newLeftContext = { printType_Style: PrintType_OneLine, printType_IsInsideOfApp: PrintType_IsInsideOfApp_Yes }
 
     newRightContext :: PrintType_Context
-    newRightContext = { printType_Style: PrintType_OneLine, printType_IsInsideOfApp: PrintType_IsInsideOfApp_Yes }
+    newRightContext = { printType_Style: PrintType_OneLine, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
+  in unwrap do
+     traceM "--------------------------------"
+     traceM "printType_Context.printType_IsInsideOfApp"
+     traceM (printType_Context.printType_IsInsideOfApp)
+     traceM "doWrapRight"
+     traceM (doWrapRight)
+     traceM "leftType"
+     traceM leftType
+     traceM "rightType"
+     traceM rightType
+     let
+         printedLeft :: Box
+         printedLeft = printType newLeftContext leftType
 
-    maybeWrap :: Box -> Box
-    maybeWrap = if doWrap leftType then wrapInParentheses else identity
+         printedRight :: Box
+         printedRight = printType newRightContext rightType
 
-    printedLeft :: Box
-    printedLeft = printType newLeftContext leftType
-
-    printedRight :: Box
-    printedRight = printType newRightContext rightType
-
-    printed :: Box
-    printed = maybeWrap $ printedLeft <<+>> printedRight
-  in
-    printed
+         printed :: Box
+         printed = printedLeft <<+>> (maybeWrap doWrapRight printedRight)
+     Identity printed
 printType printType_Context (TypeForall typeVarBindings type_) =
   let
     newContext = resetPrintType_IsInsideOfApp printType_Context

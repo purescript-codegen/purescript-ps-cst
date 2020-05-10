@@ -42,6 +42,7 @@ data Foo
                       , baz :: Complex A B C D E F G H
                       , qux :: Complex (A B C) D E (F G H)
                       , asd :: Complex A B (C (D E) F G) H
+                      , qwe :: Complex (A B C) D E (F (G H))
                       }
         )
         (forall a (b :: # Type) . Array a)
