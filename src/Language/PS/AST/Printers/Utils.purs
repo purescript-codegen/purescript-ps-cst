@@ -68,3 +68,6 @@ foldWithPrev _   default' Nil   = default'
 foldWithPrev fun default' list = foo default' Nothing list
     where foo acc _    Nil     = acc
           foo acc prev (x : xs) = foo (fun acc prev x) (Just x) xs
+
+maybeWrapInParentheses :: Boolean -> Box -> Box
+maybeWrapInParentheses b = if b then wrapInParentheses else identity

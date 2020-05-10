@@ -36,12 +36,10 @@ printDataCtor (DataCtor dataCtor) =
     doWrap (TypeConstrained _ _) = true
     doWrap _ = false
 
-    maybeWrap x = if doWrap x then wrapInParentheses else identity
-
-    context = { printType_Style: PrintType_Multiline, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
+    context = PrintType_Multiline
 
     printType' :: Type -> Box
-    printType' type_ = maybeWrap type_ $ printType context $ type_
+    printType' type_ = maybeWrapInParentheses (doWrap type_) $ printType context $ type_
 
     name = textFromNewtype dataCtor.dataCtorName
 
@@ -99,115 +97,89 @@ data PrintType_Style
   = PrintType_Multiline
   | PrintType_OneLine
 
--- Am I inside of TypeApp that didn't yet break? (i.e. TypeApp inside TypeApp)
--- used to prevent multiple wraps
--- e.g. prevents `(((Complex A) B) C)`
--- expected `Complex A B C`
-data PrintType_IsInsideOfApp
-  = PrintType_IsInsideOfApp_Yes
-  | PrintType_IsInsideOfApp_No
-
-type PrintType_Context
-  = { printType_Style :: PrintType_Style, printType_IsInsideOfApp :: PrintType_IsInsideOfApp }
-
-initialPrintType_Context :: PrintType_Style -> PrintType_Context
-initialPrintType_Context printType_Style = { printType_Style: printType_Style, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
-
-resetPrintType_IsInsideOfApp :: PrintType_Context -> PrintType_Context
-resetPrintType_IsInsideOfApp printType_Context = printType_Context { printType_IsInsideOfApp = PrintType_IsInsideOfApp_No }
-
-printType :: PrintType_Context -> Type -> Box
-printType printType_Context (TypeVar ident) = textFromNewtype ident
-printType printType_Context (TypeConstructor qualifiedTypeName) = printQualifiedName_AnyProperNameType qualifiedTypeName
-printType printType_Context TypeWildcard = text "_"
-printType printType_Context (TypeHole ident) = text "?" <<>> textFromNewtype ident
-printType printType_Context (TypeString string) = wrapInDoubleQuotes $ text string
-printType printType_Context (TypeRow row) = printRowLikeType (resetPrintType_IsInsideOfApp printType_Context) (text "(") (text ")") row
-printType printType_Context (TypeRecord row) = printRowLikeType (resetPrintType_IsInsideOfApp printType_Context) (text "{") (text "}") row
-printType printType_Context (TypeApp leftType rightType) =
+printType :: PrintType_Style -> Type -> Box
+printType printType_Style (TypeVar ident) = textFromNewtype ident
+printType printType_Style (TypeConstructor qualifiedTypeName) = printQualifiedName_AnyProperNameType qualifiedTypeName
+printType printType_Style TypeWildcard = text "_"
+printType printType_Style (TypeHole ident) = text "?" <<>> textFromNewtype ident
+printType printType_Style (TypeString string) = wrapInDoubleQuotes $ text string
+printType printType_Style (TypeRow row) = printRowLikeType printType_Style (text "(") (text ")") row
+printType printType_Style (TypeRecord row) = printRowLikeType printType_Style (text "{") (text "}") row
+printType printType_Style (TypeApp leftType rightType) =
   let
     doWrapRight =
       case rightType of
-        (TypeApp _ _) -> true
+        (TypeApp _ _) -> true -- always wrap right side application
         (TypeForall _ _) -> true
         (TypeArr _ _) -> true
         (TypeOp _ _ _) -> true
         (TypeConstrained _ _) -> true
         _ -> false
-
-    maybeWrap :: Boolean -> Box -> Box
-    maybeWrap b = if b then wrapInParentheses else identity
-
-    newLeftContext :: PrintType_Context
-    newLeftContext = { printType_Style: PrintType_OneLine, printType_IsInsideOfApp: PrintType_IsInsideOfApp_Yes }
-
-    newRightContext :: PrintType_Context
-    newRightContext = { printType_Style: PrintType_OneLine, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
   in unwrap do
-     traceM "--------------------------------"
-     traceM "printType_Context.printType_IsInsideOfApp"
-     traceM (printType_Context.printType_IsInsideOfApp)
-     traceM "doWrapRight"
-     traceM (doWrapRight)
-     traceM "leftType"
-     traceM leftType
-     traceM "rightType"
-     traceM rightType
+     -- traceM "--------------------------------"
+     -- traceM "printType_Style.printType_IsInsideOfApp"
+     -- traceM (printType_Style.printType_IsInsideOfApp)
+     -- traceM "doWrapRight"
+     -- traceM (doWrapRight)
+     -- traceM "leftType"
+     -- traceM leftType
+     -- traceM "rightType"
+     -- traceM rightType
      let
          printedLeft :: Box
-         printedLeft = printType newLeftContext leftType
+         printedLeft = printType PrintType_OneLine leftType
 
          printedRight :: Box
-         printedRight = printType newRightContext rightType
+         printedRight = printType PrintType_OneLine rightType
 
          printed :: Box
-         printed = printedLeft <<+>> (maybeWrap doWrapRight printedRight)
+         printed = printedLeft <<+>> maybeWrapInParentheses doWrapRight printedRight
      Identity printed
-printType printType_Context (TypeForall typeVarBindings type_) =
+printType printType_Style (TypeForall typeVarBindings type_) =
   let
-    newContext = resetPrintType_IsInsideOfApp printType_Context
+    newContext = printType_Style
   in
     text "forall" <<+>> punctuateH left (emptyColumn) (map printTypeVarBinding typeVarBindings) <<+>> text "." <<+>> printType newContext type_
-printType printType_Context (TypeArr leftType rightType) =
+printType printType_Style (TypeArr leftType rightType) =
   let
-    newContext = resetPrintType_IsInsideOfApp printType_Context
+    newContext = printType_Style
   in
     printType newContext leftType <<+>> text "->" <<+>> printType newContext rightType
-printType printType_Context (TypeKinded type_ kind_) =
+printType printType_Style (TypeKinded type_ kind_) =
   let
-    newContext = resetPrintType_IsInsideOfApp printType_Context
+    newContext = printType_Style
   in
     wrapInParentheses $ printType newContext type_ <<+>> text "::" <<+>> printKind kind_
-printType printType_Context (TypeOp leftType qualifiedOpName rightType) =
+printType printType_Style (TypeOp leftType qualifiedOpName rightType) =
   let
-    newContext = resetPrintType_IsInsideOfApp printType_Context
+    newContext = printType_Style
   in
     printType newContext leftType <<+>> printQualifiedName_AnyOpNameType qualifiedOpName <<+>> printType newContext rightType
-printType printType_Context (TypeConstrained constraint type_) =
+printType printType_Style (TypeConstrained constraint type_) =
   let
-    newContext = { printType_Style: PrintType_OneLine, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
+    newContext = PrintType_OneLine
   in
     printConstraint constraint <<+>> text "=>" <<+>> printType newContext type_
 
 printConstraint :: Constraint -> Box
 printConstraint (Constraint { className, args }) =
   let
-    context = { printType_Style: PrintType_OneLine, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
+    context = PrintType_OneLine
   in
     if null args
       then printQualifiedName_AnyProperNameType className
       else printQualifiedName_AnyProperNameType className <<+>> (punctuateH left (emptyColumn) $ map (printType context) args)
 
-printRowLikeType :: PrintType_Context -> Box -> Box -> Row -> Box
+printRowLikeType :: PrintType_Style -> Box -> Box -> Row -> Box
 printRowLikeType _ leftWrapper rightWrapper row@(Row { rowLabels: [], rowTail: Nothing }) = leftWrapper <<>> rightWrapper
 printRowLikeType _ leftWrapper rightWrapper row@(Row { rowLabels: [], rowTail: Just rowTail }) =
   let
-    context = { printType_Style: PrintType_OneLine, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
+    context = PrintType_OneLine
   in
     leftWrapper <<+>> text "|" <<+>> printType context rowTail <<+>> rightWrapper
-printRowLikeType ({ printType_Style: PrintType_OneLine }) leftWrapper rightWrapper row@(Row { rowLabels, rowTail }) =
+printRowLikeType PrintType_OneLine leftWrapper rightWrapper row@(Row { rowLabels, rowTail }) =
   let
-    context = { printType_Style: PrintType_OneLine, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
+    context = PrintType_OneLine
 
     printedTail = rowTail <#> printType context <#> (text "|" <<+>> _)
 
@@ -219,9 +191,9 @@ printRowLikeType ({ printType_Style: PrintType_OneLine }) leftWrapper rightWrapp
         # (\x -> leftWrapper <<+>> x <<+>> rightWrapper)
   in
     printedRowLabels
-printRowLikeType ({ printType_Style: PrintType_Multiline }) leftWrapper rightWrapper row@(Row { rowLabels, rowTail }) =
+printRowLikeType PrintType_Multiline leftWrapper rightWrapper row@(Row { rowLabels, rowTail }) =
   let
-    context = { printType_Style: PrintType_Multiline, printType_IsInsideOfApp: PrintType_IsInsideOfApp_No }
+    context = PrintType_Multiline
 
     printedTail = rowTail <#> printType context <#> (text "|" <<+>> _)
 
@@ -235,5 +207,5 @@ printRowLikeType ({ printType_Style: PrintType_Multiline }) leftWrapper rightWra
   in
     printedRowLabels
 
-printRowLabel :: PrintType_Context -> { label :: Label, type_ :: Type } -> Box
-printRowLabel printType_Context { label, type_ } = textFromNewtype label <<+>> text "::" <<+>> printType printType_Context type_
+printRowLabel :: PrintType_Style -> { label :: Label, type_ :: Type } -> Box
+printRowLabel printType_Style { label, type_ } = textFromNewtype label <<+>> text "::" <<+>> printType printType_Style type_
