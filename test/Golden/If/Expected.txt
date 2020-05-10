@@ -1,0 +1,15 @@
+module Foo where
+
+x =
+  if
+    if true
+      then true
+      else false
+    then
+      if true
+        then true
+        else false
+    else
+      if true
+        then true
+        else false

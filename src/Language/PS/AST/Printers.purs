@@ -249,9 +249,25 @@ printExpr (ExprApp exprLeft exprRight) =
     printed
 printExpr (ExprLambda { binders, body }) = (wrapInParentheses $ punctuateH left emptyColumn $ map printBinder binders) <<+>> text "=" <<+>> printExpr body
 printExpr (ExprIf { cond, true_, false_ }) =
-  (text "if" <<+>> printExpr cond)
-  // (twoSpaceIdentation <<>> text "then" <<+>> printExpr true_)
-  // (twoSpaceIdentation <<>> text "else" <<+>> printExpr false_)
+  let
+    printedCond =
+      if exprShouldBeOnNextLine cond
+        then text "if" // (twoSpaceIdentation <<>> printExpr cond)
+        else text "if" <<+>> printExpr cond
+
+    printedTrue =
+      if exprShouldBeOnNextLine true_
+        then twoSpaceIdentation <<>> (text "then" // (twoSpaceIdentation <<>> printExpr true_))
+        else twoSpaceIdentation <<>> text "then" <<+>> printExpr true_
+
+    printedFalse =
+      if exprShouldBeOnNextLine false_
+        then twoSpaceIdentation <<>> (text "else" // (twoSpaceIdentation <<>> printExpr false_))
+        else twoSpaceIdentation <<>> text "else" <<+>> printExpr false_
+   in
+    printedCond
+    // printedTrue
+    // printedFalse
 printExpr (ExprCase { head, branches }) =
   let
     printBranch :: { binders :: NonEmpty Array Binder, body :: Guarded } -> Box
