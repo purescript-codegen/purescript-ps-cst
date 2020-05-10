@@ -76,7 +76,16 @@ actualModule = Module
                       :|
                       []
                     }
-                  , whereBindings: []
+                  , whereBindings:
+                    [ LetBindingName
+                        { name: Ident "foo"
+                        , binders: []
+                        , guarded: Unconditional
+                          { expr: ExprNumber (Left 1)
+                          , whereBindings: []
+                          }
+                        }
+                    ]
                   }
                 }
               , { binders: BinderNamed
@@ -86,20 +95,14 @@ actualModule = Module
                     , args: [BinderVar (Ident "a")]
                     }
                   } :| []
-                , body: Unconditional { expr: ExprBoolean false, whereBindings: [] }
-                }
-              ]
-            }
-          , whereBindings:
-            [ LetBindingName
-                { name: Ident "foo"
-                , binders: []
-                , guarded: Unconditional
-                  { expr: ExprNumber (Left 1)
+                , body: Unconditional
+                  { expr: ExprBoolean false
                   , whereBindings: []
                   }
                 }
-            ]
+              ]
+            }
+          , whereBindings: []
           }
       }
     ]

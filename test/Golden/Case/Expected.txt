@@ -22,5 +22,5 @@ x =
       of
         Just a -> true
       where
-        foo = 1
+      foo = 1
     a@(Just a) -> false
