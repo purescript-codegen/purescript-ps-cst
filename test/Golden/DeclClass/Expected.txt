@@ -11,6 +11,12 @@ class MultiFunDep a b c d e | b c -> d, d -> b c
 
 class Bar m <= Foo m
 
+-- | line1
+-- | line2
 class (Bar m, Baz m) <= Foo m
 
+{-
+  line1
+  line2
+-}
 class Bar m c <= Foo m c | m -> c

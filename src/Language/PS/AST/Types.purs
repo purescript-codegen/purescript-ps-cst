@@ -37,7 +37,7 @@ data Comments
   -- |   line2
   -- | -}
   -- | ```
-  | BlockComment (Array String)
+  | BlockComments (Array String)
 
 derive instance genericComments :: Generic Comments _
 derive instance eqComments :: Eq Comments

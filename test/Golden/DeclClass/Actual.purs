@@ -74,7 +74,7 @@ actualModule = Module
       , methods: []
       }
     , DeclClass
-      { comments: Nothing
+      { comments: Just $ OneLineComments ["line1", "line2"]
       , head:
         { name: ProperName "Foo"
         , vars: [typeVarName "m"]
@@ -87,7 +87,7 @@ actualModule = Module
       , methods: []
       }
     , DeclClass
-      { comments: Nothing
+      { comments: Just $ BlockComments ["line1", "line2"]
       , head:
         { name: ProperName "Foo"
         , vars: [typeVarName "m", typeVarName "c"]

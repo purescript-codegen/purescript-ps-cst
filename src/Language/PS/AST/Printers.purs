@@ -51,9 +51,16 @@ printDeclarations :: Array Declaration -> Box
 printDeclarations [] = nullBox
 printDeclarations declarations = emptyRow // printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenDeclarations printDeclaration declarations
 
+printComments :: Comments -> Box
+printComments (OneLineComments strings) = strings <#> (\x -> text "-- |" <<+>> text x) # vcat left
+printComments (BlockComments strings) = text "{-" // (strings <#> (\x -> twoSpaceIdentation <<>> text x) # vcat left) // text "-}"
+
+printMaybeComments :: Maybe Comments -> Box
+printMaybeComments = maybe nullBox printComments
+
 printDeclaration :: Declaration -> Box
-printDeclaration (DeclData { head, constructors: [] }) = printDataHead (text "data") head
-printDeclaration (DeclData { head, constructors }) =
+printDeclaration (DeclData { comments, head, constructors: [] }) = printMaybeComments comments // printDataHead (text "data") head
+printDeclaration (DeclData { comments, head, constructors }) =
   let
     printedCtors =
       constructors
@@ -62,8 +69,8 @@ printDeclaration (DeclData { head, constructors }) =
         <#> (twoSpaceIdentation <<>> _)
         # vcat left
   in
-    printDataHead (text "data") head // printedCtors
-printDeclaration (DeclType { head, type_ }) =
+    printMaybeComments comments // printDataHead (text "data") head // printedCtors
+printDeclaration (DeclType { comments, head, type_ }) =
   let
     doWrap :: Type -> Boolean
     doWrap (TypeForall _ _) = true
@@ -75,8 +82,8 @@ printDeclaration (DeclType { head, type_ }) =
     printType' :: Type -> Box
     printType' type_ = maybeWrapInParentheses (doWrap type_) $ printType PrintType_Multiline $ type_
   in
-    printDataHead (text "type") head <<+>> text "=" <<+>> printType' type_
-printDeclaration (DeclNewtype { head, name, type_ }) =
+    printMaybeComments comments // (printDataHead (text "type") head <<+>> text "=" <<+>> printType' type_)
+printDeclaration (DeclNewtype { comments, head, name, type_ }) =
   let
     doWrap :: Type -> Boolean
     doWrap (TypeApp _ _) = true
@@ -89,22 +96,24 @@ printDeclaration (DeclNewtype { head, name, type_ }) =
     printType' :: Type -> Box
     printType' type_ = maybeWrapInParentheses (doWrap type_) $ printType PrintType_Multiline $ type_
   in
-    printDataHead (text "newtype") head <<+>> text "=" <<+>> (textFromNewtype name <<+>> printType' type_)
-printDeclaration (DeclFixity { fixityFields: { keyword, precedence, operator } }) =
+    printMaybeComments comments // (printDataHead (text "newtype") head <<+>> text "=" <<+>> (textFromNewtype name <<+>> printType' type_))
+printDeclaration (DeclFixity { comments, fixityFields: { keyword, precedence, operator } }) =
   let
     printFixityOp :: FixityOp -> Box
     printFixityOp (FixityValue (Left qualifiedIdent) opName) = printQualifiedName_Ident qualifiedIdent <<+>> text "as" <<+>> textFromNewtype opName
     printFixityOp (FixityValue (Right qualifiedPropName) opName) = printQualifiedName_AnyProperNameType qualifiedPropName <<+>> text "as" <<+>> textFromNewtype opName
     printFixityOp (FixityType qualifiedPropName opName) = text "type" <<+>> printQualifiedName_AnyProperNameType qualifiedPropName <<+>> text "as" <<+>> textFromNewtype opName
   in
-    printFixity keyword <<+>> text (show precedence) <<+>> printFixityOp operator
-printDeclaration (DeclForeign { foreign_ }) =
-  text "foreign" <<+>> text "import" <<+>>
-    case foreign_ of
-      (ForeignValue { ident, type_ }) -> textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
-      (ForeignData { name, kind_ }) -> text "data" <<+>> textFromNewtype name <<+>> text "::" <<+>> printKind kind_
-      (ForeignKind { name }) -> text "kind" <<+>> textFromNewtype name
-printDeclaration (DeclDerive { deriveType, head: { instName, instConstraints, instClass, instTypes } }) =
+    printMaybeComments comments // (printFixity keyword <<+>> text (show precedence) <<+>> printFixityOp operator)
+printDeclaration (DeclForeign { comments, foreign_ }) =
+  printMaybeComments comments //
+    ( text "foreign" <<+>> text "import" <<+>>
+        case foreign_ of
+           (ForeignValue { ident, type_ }) -> textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
+           (ForeignData { name, kind_ }) -> text "data" <<+>> textFromNewtype name <<+>> text "::" <<+>> printKind kind_
+           (ForeignKind { name }) -> text "kind" <<+>> textFromNewtype name
+    )
+printDeclaration (DeclDerive { comments, deriveType, head: { instName, instConstraints, instClass, instTypes } }) =
   let
     doWrap :: Type -> Boolean
     doWrap (TypeApp _ _) = true
@@ -127,8 +136,8 @@ printDeclaration (DeclDerive { deriveType, head: { instName, instConstraints, in
 
     types' = punctuateH left (emptyColumn) $ map (\type_ -> maybeWrapInParentheses (doWrap type_) $ printType PrintType_OneLine type_) instTypes
    in
-   text "derive" <<>> deriveType' <<+>> text "instance" <<+>> textFromNewtype instName <<+>> text "::" <<>> constraints' <<+>> printQualifiedName_AnyProperNameType instClass <<+>> types'
-printDeclaration (DeclClass { head: { name, vars, super, fundeps }, methods }) =
+   printMaybeComments comments // (text "derive" <<>> deriveType' <<+>> text "instance" <<+>> textFromNewtype instName <<+>> text "::" <<>> constraints' <<+>> printQualifiedName_AnyProperNameType instClass <<+>> types')
+printDeclaration (DeclClass { comments, head: { name, vars, super, fundeps }, methods }) =
   let
     printedVars =
       if null vars
@@ -149,15 +158,17 @@ printDeclaration (DeclClass { head: { name, vars, super, fundeps }, methods }) =
     printedHeader = text "class" <<+>> printedSuper <<>> textFromNewtype name <<>> printedVars <<>> printedFundeps
    in
     if null methods
-      then printedHeader
+      then printMaybeComments comments // printedHeader
       else
-        printedHeader <<+>> (text "where")
-        // (methods
-            <#> (\({ ident, type_ }) -> textFromNewtype ident <<+>> text "::" <<+>> (printType PrintType_Multiline type_))
-            <#> (twoSpaceIdentation <<>> _)
-            # vcat left
-           )
-printDeclaration (DeclInstanceChain { instances }) =
+        printMaybeComments comments //
+          ( printedHeader <<+>> (text "where")
+            // (methods
+                <#> (\({ ident, type_ }) -> textFromNewtype ident <<+>> text "::" <<+>> (printType PrintType_Multiline type_))
+                <#> (twoSpaceIdentation <<>> _)
+                # vcat left
+                )
+          )
+printDeclaration (DeclInstanceChain { comments, instances }) =
   let
     printInstance :: Instance -> Box
     printInstance { head: { instName, instConstraints, instClass, instTypes }, body } =
@@ -180,16 +191,17 @@ printDeclaration (DeclInstanceChain { instances }) =
         firstRow = head <<>> tail
        in
         if null body
-          then firstRow
+          then printMaybeComments comments // firstRow
           else
           let
             printedBody = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenInstanceBindings printInstanceBinding body
            in
-            firstRow <<+>> text "where"
+            printMaybeComments comments
+            // (firstRow <<+>> text "where")
             // (twoSpaceIdentation <<>> printedBody)
    in instances <#> printInstance # punctuateV left (nullBox /+/ text "else" /+/ nullBox)
-printDeclaration (DeclSignature { ident, type_ }) = textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
-printDeclaration (DeclValue { valueBindingFields }) = printValueBindingFields valueBindingFields
+printDeclaration (DeclSignature { comments, ident, type_ }) = printMaybeComments comments // (textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_)
+printDeclaration (DeclValue { comments, valueBindingFields }) = printMaybeComments comments // (printValueBindingFields valueBindingFields)
 
 printInstanceBinding :: InstanceBinding -> Box
 printInstanceBinding (InstanceBindingSignature { ident, type_ }) = textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
