@@ -36,6 +36,7 @@ import Test.Golden.MultilinePatternMatchingInWhere2.Actual       as Test.Golden.
 import Test.Golden.MultilinePatternMatchingInWhereAndLet2.Actual as Test.Golden.MultilinePatternMatchingInWhereAndLet2.Actual
 import Test.Golden.Case.Actual                                   as Test.Golden.Case.Actual
 import Test.Golden.If.Actual                                     as Test.Golden.If.Actual
+import Test.Golden.Instance.Actual                               as Test.Golden.Instance.Actual
 
 type GoldenTest =
   { name :: String
@@ -69,6 +70,7 @@ goldenTests =
   , { name: "MultilinePatternMatchingInWhereAndLet2", actualModule: Test.Golden.MultilinePatternMatchingInWhereAndLet2.Actual.actualModule }
   , { name: "Case", actualModule: Test.Golden.Case.Actual.actualModule }
   , { name: "If", actualModule: Test.Golden.If.Actual.actualModule }
+  , { name: "Instance", actualModule: Test.Golden.Instance.Actual.actualModule }
   ]
 
 addText :: GoldenTest -> Aff GoldenTestWithExpected

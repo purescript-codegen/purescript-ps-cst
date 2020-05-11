@@ -42,6 +42,11 @@ shouldBeNoNewlineBetweenLetBindings (LetBindingSignature { ident }) (LetBindingN
 shouldBeNoNewlineBetweenLetBindings (LetBindingName { name }) (LetBindingName { name: nameNext }) = name == nameNext
 shouldBeNoNewlineBetweenLetBindings _ _ = false
 
+shouldBeNoNewlineBetweenInstanceBindings :: InstanceBinding -> InstanceBinding -> Boolean
+shouldBeNoNewlineBetweenInstanceBindings (InstanceBindingSignature { ident }) (InstanceBindingName { name }) = ident == name
+shouldBeNoNewlineBetweenInstanceBindings (InstanceBindingName { name }) (InstanceBindingName { name: nameNext }) = name == nameNext
+shouldBeNoNewlineBetweenInstanceBindings _ _ = false
+
 printDeclarations :: Array Declaration -> Box
 printDeclarations [] = nullBox
 printDeclarations declarations = emptyRow // printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenDeclarations printDeclaration declarations
@@ -152,9 +157,43 @@ printDeclaration (DeclClass { head: { name, vars, super, fundeps }, methods }) =
             <#> (twoSpaceIdentation <<>> _)
             # vcat left
            )
-printDeclaration (DeclInstanceChain _) = nullBox
+printDeclaration (DeclInstanceChain instances) =
+  let
+    printInstance :: Instance -> Box
+    printInstance { head: { instName, instConstraints, instClass, instTypes }, body } =
+      let
+        head = text "instance" <<+>> textFromNewtype instName <<+>> text "::" <<+>> printQualifiedName_AnyProperNameType instClass
+
+        doWrap :: Type -> Boolean
+        doWrap (TypeApp _ _) = true
+        doWrap (TypeForall _ _) = true
+        doWrap (TypeArr _ _) = true
+        doWrap (TypeOp _ _ _) = true
+        doWrap (TypeConstrained _ _) = true
+        doWrap _ = false
+
+        tail =
+          if null instTypes
+            then nullBox
+            else emptyColumn <<>> (instTypes <#> (\type_ -> maybeWrapInParentheses (doWrap type_) (printType PrintType_OneLine type_)) # punctuateH left emptyColumn)
+
+        firstRow = head <<>> tail
+       in
+        if null body
+          then firstRow
+          else
+          let
+            printedBody = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenInstanceBindings printInstanceBinding body
+           in
+            firstRow <<+>> text "where"
+            // (twoSpaceIdentation <<>> printedBody)
+   in instances <#> printInstance # punctuateV left (text "else")
 printDeclaration (DeclSignature { ident, type_ }) = textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
 printDeclaration (DeclValue valueBindingFields) = printValueBindingFields valueBindingFields
+
+printInstanceBinding :: InstanceBinding -> Box
+printInstanceBinding (InstanceBindingSignature { ident, type_ }) = textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
+printInstanceBinding (InstanceBindingName valueBindingFields) = printValueBindingFields valueBindingFields
 
 printValueBindingFields :: ValueBindingFields -> Box
 printValueBindingFields { name, binders, guarded } =
