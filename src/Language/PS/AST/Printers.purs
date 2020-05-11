@@ -233,7 +233,7 @@ printGuarded printedHead guarded =
             if exprShouldBeOnNextLine expr
               then printedHead // (twoSpaceIdentation <<>> printExpr expr) // printedBindings
               else printedHead <<+>> printExpr expr // printedBindings
-    (Guarded _) -> nullBox
+    (Guarded _) -> nullBox -- TODO
 
 exprShouldBeOnNextLine :: Expr -> Boolean
 exprShouldBeOnNextLine (ExprLet _) = true
@@ -363,8 +363,8 @@ printExpr (ExprLet { bindings, body }) =
       // (twoSpaceIdentation <<>> printedBody)
    in
     printed
-printExpr (ExprDo doStatements) = nullBox
-printExpr (ExprAdo { statements, result }) = nullBox
+printExpr (ExprDo doStatements) = nullBox -- TODO
+printExpr (ExprAdo { statements, result }) = nullBox -- TODO
 
 printLetBinding :: LetBinding -> Box
 printLetBinding (LetBindingSignature { ident, type_ }) = textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
