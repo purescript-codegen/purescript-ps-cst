@@ -17,7 +17,7 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
 import Data.NonEmpty (NonEmpty(..))
 import Data.Variant (contract)
-import Text.PrettyPrint.Boxes (Box, left, nullBox, punctuateH, punctuateV, text, vcat, vsep, (/+/), (//), (<<+>>), (<<>>))
+import Text.PrettyPrint.Boxes (Box, emptyBox, left, nullBox, punctuateH, punctuateV, text, vcat, vsep, (/+/), (//), (<<+>>), (<<>>))
 import Text.PrettyPrint.Boxes (render) as Text.PrettyPrint.Boxes
 
 printModuleToString :: Module -> String
@@ -187,7 +187,7 @@ printDeclaration (DeclInstanceChain instances) =
            in
             firstRow <<+>> text "where"
             // (twoSpaceIdentation <<>> printedBody)
-   in instances <#> printInstance # punctuateV left (text "else")
+   in instances <#> printInstance # punctuateV left (nullBox /+/ text "else" /+/ nullBox)
 printDeclaration (DeclSignature { ident, type_ }) = textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
 printDeclaration (DeclValue valueBindingFields) = printValueBindingFields valueBindingFields
 

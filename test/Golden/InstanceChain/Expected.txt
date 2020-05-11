@@ -1,8 +1,17 @@
 module InstanceChain where
 
-class Foo a
+instance fooBaz :: Foo Baz
 
-data Bar
+else
 
-instance fooBar :: Foo Bar
-else instance fooA :: Foo a
+instance fooBaz :: Foo Baz where
+  foo :: Number
+  foo = append foo bar
+
+  bar :: Number
+  bar = append (foo bar)
+
+else
+
+instance fooBaz :: Foo (Cor Int) (Gar Int Boolean) where
+  foo = append
