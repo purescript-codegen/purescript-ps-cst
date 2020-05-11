@@ -384,7 +384,7 @@ type PatternGuard =
 
 data Expr
   = ExprHole Ident
-  -- | ExprSection -- ???
+  | ExprSection
   | ExprIdent (QualifiedName Ident)
   | ExprConstructor (QualifiedName (ProperName ProperNameType_ConstructorName))
   | ExprBoolean Boolean

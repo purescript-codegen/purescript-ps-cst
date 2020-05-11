@@ -263,6 +263,7 @@ printRecordLabeled print (RecordField label a) = textFromNewtype label <<>> text
 
 printExpr :: Expr -> Box
 printExpr (ExprHole hole) = text "?" <<>> textFromNewtype hole
+printExpr ExprSection = text "_"
 printExpr (ExprIdent qualifiedIdent) = printQualifiedName_Ident qualifiedIdent
 printExpr (ExprConstructor qualifiedPropName) = printQualifiedName_AnyProperNameType qualifiedPropName
 printExpr (ExprBoolean boolean) = text $ show boolean
