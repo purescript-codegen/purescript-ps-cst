@@ -66,7 +66,7 @@ typeVarName :: String → TypeVarBinding
 typeVarName = TypeVarName <<< Ident -- for left side of forall
 
 typeVar :: String → Type
-typeVar = TypeVar <<< Ident -- for right side of forall
+typeVar = TypeVar <<< Ident -- for right side of forall and constructor arguments
 
 kindNamed :: String → Kind
 kindNamed s = KindName (nonQualifiedName $ ProperName s)

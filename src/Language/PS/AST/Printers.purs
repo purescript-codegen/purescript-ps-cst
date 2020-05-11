@@ -33,8 +33,8 @@ printModule (Module { moduleName, imports, exports, declarations }) =
       ]
 
 shouldBeNoNewlineBetweenDeclarations :: Declaration -> Declaration -> Boolean
-shouldBeNoNewlineBetweenDeclarations (DeclSignature { ident }) (DeclValue { name }) = ident == name
-shouldBeNoNewlineBetweenDeclarations (DeclValue { name }) (DeclValue { name: nameNext }) = name == nameNext
+shouldBeNoNewlineBetweenDeclarations (DeclSignature { ident }) (DeclValue { valueBindingFields: { name } }) = ident == name
+shouldBeNoNewlineBetweenDeclarations (DeclValue { valueBindingFields: { name } }) (DeclValue { valueBindingFields: { name: nameNext } }) = name == nameNext
 shouldBeNoNewlineBetweenDeclarations _ _ = false
 
 shouldBeNoNewlineBetweenLetBindings :: LetBinding -> LetBinding -> Boolean
@@ -90,7 +90,7 @@ printDeclaration (DeclNewtype { head, name, type_ }) =
     printType' type_ = maybeWrapInParentheses (doWrap type_) $ printType PrintType_Multiline $ type_
   in
     printDataHead (text "newtype") head <<+>> text "=" <<+>> (textFromNewtype name <<+>> printType' type_)
-printDeclaration (DeclFixity { keyword, precedence, operator }) =
+printDeclaration (DeclFixity { fixityFields: { keyword, precedence, operator } }) =
   let
     printFixityOp :: FixityOp -> Box
     printFixityOp (FixityValue (Left qualifiedIdent) opName) = printQualifiedName_Ident qualifiedIdent <<+>> text "as" <<+>> textFromNewtype opName
@@ -98,13 +98,13 @@ printDeclaration (DeclFixity { keyword, precedence, operator }) =
     printFixityOp (FixityType qualifiedPropName opName) = text "type" <<+>> printQualifiedName_AnyProperNameType qualifiedPropName <<+>> text "as" <<+>> textFromNewtype opName
   in
     printFixity keyword <<+>> text (show precedence) <<+>> printFixityOp operator
-printDeclaration (DeclForeign foreign_) =
+printDeclaration (DeclForeign { foreign_ }) =
   text "foreign" <<+>> text "import" <<+>>
     case foreign_ of
       (ForeignValue { ident, type_ }) -> textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
       (ForeignData { name, kind_ }) -> text "data" <<+>> textFromNewtype name <<+>> text "::" <<+>> printKind kind_
       (ForeignKind { name }) -> text "kind" <<+>> textFromNewtype name
-printDeclaration (DeclDerive deriveType { instName, instConstraints, instClass, instTypes }) =
+printDeclaration (DeclDerive { deriveType, head: { instName, instConstraints, instClass, instTypes } }) =
   let
     doWrap :: Type -> Boolean
     doWrap (TypeApp _ _) = true
@@ -157,7 +157,7 @@ printDeclaration (DeclClass { head: { name, vars, super, fundeps }, methods }) =
             <#> (twoSpaceIdentation <<>> _)
             # vcat left
            )
-printDeclaration (DeclInstanceChain instances) =
+printDeclaration (DeclInstanceChain { instances }) =
   let
     printInstance :: Instance -> Box
     printInstance { head: { instName, instConstraints, instClass, instTypes }, body } =
@@ -189,7 +189,7 @@ printDeclaration (DeclInstanceChain instances) =
             // (twoSpaceIdentation <<>> printedBody)
    in instances <#> printInstance # punctuateV left (nullBox /+/ text "else" /+/ nullBox)
 printDeclaration (DeclSignature { ident, type_ }) = textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
-printDeclaration (DeclValue valueBindingFields) = printValueBindingFields valueBindingFields
+printDeclaration (DeclValue { valueBindingFields }) = printValueBindingFields valueBindingFields
 
 printInstanceBinding :: InstanceBinding -> Box
 printInstanceBinding (InstanceBindingSignature { ident, type_ }) = textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_

@@ -22,7 +22,7 @@ dataMapMap x y =
 
 myExtension = nonQualifiedNameTypeConstructor "MyExtension"
 
-declFooType type_ = DeclType { head, type_ }
+declFooType type_ = DeclType { comments: Nothing, head, type_ }
 
 actualModule :: Module
 actualModule = Module

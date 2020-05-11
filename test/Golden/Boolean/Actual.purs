@@ -15,44 +15,58 @@ actualModule = Module
   , exports: []
   , declarations:
     [ DeclValue
-      { name: Ident "x"
-      , binders: []
-      , guarded: Unconditional
-          { expr: ExprBoolean true
-          , whereBindings: []
-          }
+      { comments: Nothing
+      , valueBindingFields:
+        { name: Ident "x"
+        , binders: []
+        , guarded: Unconditional
+            { expr: ExprBoolean true
+            , whereBindings: []
+            }
+        }
       }
     , DeclValue
-      { name: Ident "x"
-      , binders: []
-      , guarded: Unconditional
-          { expr: ExprBoolean true
-          , whereBindings: []
-          }
+      { comments: Nothing
+      , valueBindingFields:
+        { name: Ident "x"
+        , binders: []
+        , guarded: Unconditional
+            { expr: ExprBoolean true
+            , whereBindings: []
+            }
+        }
       }
     , DeclSignature
-      { ident: Ident "y"
+      { comments: Nothing
+      , ident: Ident "y"
       , type_: booleanType
       }
     , DeclValue
-      { name: Ident "y"
-      , binders: []
-      , guarded: Unconditional
-          { expr: ExprBoolean true
-          , whereBindings: []
-          }
+      { comments: Nothing
+      , valueBindingFields:
+        { name: Ident "y"
+        , binders: []
+        , guarded: Unconditional
+            { expr: ExprBoolean true
+            , whereBindings: []
+            }
+        }
       }
     , DeclSignature
-      { ident: Ident "z"
+      { comments: Nothing
+      , ident: Ident "z"
       , type_: booleanType ====>> booleanType
       }
     , DeclValue
-      { name: Ident "z"
-      , binders: [(BinderBoolean false)]
-      , guarded: Unconditional
-          { expr: ExprBoolean true
-          , whereBindings: []
-          }
+      { comments: Nothing
+      , valueBindingFields:
+        { name: Ident "z"
+        , binders: [(BinderBoolean false)]
+        , guarded: Unconditional
+            { expr: ExprBoolean true
+            , whereBindings: []
+            }
+        }
       }
     ]
   }

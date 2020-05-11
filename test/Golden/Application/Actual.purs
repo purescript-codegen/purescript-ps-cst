@@ -15,54 +15,60 @@ actualModule = Module
   , exports: []
   , declarations:
     [ DeclValue
-      { name: Ident "x"
-      , binders: []
-      , guarded: Unconditional
-          { expr:
-            nonQualifiedExprIdent "a"
-            `ExprApp`
-            nonQualifiedExprIdent "b"
-            `ExprApp`
-            nonQualifiedExprIdent "c"
-            `ExprApp`
-            nonQualifiedExprIdent "d"
-            `ExprApp`
-            nonQualifiedExprIdent "e"
-            `ExprApp`
-            nonQualifiedExprIdent "f"
-            `ExprApp`
-            nonQualifiedExprIdent "g"
-            `ExprApp`
-            nonQualifiedExprIdent "h"
-          , whereBindings: []
-          }
-      }
-    , DeclValue
-      { name: Ident "x"
-      , binders: []
-      , guarded: Unconditional
-          { expr:
-            nonQualifiedExprIdent "a"
-            `ExprApp`
-            nonQualifiedExprIdent "b"
-            `ExprApp`
-            (
+      { comments: Nothing
+      , valueBindingFields:
+        { name: Ident "x"
+        , binders: []
+        , guarded: Unconditional
+            { expr:
+              nonQualifiedExprIdent "a"
+              `ExprApp`
+              nonQualifiedExprIdent "b"
+              `ExprApp`
               nonQualifiedExprIdent "c"
               `ExprApp`
-              (
-                nonQualifiedExprIdent "d"
-                `ExprApp`
-                nonQualifiedExprIdent "e"
-              )
+              nonQualifiedExprIdent "d"
+              `ExprApp`
+              nonQualifiedExprIdent "e"
               `ExprApp`
               nonQualifiedExprIdent "f"
               `ExprApp`
               nonQualifiedExprIdent "g"
-            )
-            `ExprApp`
-            nonQualifiedExprIdent "h"
-          , whereBindings: []
-          }
+              `ExprApp`
+              nonQualifiedExprIdent "h"
+            , whereBindings: []
+            }
+        }
+      }
+    , DeclValue
+      { comments: Nothing
+      , valueBindingFields:
+        { name: Ident "x"
+        , binders: []
+        , guarded: Unconditional
+            { expr:
+              nonQualifiedExprIdent "a"
+              `ExprApp`
+              nonQualifiedExprIdent "b"
+              `ExprApp`
+              (
+                nonQualifiedExprIdent "c"
+                `ExprApp`
+                (
+                  nonQualifiedExprIdent "d"
+                  `ExprApp`
+                  nonQualifiedExprIdent "e"
+                )
+                `ExprApp`
+                nonQualifiedExprIdent "f"
+                `ExprApp`
+                nonQualifiedExprIdent "g"
+              )
+              `ExprApp`
+              nonQualifiedExprIdent "h"
+            , whereBindings: []
+            }
+        }
       }
     ]
   }

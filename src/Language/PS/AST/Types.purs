@@ -23,6 +23,26 @@ newtype Module = Module
   , declarations :: Array Declaration
   }
 
+data Comments
+  -- | Rendered as
+  -- | ```purs
+  -- | -- | line1
+  -- | -- | line2
+  -- | ```
+  = OneLineComments (Array String)
+  -- | Rendered as
+  -- | ```purs
+  -- | {-
+  -- |   line1
+  -- |   line2
+  -- | -}
+  -- | ```
+  | BlockComment (Array String)
+
+derive instance genericComments :: Generic Comments _
+derive instance eqComments :: Eq Comments
+derive instance ordComments :: Ord Comments
+
 newtype ModuleName = ModuleName (NonEmpty Array (ProperName ProperNameType_Namespace))
 derive instance newtypeModuleName :: Newtype ModuleName _
 derive instance genericModuleName :: Generic ModuleName _
@@ -111,16 +131,16 @@ derive instance ordExport :: Ord Export
 instance showExport :: Show Export where show = genericShow
 
 data Declaration
-  = DeclData { head :: DataHead, constructors :: Array DataCtor }
-  | DeclType { head :: DataHead, type_ :: Type }
-  | DeclNewtype { head :: DataHead, name :: ProperName ProperNameType_ConstructorName, type_ :: Type }
-  | DeclClass { head :: ClassHead, methods :: Array { ident :: Ident, type_ :: Type } }
-  | DeclInstanceChain (NonEmpty Array Instance)
-  | DeclDerive DeclDeriveType InstanceHead
-  | DeclSignature { ident :: Ident, type_ :: Type }
-  | DeclValue ValueBindingFields
-  | DeclFixity FixityFields
-  | DeclForeign Foreign
+  = DeclData          { comments :: Maybe Comments, head :: DataHead, constructors :: Array DataCtor }
+  | DeclType          { comments :: Maybe Comments, head :: DataHead, type_ :: Type }
+  | DeclNewtype       { comments :: Maybe Comments, head :: DataHead, name :: ProperName ProperNameType_ConstructorName, type_ :: Type }
+  | DeclClass         { comments :: Maybe Comments, head :: ClassHead, methods :: Array { ident :: Ident, type_ :: Type } }
+  | DeclInstanceChain { comments :: Maybe Comments, instances :: NonEmpty Array Instance }
+  | DeclDerive        { comments :: Maybe Comments, deriveType :: DeclDeriveType, head :: InstanceHead }
+  | DeclSignature     { comments :: Maybe Comments, ident :: Ident, type_ :: Type }
+  | DeclValue         { comments :: Maybe Comments, valueBindingFields :: ValueBindingFields }
+  | DeclFixity        { comments :: Maybe Comments, fixityFields :: FixityFields }
+  | DeclForeign       { comments :: Maybe Comments, foreign_ :: Foreign }
 derive instance genericDeclaration :: Generic Declaration _
 derive instance eqDeclaration :: Eq Declaration
 derive instance ordDeclaration :: Ord Declaration
@@ -148,11 +168,13 @@ derive instance genericForeign :: Generic Foreign _
 derive instance eqForeign :: Eq Foreign
 derive instance ordForeign :: Ord Foreign
 
-type FixityFields =
-  { keyword :: Fixity
+type FixityFieldsRow =
+  ( keyword :: Fixity
   , precedence :: Int
   , operator :: FixityOp
-  }
+  )
+
+type FixityFields = Record FixityFieldsRow
 
 data Fixity
   = Infix
@@ -293,11 +315,13 @@ type ClassHead =
   , fundeps :: Array ClassFundep
   }
 
-type ValueBindingFields =
-  { name :: Ident
+type ValueBindingFieldsRow =
+  ( name :: Ident
   , binders :: Array Binder
   , guarded :: Guarded
-  }
+  )
+
+type ValueBindingFields = Record ValueBindingFieldsRow
 
 data RecordLabeled a
   = RecordPun Ident

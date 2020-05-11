@@ -6,7 +6,7 @@ import Language.PS.AST.Types
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
 import Data.Tuple.Nested (type (/\), (/\))
-import Prelude (map, ($), (<<<))
+import Prelude
 
 dataMapMap x y =
   (TypeConstructor $ qualifiedName (mkModuleName $ "Data" :| ["Map"]) (ProperName "Map"))
@@ -24,7 +24,8 @@ actualModule = Module
   , exports: []
   , declarations:
     [ DeclData
-      { head: DataHead
+      { comments: Nothing
+      , head: DataHead
         { dataHdName: ProperName "Foo"
         , dataHdVars: []
         }

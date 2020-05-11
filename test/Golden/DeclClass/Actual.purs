@@ -15,7 +15,8 @@ actualModule = Module
   , exports: []
   , declarations:
     [ DeclClass
-      { head:
+      { comments: Nothing
+      , head:
         { name: ProperName "Foo"
         , vars: [TypeVarName (Ident "a")]
         , super: []
@@ -24,7 +25,8 @@ actualModule = Module
       , methods: []
       }
     , DeclClass
-      { head:
+      { comments: Nothing
+      , head:
         { name: ProperName "Bar"
         , vars: [TypeVarName (Ident "a")]
         , super: []
@@ -37,7 +39,8 @@ actualModule = Module
         ]
       }
     , DeclClass
-      { head:
+      { comments: Nothing
+      , head:
         { name: ProperName "FunDep"
         , vars: [typeVarName "a", typeVarName "b"]
         , super: []
@@ -46,7 +49,8 @@ actualModule = Module
       , methods: []
       }
     , DeclClass
-      { head:
+      { comments: Nothing
+      , head:
         { name: ProperName "MultiFunDep"
         , vars: [typeVarName "a", typeVarName "b", typeVarName "c", typeVarName "d", typeVarName "e"]
         , super: []
@@ -58,7 +62,8 @@ actualModule = Module
       , methods: []
       }
     , DeclClass
-      { head:
+      { comments: Nothing
+      , head:
         { name: ProperName "Foo"
         , vars: [typeVarName "m"]
         , super:
@@ -69,7 +74,8 @@ actualModule = Module
       , methods: []
       }
     , DeclClass
-      { head:
+      { comments: Nothing
+      , head:
         { name: ProperName "Foo"
         , vars: [typeVarName "m"]
         , super:
@@ -81,7 +87,8 @@ actualModule = Module
       , methods: []
       }
     , DeclClass
-      { head:
+      { comments: Nothing
+      , head:
         { name: ProperName "Foo"
         , vars: [typeVarName "m", typeVarName "c"]
         , super:

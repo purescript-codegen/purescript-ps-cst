@@ -16,32 +16,35 @@ actualModule = Module
   , exports: []
   , declarations:
     [ DeclValue
-      { name: Ident "x"
-      , binders: []
-      , guarded: Unconditional
-          { expr:
-            ExprIf
-            { cond:
+      { comments: Nothing
+      , valueBindingFields:
+        { name: Ident "x"
+        , binders: []
+        , guarded: Unconditional
+            { expr:
               ExprIf
-              { cond: ExprBoolean true
-              , true_: ExprBoolean true
-              , false_: ExprBoolean false
+              { cond:
+                ExprIf
+                { cond: ExprBoolean true
+                , true_: ExprBoolean true
+                , false_: ExprBoolean false
+                }
+              , true_:
+                ExprIf
+                { cond: ExprBoolean true
+                , true_: ExprBoolean true
+                , false_: ExprBoolean false
+                }
+              , false_:
+                ExprIf
+                { cond: ExprBoolean true
+                , true_: ExprBoolean true
+                , false_: ExprBoolean false
+                }
               }
-            , true_:
-              ExprIf
-              { cond: ExprBoolean true
-              , true_: ExprBoolean true
-              , false_: ExprBoolean false
-              }
-            , false_:
-              ExprIf
-              { cond: ExprBoolean true
-              , true_: ExprBoolean true
-              , false_: ExprBoolean false
-              }
+            , whereBindings: []
             }
-          , whereBindings: []
-          }
+        }
       }
     ]
   }
