@@ -8,4 +8,4 @@ TODO:
 
 Objectives:
 - types are copy of purescript-cst
-- paranthesis are added automatically, there is no need to use ExprParens or TypeParens (they are added by purescript parser on parsing phase)
+- parentheses are added automatically, there is no need to use ExprParens or TypeParens (they are added by purescript parser on parsing phase)
