@@ -1,7 +1,7 @@
 module Language.PS.AST.Printers.Utils where
 
 import Language.PS.AST.Types (ModuleName(..), ProperName, ProperNameType_ConstructorName)
-import Prelude (const, identity, map, (#), (<<<), (>>>))
+import Prelude (identity, map, (#), (<<<), (>>>))
 import Text.PrettyPrint.Boxes (Box, emptyBox, hsep, left, nullBox, punctuateH, text, vsep, (//), (<<>>))
 
 import Data.Foldable (class Foldable)
@@ -9,7 +9,7 @@ import Data.List (List(..), (:))
 import Data.List (fromFoldable) as List
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
-import Debug.Trace (trace)
+-- import Debug.Trace (trace)
 
 line :: ∀ f. Foldable f ⇒ f Box → Box
 line = hsep 1 left
@@ -74,5 +74,5 @@ printAndConditionallyAddNewlinesBetween shouldBeNoNewlines print xs =
    in
     foldWithPrev foldDeclaration nullBox xs'
 
-traceId :: forall t2. t2 -> t2
-traceId a = trace a (const a)
+-- traceId :: forall t2. t2 -> t2
+-- traceId a = trace a (const a)

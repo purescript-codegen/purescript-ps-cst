@@ -72,7 +72,7 @@ printKind (KindArr kindLeft_ kindRight_) =
     printedLeft' <<+>> text "->" <<+>> printKind kindRight_
 printKind (KindRow kind_) = text "#" <<+>> printKind kind_
 
-printQualifiedName_Ident :: ∀ proxy. QualifiedName Ident -> Box
+printQualifiedName_Ident :: QualifiedName Ident -> Box
 printQualifiedName_Ident (QualifiedName qualifiedName) = case qualifiedName.qualModule of
   Nothing -> textFromNewtype qualifiedName.qualName
   (Just moduleName) -> printModuleName moduleName <<>> text "." <<>> textFromNewtype qualifiedName.qualName

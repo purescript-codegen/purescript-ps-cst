@@ -75,10 +75,10 @@ printDeclaration (DeclType { comments, head, type_ }) =
     doWrap (TypeConstrained _ _) = true
     doWrap _ = false
 
-    printType' :: Type -> Box
-    printType' type_ = maybeWrapInParentheses (doWrap type_) $ printType PrintType_Multiline $ type_
+    printedType :: Box
+    printedType = maybeWrapInParentheses (doWrap type_) $ printType PrintType_Multiline $ type_
   in
-    printMaybeComments comments // (printDataHead (text "type") head <<+>> text "=" <<+>> printType' type_)
+    printMaybeComments comments // (printDataHead (text "type") head <<+>> text "=" <<+>> printedType)
 printDeclaration (DeclNewtype { comments, head, name, type_ }) =
   let
     doWrap :: Type -> Boolean
@@ -89,10 +89,10 @@ printDeclaration (DeclNewtype { comments, head, name, type_ }) =
     doWrap (TypeConstrained _ _) = true
     doWrap _ = false
 
-    printType' :: Type -> Box
-    printType' type_ = maybeWrapInParentheses (doWrap type_) $ printType PrintType_Multiline $ type_
+    printedType :: Box
+    printedType = maybeWrapInParentheses (doWrap type_) $ printType PrintType_Multiline $ type_
   in
-    printMaybeComments comments // (printDataHead (text "newtype") head <<+>> text "=" <<+>> (textFromNewtype name <<+>> printType' type_))
+    printMaybeComments comments // (printDataHead (text "newtype") head <<+>> text "=" <<+>> (textFromNewtype name <<+>> printedType))
 printDeclaration (DeclFixity { comments, fixityFields: { keyword, precedence, operator } }) =
   let
     printFixityOp :: FixityOp -> Box
