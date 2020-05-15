@@ -1,13 +1,14 @@
 module Test.Golden.DeclDataComplex.Actual where
 
-import Language.PS.AST.Sugar
-import Language.PS.AST.Types
+import Language.PS.AST.Sugar (arrayType, booleanType, kindNamed, maybeType, mkModuleName, mkRowLabels, nonQualifiedName, nonQualifiedNameTypeConstructor, numberType, qualifiedName, stringType, typeRecord, typeVar, typeVarName)
+import Language.PS.AST.Types (Constraint(..), DataCtor(..), DataHead(..), Declaration(..), Ident(..), Kind(..), Module(..), OpName(..), ProperName(..), Row(..), Type(..), TypeVarBinding(..), (====>>), (====>>>))
 
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
-import Data.Tuple.Nested (type (/\), (/\))
-import Prelude
+import Data.Tuple.Nested ((/\))
+import Prelude (($))
 
+dataMapMap :: Type -> Type -> Type
 dataMapMap x y =
   (TypeConstructor $ qualifiedName (mkModuleName $ "Data" :| ["Map"]) (ProperName "Map"))
   `TypeApp`
@@ -15,6 +16,7 @@ dataMapMap x y =
   `TypeApp`
   y
 
+myExtension :: Type
 myExtension = nonQualifiedNameTypeConstructor "MyExtension"
 
 actualModule :: Module

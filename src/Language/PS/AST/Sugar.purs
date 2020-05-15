@@ -1,19 +1,14 @@
 module Language.PS.AST.Sugar where
 
-import Language.PS.AST.Printers
-import Language.PS.AST.Types
-import Prelude
+import Language.PS.AST.Types (Expr(..), Ident(..), Kind(..), Label(..), ModuleName(..), ProperName(..), QualifiedName(..), Row(..), Type(..), TypeVarBinding(..))
+import Prelude (map, ($), (<<<))
 
-import Data.Foldable (foldMap)
-import Data.Functor.Mu (roll)
 import Data.Maybe (Maybe(..))
-import Data.Newtype (wrap)
-import Data.NonEmpty (NonEmpty(..))
-import Data.String.Extra (camelCase)
+import Data.NonEmpty (NonEmpty)
 import Data.Tuple.Nested (type (/\), (/\))
 
 mkModuleName :: NonEmpty Array String -> ModuleName
-mkModuleName = ModuleName <<< map wrap
+mkModuleName = ModuleName <<< map ProperName
 
 nonQualifiedName :: ∀ a . a -> QualifiedName a
 nonQualifiedName a = QualifiedName { qualModule: Nothing, qualName: a }

@@ -1,12 +1,12 @@
 module Test.Golden.DeclDerive.Actual where
 
-import Language.PS.AST.Sugar
-import Language.PS.AST.Types
+import Language.PS.AST.Sugar (mkModuleName, mkRowLabels, nonQualifiedName, numberType, typeVar)
+import Language.PS.AST.Types (Constraint(..), DeclDeriveType(..), Declaration(..), Ident(..), Module(..), ProperName(..), Row(..), Type(..))
 
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|), singleton)
-import Data.Tuple.Nested (type (/\), (/\))
-import Prelude (map, pure, ($), (<<<))
+import Data.Tuple.Nested ((/\))
+import Prelude (($))
 
 actualModule :: Module
 actualModule = Module

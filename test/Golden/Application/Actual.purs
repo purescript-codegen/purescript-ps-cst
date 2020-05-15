@@ -1,12 +1,11 @@
 module Test.Golden.Application.Actual where
 
-import Language.PS.AST.Types
+import Language.PS.AST.Types (Declaration(..), Expr(..), Guarded(..), Ident(..), Module(..))
 
 import Data.Maybe (Maybe(..))
-import Data.Newtype (wrap)
 import Data.NonEmpty ((:|))
-import Language.PS.AST.Sugar
-import Prelude (map, ($))
+import Language.PS.AST.Sugar (mkModuleName, nonQualifiedExprIdent)
+import Prelude (($))
 
 actualModule :: Module
 actualModule = Module

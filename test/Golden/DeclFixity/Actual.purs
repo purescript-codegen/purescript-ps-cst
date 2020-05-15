@@ -1,12 +1,11 @@
 module Test.Golden.DeclFixity.Actual where
 
-import Language.PS.AST.Sugar
-import Language.PS.AST.Types
+import Language.PS.AST.Sugar (mkModuleName, nonQualifiedName)
+import Language.PS.AST.Types (Declaration(..), Fixity(..), FixityOp(..), Ident(..), Module(..), OpName(..), ProperName(..))
 
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
-import Data.Tuple.Nested (type (/\), (/\))
-import Prelude (map, ($), (<<<))
+import Prelude (($))
 import Data.Either (Either(..))
 
 actualModule :: Module

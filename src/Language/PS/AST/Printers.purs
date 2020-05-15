@@ -1,23 +1,19 @@
 module Language.PS.AST.Printers where
 
-import Language.PS.AST.Printers.PrintImports
-import Language.PS.AST.Printers.PrintModuleModuleNameAndExports
-import Language.PS.AST.Printers.TypeLevel
-import Language.PS.AST.Printers.Utils
-import Language.PS.AST.Types
-import Prelude
+import Language.PS.AST.Printers.PrintImports (printImports)
+import Language.PS.AST.Printers.PrintModuleModuleNameAndExports (printModuleModuleNameAndExports)
+import Language.PS.AST.Printers.TypeLevel (PrintType_Style(..), printConstraint, printDataCtor, printDataHead, printFixity, printFundep, printKind, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printTypeVarBinding)
+import Language.PS.AST.Printers.Utils (emptyColumn, emptyRow, ifelse, lines, maybeWrapInParentheses, printAndConditionallyAddNewlinesBetween, textFromNewtype, twoSpaceIdentation, wrapInParentheses)
+import Language.PS.AST.Types (Binder(..), Comments(..), DeclDeriveType(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), Module(..), RecordLabeled(..), RecordUpdate(..), Type(..), ValueBindingFields)
+import Prelude (flip, map, show, (#), ($), (<#>), (<<<), (==))
 
-import Data.Array (fromFoldable, snoc) as Array
 import Data.Either (Either(..))
-import Data.Foldable (class Foldable, any, null)
+import Data.Foldable (any, null)
 import Data.FunctorWithIndex (mapWithIndex)
-import Data.List (List(..), (:))
 import Data.List (fromFoldable) as List
-import Data.Maybe (Maybe(..), maybe)
-import Data.Newtype (unwrap)
-import Data.NonEmpty (NonEmpty(..))
-import Data.Variant (contract)
-import Text.PrettyPrint.Boxes (Box, emptyBox, left, nullBox, punctuateH, punctuateV, text, vcat, vsep, (/+/), (//), (<<+>>), (<<>>))
+import Data.Maybe (Maybe, maybe)
+import Data.NonEmpty (NonEmpty)
+import Text.PrettyPrint.Boxes (Box, left, nullBox, punctuateH, punctuateV, text, vcat, vsep, (/+/), (//), (<<+>>), (<<>>))
 import Text.PrettyPrint.Boxes (render) as Text.PrettyPrint.Boxes
 
 printModuleToString :: Module -> String
@@ -218,6 +214,7 @@ printValueBindingFields { name, binders, guarded } =
     printedHead = textFromNewtype name <<+>> printedBinders <<>> text "="
    in printGuarded printedHead guarded
 
+printGuarded :: Box -> Guarded -> Box
 printGuarded printedHead guarded =
   case guarded of
     (Unconditional where_) ->

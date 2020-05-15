@@ -1,13 +1,12 @@
 module Test.Golden.MultilinePatternMatchingInLet.Actual where
 
-import Language.PS.AST.Sugar
-import Language.PS.AST.Types
+import Language.PS.AST.Sugar (mkModuleName, nonQualifiedExprIdent, nonQualifiedName, nonQualifiedNameTypeConstructor)
+import Language.PS.AST.Types (Binder(..), Declaration(..), Expr(..), Guarded(..), Ident(..), LetBinding(..), Module(..), ProperName(..), (====>>))
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Newtype (wrap)
 import Data.NonEmpty ((:|))
-import Prelude (map, ($))
+import Prelude (($))
 
 actualModule :: Module
 actualModule = Module

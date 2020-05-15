@@ -1,12 +1,11 @@
 module Test.Golden.DeclClass.Actual where
 
-import Language.PS.AST.Sugar
-import Language.PS.AST.Types
+import Language.PS.AST.Sugar (mkModuleName, nonQualifiedName, typeVar, typeVarName)
+import Language.PS.AST.Types (ClassFundep(..), Comments(..), Constraint(..), Declaration(..), Ident(..), Module(..), ProperName(..), TypeVarBinding(..), (====>>))
 
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|), singleton)
-import Data.Tuple.Nested (type (/\), (/\))
-import Prelude (map, pure, ($), (<<<))
+import Prelude (($))
 
 actualModule :: Module
 actualModule = Module

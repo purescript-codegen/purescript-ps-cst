@@ -12,7 +12,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
-import Data.NonEmpty (NonEmpty(..))
+import Data.NonEmpty (NonEmpty)
 
 -- | No need for imports list as they are collected from declarations
 -- | during final codegen.
@@ -236,12 +236,6 @@ derive instance eqKind :: Eq Kind
 derive instance ordKind :: Ord Kind
 -- instance showKind :: Show Kind where
 --   show _ = ""
-
--- e.g. main , forAll
--- data Labeled a b = Labeled
---   { lblLabel :: a
---   , lblValue  :: b
---   }
 
 data TypeVarBinding
   = TypeVarKinded Ident Kind
@@ -472,6 +466,7 @@ type Instance =
   , body :: Array InstanceBinding
   }
 
+-- TODO: add `_` postfix during printing for reservedNames
 -- reservedNames :: Set String
 -- reservedNames = Set.fromFoldable
 --   [ "ado" , "case" , "class" , "data"
@@ -482,6 +477,6 @@ type Instance =
 --   , "of" , "true" , "type" , "where"
 --   ]
 
--- infixl 5 ExprArr as ====>
+infixl 5 ExprLambda as ====>
 infixr 5 TypeArr as ====>>
 infixr 5 KindArr as ====>>>

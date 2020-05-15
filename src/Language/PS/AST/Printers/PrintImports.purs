@@ -1,28 +1,12 @@
 module Language.PS.AST.Printers.PrintImports where
 
-import Prelude
-import Language.PS.AST.Types
-import Language.PS.AST.Printers.Utils
-import Text.PrettyPrint.Boxes
-import Data.Array (cons, fromFoldable, null) as Array
-import Data.Char.Unicode (isUpper)
-import Data.Either (Either(..), fromRight)
-import Data.Foldable (class Foldable, foldMap, intercalate, length, null)
-import Data.List (List(..))
-import Data.List (fromFoldable, intercalate) as List
-import Data.Map (toUnfoldable) as Map
+import Prelude (map, ($), (-), (<#>), (<>))
+import Language.PS.AST.Types (DataMembers(..), Import(..), ImportDecl(..))
+import Language.PS.AST.Printers.Utils (emptyColumn, emptyRow, printConstructors, printModuleName, textFromNewtype, twoSpaceIdentation, wrapInParentheses)
+import Text.PrettyPrint.Boxes (Box, left, nullBox, text, vcat, vsep, (//), (<<+>>), (<<>>))
+import Data.Foldable (length, null)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Data.Newtype (class Newtype, unwrap)
-import Data.Set (member) as Set
-import Data.String (joinWith)
-import Data.String.CodeUnits (uncons) as SCU
-import Data.String.Regex (Regex, regex)
-import Data.String.Regex (test) as Regex
-import Data.String.Regex.Flags (noFlags) as Regex.Flags
-import Data.Tuple (Tuple(..))
 import Data.Unfoldable (replicate)
-import Matryoshka (Algebra, cata)
-import Partial.Unsafe (unsafePartial)
 
 printImports :: Array ImportDecl -> Box
 printImports [] = nullBox

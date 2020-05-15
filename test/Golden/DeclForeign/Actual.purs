@@ -1,12 +1,12 @@
 module Test.Golden.DeclForeign.Actual where
 
-import Language.PS.AST.Sugar
-import Language.PS.AST.Types
-import Prelude
+import Language.PS.AST.Sugar (mkModuleName, mkRowLabels, nonQualifiedName, nonQualifiedNameTypeConstructor, typeVar, typeVarName)
+import Language.PS.AST.Types (Declaration(..), Foreign(..), Ident(..), Kind(..), Module(..), ProperName(..), Row(..), Type(..), (====>>>))
+import Prelude (($))
 
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
-import Data.Tuple.Nested (type (/\), (/\))
+import Data.Tuple.Nested ((/\))
 
 actualModule :: Module
 actualModule = Module

@@ -1,29 +1,15 @@
 module Language.PS.AST.Printers.Utils where
 
-import Language.PS.AST.Types
-import Prelude
-import Text.PrettyPrint.Boxes
+import Language.PS.AST.Types (ModuleName(..), ProperName, ProperNameType_ConstructorName)
+import Prelude (const, identity, map, (#), (<<<), (>>>))
+import Text.PrettyPrint.Boxes (Box, emptyBox, hsep, left, nullBox, punctuateH, text, vsep, (//), (<<>>))
 
-import Data.Array (cons, fromFoldable, null) as Array
-import Data.Char.Unicode (isUpper)
-import Data.Either (Either(..), either, fromRight)
-import Data.Foldable (class Foldable, foldMap, intercalate, length, null)
+import Data.Foldable (class Foldable)
 import Data.List (List(..), (:))
-import Data.List (fromFoldable, intercalate) as List
-import Data.Map (toUnfoldable) as Map
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.List (fromFoldable) as List
+import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
-import Data.Set (member) as Set
-import Data.String (joinWith)
-import Data.String.CodeUnits (uncons) as SCU
-import Data.String.Regex (Regex, regex)
-import Data.String.Regex (test) as Regex
-import Data.String.Regex.Flags (noFlags) as Regex.Flags
-import Data.Tuple (Tuple(..))
-import Data.Unfoldable (replicate)
 import Debug.Trace (trace)
-import Matryoshka (Algebra, cata)
-import Partial.Unsafe (unsafePartial)
 
 line :: ∀ f. Foldable f ⇒ f Box → Box
 line = hsep 1 left
@@ -88,4 +74,5 @@ printAndConditionallyAddNewlinesBetween shouldBeNoNewlines print xs =
    in
     foldWithPrev foldDeclaration nullBox xs'
 
+traceId :: forall t2. t2 -> t2
 traceId a = trace a (const a)

@@ -1,21 +1,16 @@
 module Language.PS.AST.Printers.TypeLevel where
 
-import Language.PS.AST.Printers.PrintImports
-import Language.PS.AST.Printers.PrintModuleModuleNameAndExports
-import Language.PS.AST.Printers.Utils
-import Language.PS.AST.Types
-import Prelude
+import Language.PS.AST.Printers.Utils (emptyColumn, ifelse, maybeWrapInParentheses, printModuleName, textFromNewtype, wrapInDoubleQuotes, wrapInParentheses)
+import Language.PS.AST.Types (ClassFundep(..), Constraint(..), DataCtor(..), DataHead(..), Fixity(..), Ident, Kind(..), Label, OpName, ProperName, QualifiedName(..), Row(..), Type(..), TypeVarBinding(..))
+import Prelude (flip, identity, map, (#), ($), (<#>), (==))
 
 import Data.Array (snoc) as Array
-import Data.Either (Either(..))
 import Data.Foldable (null)
 import Data.FunctorWithIndex (mapWithIndex)
 import Data.Identity (Identity(..))
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
-import Data.Variant (contract)
-import Debug.Trace (traceM)
-import Text.PrettyPrint.Boxes (Box, left, nullBox, punctuateH, text, vcat, vsep, (//), (<<+>>), (<<>>))
+import Text.PrettyPrint.Boxes (Box, left, punctuateH, text, vcat, (<<+>>), (<<>>))
 
 printFundep :: ClassFundep -> Box
 printFundep (FundepDetermines lefts rights) = (punctuateH left emptyColumn $ map textFromNewtype lefts) <<+>> text "->" <<+>> (punctuateH left emptyColumn $ map textFromNewtype rights)

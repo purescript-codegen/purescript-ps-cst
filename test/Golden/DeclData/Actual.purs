@@ -1,11 +1,11 @@
 module Test.Golden.DeclData.Actual where
 
-import Prelude
+import Prelude (($))
 
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
 import Language.PS.AST.Sugar (mkModuleName)
-import Language.PS.AST.Types
+import Language.PS.AST.Types (Comments(..), DataCtor(..), DataHead(..), Declaration(..), Module(..), ProperName(..))
 
 actualModule :: Module
 actualModule = Module

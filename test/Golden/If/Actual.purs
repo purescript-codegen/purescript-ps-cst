@@ -1,13 +1,11 @@
 module Test.Golden.If.Actual where
 
-import Language.PS.AST.Sugar
-import Language.PS.AST.Types
+import Language.PS.AST.Sugar (mkModuleName)
+import Language.PS.AST.Types (Declaration(..), Expr(..), Guarded(..), Ident(..), Module(..))
 
-import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Newtype (wrap)
 import Data.NonEmpty ((:|))
-import Prelude (map, ($))
+import Prelude (($))
 
 actualModule :: Module
 actualModule = Module

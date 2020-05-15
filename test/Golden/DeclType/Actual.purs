@@ -1,18 +1,20 @@
 module Test.Golden.DeclType.Actual where
 
-import Language.PS.AST.Sugar
-import Language.PS.AST.Types
+import Language.PS.AST.Sugar (arrayType, booleanType, kindNamed, maybeType, mkModuleName, mkRowLabels, nonQualifiedName, nonQualifiedNameTypeConstructor, numberType, qualifiedName, stringType, typeRecord, typeVar, typeVarName)
+import Language.PS.AST.Types (Constraint(..), DataHead(..), Declaration(..), Ident(..), Kind(..), Module(..), OpName(..), ProperName(..), Row(..), Type(..), TypeVarBinding(..), (====>>), (====>>>))
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
-import Data.Tuple.Nested (type (/\), (/\))
-import Prelude (map, ($), (<<<))
+import Data.Tuple.Nested ((/\))
+import Prelude (($))
 
+head :: DataHead
 head =
   DataHead
   { dataHdName: ProperName "Foo"
   , dataHdVars: []
   }
 
+dataMapMap :: Type -> Type -> Type
 dataMapMap x y =
   (TypeConstructor $ qualifiedName (mkModuleName $ "Data" :| ["Map"]) (ProperName "Map"))
   `TypeApp`
@@ -20,8 +22,10 @@ dataMapMap x y =
   `TypeApp`
   y
 
+myExtension :: Type
 myExtension = nonQualifiedNameTypeConstructor "MyExtension"
 
+declFooType :: Type -> Declaration
 declFooType type_ = DeclType { comments: Nothing, head, type_ }
 
 actualModule :: Module
