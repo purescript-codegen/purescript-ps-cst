@@ -127,13 +127,7 @@ let overrides =
   }
 
 let additions =
-      { matryoshka =
-          { dependencies =
-            [ "fixed-points", "free", "prelude", "profunctor", "transformers" ]
-          , repo = "https://github.com/slamdata/purescript-matryoshka.git"
-          , version = "master"
-          }
-      , boxes =
+      { boxes =
           { dependencies =
             [ "generics-rep"
             , "prelude"
