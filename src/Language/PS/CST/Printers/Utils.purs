@@ -1,6 +1,6 @@
-module Language.PS.AST.Printers.Utils where
+module Language.PS.CST.Printers.Utils where
 
-import Language.PS.AST.Types (ModuleName(..), ProperName, ProperNameType_ConstructorName)
+import Language.PS.CST.Types (ModuleName(..), ProperName, ProperNameType_ConstructorName)
 import Prelude (identity, map, (#), (<<<), (>>>))
 import Text.PrettyPrint.Boxes (Box, emptyBox, hsep, left, nullBox, punctuateH, text, vsep, (//), (<<>>))
 

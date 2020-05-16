@@ -1,7 +1,7 @@
 module Test.Golden.DeclDerive.Actual where
 
-import Language.PS.AST.Sugar (mkModuleName, mkRowLabels, nonQualifiedName, numberType, typeVar)
-import Language.PS.AST.Types (Constraint(..), DeclDeriveType(..), Declaration(..), Ident(..), Module(..), ProperName(..), Row(..), Type(..))
+import Language.PS.CST.Sugar (mkModuleName, mkRowLabels, nonQualifiedName, numberType, typeVar)
+import Language.PS.CST.Types (Constraint(..), DeclDeriveType(..), Declaration(..), Ident(..), Module(..), ProperName(..), Row(..), Type(..))
 
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|), singleton)

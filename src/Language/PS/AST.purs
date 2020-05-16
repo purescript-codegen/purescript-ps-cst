@@ -1,5 +1,0 @@
-module Language.PS.AST
-  ( module Types
-  ) where
-
-import Language.PS.AST.Types (AdoBlock, Binder(..), CaseOf, ClassFundep(..), ClassHead, Comments(..), Constraint(..), DataCtor(..), DataHead(..), DataMembers(..), DeclDeriveType(..), Declaration(..), DoBlock, DoStatement(..), Export(..), Expr(..), Fixity(..), FixityFields, FixityFieldsRow, FixityOp(..), Foreign(..), Guarded(..), GuardedExpr, Ident(..), IfThenElse, Import(..), ImportDecl(..), Instance, InstanceBinding(..), InstanceHead, Kind(..), Label(..), Lambda, LetBinding(..), LetIn, Module(..), ModuleName(..), OpName(..), OpNameType_TypeOpName, OpNameType_ValueOpName, PatternGuard, ProperName(..), ProperNameType_ClassName, ProperNameType_ConstructorName, ProperNameType_KindName, ProperNameType_Namespace, ProperNameType_TypeName, QualifiedName(..), RecordAccessor, RecordLabeled(..), RecordUpdate(..), Row(..), Type(..), TypeVarBinding(..), ValueBindingFields, ValueBindingFieldsRow, Where, (====>), (====>>), (====>>>), kind OpNameType, kind ProperNameType) as Types

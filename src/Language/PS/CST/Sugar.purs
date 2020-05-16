@@ -1,6 +1,6 @@
-module Language.PS.AST.Sugar where
+module Language.PS.CST.Sugar where
 
-import Language.PS.AST.Types (Expr(..), Ident(..), Kind(..), Label(..), ModuleName(..), ProperName(..), QualifiedName(..), Row(..), Type(..), TypeVarBinding(..))
+import Language.PS.CST.Types (Expr(..), Ident(..), Kind(..), Label(..), ModuleName(..), ProperName(..), QualifiedName(..), Row(..), Type(..), TypeVarBinding(..))
 import Prelude (map, ($), (<<<))
 
 import Data.Maybe (Maybe(..))

@@ -1,10 +1,10 @@
-module Language.PS.AST.Printers where
+module Language.PS.CST.Printers where
 
-import Language.PS.AST.Printers.PrintImports (printImports)
-import Language.PS.AST.Printers.PrintModuleModuleNameAndExports (printModuleModuleNameAndExports)
-import Language.PS.AST.Printers.TypeLevel (PrintType_Style(..), printConstraint, printDataCtor, printDataHead, printFixity, printFundep, printKind, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printTypeVarBinding)
-import Language.PS.AST.Printers.Utils (emptyColumn, emptyRow, ifelse, lines, maybeWrapInParentheses, printAndConditionallyAddNewlinesBetween, textFromNewtype, twoSpaceIdentation, wrapInParentheses)
-import Language.PS.AST.Types (Binder(..), Comments(..), DeclDeriveType(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), Module(..), RecordLabeled(..), RecordUpdate(..), Type(..), ValueBindingFields)
+import Language.PS.CST.Printers.PrintImports (printImports)
+import Language.PS.CST.Printers.PrintModuleModuleNameAndExports (printModuleModuleNameAndExports)
+import Language.PS.CST.Printers.TypeLevel (PrintType_Style(..), printConstraint, printDataCtor, printDataHead, printFixity, printFundep, printKind, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printTypeVarBinding)
+import Language.PS.CST.Printers.Utils (emptyColumn, emptyRow, ifelse, lines, maybeWrapInParentheses, printAndConditionallyAddNewlinesBetween, textFromNewtype, twoSpaceIdentation, wrapInParentheses)
+import Language.PS.CST.Types (Binder(..), Comments(..), DeclDeriveType(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), Module(..), RecordLabeled(..), RecordUpdate(..), Type(..), ValueBindingFields)
 import Prelude (flip, map, show, (#), ($), (<#>), (<<<), (==))
 
 import Data.Either (Either(..))

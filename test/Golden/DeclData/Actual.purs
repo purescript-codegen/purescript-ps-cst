@@ -4,8 +4,8 @@ import Prelude (($))
 
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
-import Language.PS.AST.Sugar (mkModuleName)
-import Language.PS.AST.Types (Comments(..), DataCtor(..), DataHead(..), Declaration(..), Module(..), ProperName(..))
+import Language.PS.CST.Sugar (mkModuleName)
+import Language.PS.CST.Types (Comments(..), DataCtor(..), DataHead(..), Declaration(..), Module(..), ProperName(..))
 
 actualModule :: Module
 actualModule = Module

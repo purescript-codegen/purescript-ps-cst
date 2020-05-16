@@ -1,4 +1,4 @@
-module Language.PS.AST.Sugar.Type where
+module Language.PS.CST.Sugar.Type where
 
 import Prelude
 
@@ -14,7 +14,7 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, wrap)
 import Data.String (Pattern(..), split)
 import Heterogeneous.Folding (class HFoldl, hfoldl)
-import Language.PS.AST.Types (Ident(..), ModuleName(..), QualifiedName, Row, RowF(..), RowLabel, Type, TypeF(..), TypeName)
+import Language.PS.CST.Types (Ident(..), ModuleName(..), QualifiedName, Row, RowF(..), RowLabel, Type, TypeF(..), TypeName)
 import Prim.RowList (class RowToList)
 import Record.Extra (class MapRecord, mapRecord)
 

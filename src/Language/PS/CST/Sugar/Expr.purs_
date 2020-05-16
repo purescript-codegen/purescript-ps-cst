@@ -1,11 +1,11 @@
-module Language.PS.AST.Sugar.Expr where
+module Language.PS.CST.Sugar.Expr where
 
 import Prelude
 
 import Data.Functor.Mu (roll)
 import Data.Map (Map)
-import Language.PS.AST.Sugar.Type (name')
-import Language.PS.AST.Types (Expr, ExprF(..), RowLabel)
+import Language.PS.CST.Sugar.Type (name')
+import Language.PS.CST.Types (Expr, ExprF(..), RowLabel)
 
 app :: Expr -> Expr -> Expr
 app f a = roll $ ExprApp f a

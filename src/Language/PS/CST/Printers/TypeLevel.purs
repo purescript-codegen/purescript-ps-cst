@@ -1,7 +1,7 @@
-module Language.PS.AST.Printers.TypeLevel where
+module Language.PS.CST.Printers.TypeLevel where
 
-import Language.PS.AST.Printers.Utils (emptyColumn, ifelse, maybeWrapInParentheses, printModuleName, textFromNewtype, wrapInDoubleQuotes, wrapInParentheses)
-import Language.PS.AST.Types (ClassFundep(..), Constraint(..), DataCtor(..), DataHead(..), Fixity(..), Ident, Kind(..), Label, OpName, ProperName, QualifiedName(..), Row(..), Type(..), TypeVarBinding(..))
+import Language.PS.CST.Printers.Utils (emptyColumn, ifelse, maybeWrapInParentheses, printModuleName, textFromNewtype, wrapInDoubleQuotes, wrapInParentheses)
+import Language.PS.CST.Types (ClassFundep(..), Constraint(..), DataCtor(..), DataHead(..), Fixity(..), Ident, Kind(..), Label, OpName, ProperName, QualifiedName(..), Row(..), Type(..), TypeVarBinding(..))
 import Prelude (flip, identity, map, (#), ($), (<#>), (==))
 
 import Data.Array (snoc) as Array

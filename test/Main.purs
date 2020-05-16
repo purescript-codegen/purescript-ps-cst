@@ -2,13 +2,13 @@ module Test.Main where
 
 import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
-import Language.PS.AST (Module)
+import Language.PS.CST (Module)
 import Prelude (Unit, bind, flip, pure, ($))
 
 import Control.Parallel (parTraverse)
 import Data.Traversable (traverse_)
 import Effect.Class (liftEffect)
-import Language.PS.AST.Printers as Language.PS.AST.Printers
+import Language.PS.CST.Printers as Language.PS.CST.Printers
 import Node.Encoding (Encoding(..))
 import Node.FS.Aff (readTextFile)
 import Node.Path as Node.Path
@@ -88,7 +88,7 @@ mkAllTests tests = traverse_ mkTest tests
   mkTest :: GoldenTestWithExpected -> Test.Spec.Spec Unit
   mkTest test = Test.Spec.it test.name do
     let
-      actualParsed = Language.PS.AST.Printers.printModuleToString test.actualModule
+      actualParsed = Language.PS.CST.Printers.printModuleToString test.actualModule
     actualParsed `textShouldMatch` test.expected
 
 main :: Effect Unit

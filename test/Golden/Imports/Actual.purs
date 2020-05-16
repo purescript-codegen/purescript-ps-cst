@@ -1,8 +1,8 @@
 module Test.Golden.Imports.Actual where
 
 import Data.Maybe (Maybe(..))
-import Language.PS.AST.Types
-import Language.PS.AST.Sugar (mkModuleName)
+import Language.PS.CST.Types
+import Language.PS.CST.Sugar (mkModuleName)
 import Prelude (map, ($))
 
 import Data.NonEmpty ((:|))

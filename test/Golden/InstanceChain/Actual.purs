@@ -1,7 +1,7 @@
 module Test.Golden.InstanceChain.Actual where
 
-import Language.PS.AST.Sugar (mkModuleName, nonQualifiedExprIdent, nonQualifiedName, nonQualifiedNameTypeConstructor, numberType)
-import Language.PS.AST.Types (Declaration(..), Expr(..), Guarded(..), Ident(..), InstanceBinding(..), Module(..), ProperName(..), Type(..))
+import Language.PS.CST.Sugar (mkModuleName, nonQualifiedExprIdent, nonQualifiedName, nonQualifiedNameTypeConstructor, numberType)
+import Language.PS.CST.Types (Declaration(..), Expr(..), Guarded(..), Ident(..), InstanceBinding(..), Module(..), ProperName(..), Type(..))
 
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))

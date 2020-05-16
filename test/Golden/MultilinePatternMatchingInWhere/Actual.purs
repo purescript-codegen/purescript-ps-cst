@@ -1,7 +1,7 @@
 module Test.Golden.MultilinePatternMatchingInWhere.Actual where
 
-import Language.PS.AST.Sugar (mkModuleName, nonQualifiedExprIdent, nonQualifiedName, nonQualifiedNameTypeConstructor)
-import Language.PS.AST.Types (Binder(..), Declaration(..), Expr(..), Guarded(..), Ident(..), LetBinding(..), Module(..), ProperName(..), (====>>))
+import Language.PS.CST.Sugar (mkModuleName, nonQualifiedExprIdent, nonQualifiedName, nonQualifiedNameTypeConstructor)
+import Language.PS.CST.Types (Binder(..), Declaration(..), Expr(..), Guarded(..), Ident(..), LetBinding(..), Module(..), ProperName(..), (====>>))
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))

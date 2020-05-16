@@ -1,7 +1,7 @@
 module Test.Golden.DeclNewtype.Actual where
 
-import Language.PS.AST.Sugar (arrayType, booleanType, kindNamed, maybeType, mkModuleName, mkRowLabels, nonQualifiedName, nonQualifiedNameTypeConstructor, numberType, qualifiedName, stringType, typeRecord, typeVar, typeVarName)
-import Language.PS.AST.Types (Constraint(..), DataHead(..), Declaration(..), Ident(..), Kind(..), Module(..), OpName(..), ProperName(..), Row(..), Type(..), TypeVarBinding(..), (====>>), (====>>>))
+import Language.PS.CST.Sugar (arrayType, booleanType, kindNamed, maybeType, mkModuleName, mkRowLabels, nonQualifiedName, nonQualifiedNameTypeConstructor, numberType, qualifiedName, stringType, typeRecord, typeVar, typeVarName)
+import Language.PS.CST.Types (Constraint(..), DataHead(..), Declaration(..), Ident(..), Kind(..), Module(..), OpName(..), ProperName(..), Row(..), Type(..), TypeVarBinding(..), (====>>), (====>>>))
 import Data.Maybe (Maybe(..))
 import Data.NonEmpty ((:|))
 import Data.Tuple.Nested ((/\))

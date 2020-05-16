@@ -1,8 +1,8 @@
-module Language.PS.AST.Printers.PrintImports where
+module Language.PS.CST.Printers.PrintImports where
 
 import Prelude (map, ($), (-), (<#>), (<>))
-import Language.PS.AST.Types (DataMembers(..), Import(..), ImportDecl(..))
-import Language.PS.AST.Printers.Utils (emptyColumn, emptyRow, printConstructors, printModuleName, textFromNewtype, twoSpaceIdentation, wrapInParentheses)
+import Language.PS.CST.Types (DataMembers(..), Import(..), ImportDecl(..))
+import Language.PS.CST.Printers.Utils (emptyColumn, emptyRow, printConstructors, printModuleName, textFromNewtype, twoSpaceIdentation, wrapInParentheses)
 import Text.PrettyPrint.Boxes (Box, left, nullBox, text, vcat, vsep, (//), (<<+>>), (<<>>))
 import Data.Foldable (length, null)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)

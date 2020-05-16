@@ -1,4 +1,4 @@
-module Language.PS.AST.Types where
+module Language.PS.CST.Types where
 
 -- | This module is somewhat inspired by `purescript-cst` types.
 -- | I've tried to preserve constructor names to simplify

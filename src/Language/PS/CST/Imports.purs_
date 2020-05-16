@@ -1,4 +1,4 @@
-module Language.PS.AST.Imports where
+module Language.PS.CST.Imports where
 
 import Prelude
 
@@ -10,7 +10,7 @@ import Data.Map (singleton, toUnfoldable) as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Set (singleton) as Set
 import Data.Tuple (Tuple(..))
-import Language.PS.AST.Types (ClassName, Declaration(..), ExprF(..), Import(..), ImportDecl(..), Imports(..), ModuleName, QualifiedName, RowF(..), TypeF(..), TypeName)
+import Language.PS.CST.Types (ClassName, Declaration(..), ExprF(..), Import(..), ImportDecl(..), Imports(..), ModuleName, QualifiedName, RowF(..), TypeF(..), TypeName)
 import Matryoshka (Algebra, cata)
 
 importsDeclarations :: Imports -> List ImportDecl
