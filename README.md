@@ -1,7 +1,7 @@
 # purescript-ps-cst
 
 ### Objectives:
-- types are a copy of purescript-cst (on [hackage](https://hackage.haskell.org/package/purescript/docs/Language-PureScript-CST-Types.html), [repository directory](https://github.com/purescript/purescript/blob/master/lib/purescript-cst))
+- types are a copy of purescript-cst (on [hackage](https://hackage.haskell.org/package/purescript/docs/Language-PureScript-CST-Types.html), [github](https://github.com/purescript/purescript/blob/master/lib/purescript-cst))
 - don't aim to be a complete copy of purescript-cst (because these types were created for parsing, not printing), but support 80% of most used printing functionality
 - parentheses are added automatically, there is no need to use `ExprParens` or `TypeParens` (which are added by purescript parser on parsing phase)
 
