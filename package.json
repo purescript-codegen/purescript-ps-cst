@@ -1,7 +1,7 @@
 {
-  "name": "purescript-ps-ast",
+  "name": "purescript-ps-cst",
   "version": "1.0.0",
-  "repository": "https://github.com/srghma/purescript-ps-ast",
+  "repository": "https://github.com/srghma/purescript-ps-cst",
   "license": "BSD",
   "devDependencies": {
     "disparity": "^3.0.0"
