@@ -5,12 +5,12 @@ import Language.PS.CST.Types (Binder(..), Declaration(..), Expr(..), Guarded(..)
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.NonEmpty ((:|))
+import Data.Array.NonEmpty as NonEmpty
 import Prelude (($))
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "MultilinePatternMatchingInWhere2" :| []
+  { moduleName: mkModuleName $ NonEmpty.cons' "MultilinePatternMatchingInWhere2" []
   , imports: []
   , exports: []
   , declarations:

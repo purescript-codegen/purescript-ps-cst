@@ -4,13 +4,13 @@ import Language.PS.CST.Sugar (mkModuleName, mkRowLabels, nonQualifiedName, numbe
 import Language.PS.CST.Types (Constraint(..), DeclDeriveType(..), Declaration(..), Ident(..), Module(..), ProperName(..), Row(..), Type(..))
 
 import Data.Maybe (Maybe(..))
-import Data.NonEmpty ((:|), singleton)
+import Data.Array.NonEmpty as NonEmpty
 import Data.Tuple.Nested ((/\))
 import Prelude (($))
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "DeclDerive" :| []
+  { moduleName: mkModuleName $ NonEmpty.cons' "DeclDerive" []
   , imports: []
   , exports: []
   , declarations:
@@ -21,7 +21,7 @@ actualModule = Module
         { instName: Ident "eqBaz"
         , instConstraints: []
         , instClass: nonQualifiedName $ ProperName "Eq"
-        , instTypes: (TypeConstructor $ nonQualifiedName $ ProperName "Baz") :| []
+        , instTypes: NonEmpty.cons' (TypeConstructor $ nonQualifiedName $ ProperName "Baz") []
         }
       }
     , DeclDerive
@@ -31,7 +31,7 @@ actualModule = Module
         { instName: Ident "eqBaz"
         , instConstraints: []
         , instClass: nonQualifiedName $ ProperName "Eq"
-        , instTypes: (TypeConstructor $ nonQualifiedName $ ProperName "Baz") :| []
+        , instTypes: NonEmpty.cons' (TypeConstructor $ nonQualifiedName $ ProperName "Baz") []
         }
       }
     , DeclDerive
@@ -41,7 +41,13 @@ actualModule = Module
         { instName: Ident "foo"
         , instConstraints: []
         , instClass: nonQualifiedName $ ProperName "Foo"
-        , instTypes: (TypeConstructor $ nonQualifiedName $ ProperName "Bar") :| [TypeRecord $ Row { rowLabels: mkRowLabels [ "foo" /\ numberType ], rowTail: Nothing }]
+        , instTypes: NonEmpty.cons'
+          ( TypeConstructor $ nonQualifiedName $ ProperName "Bar")
+          [ TypeRecord $ Row
+            { rowLabels: mkRowLabels [ "foo" /\ numberType ]
+            , rowTail: Nothing
+            }
+          ]
         }
       }
     , DeclDerive
@@ -53,7 +59,10 @@ actualModule = Module
           [ Constraint { className: nonQualifiedName (ProperName "Foo"), args: [typeVar "a"] }
           ]
         , instClass: nonQualifiedName $ ProperName "Foo"
-        , instTypes: singleton $ (TypeConstructor $ nonQualifiedName $ ProperName "Array") `TypeApp` (typeVar "a")
+        , instTypes: NonEmpty.singleton $
+            (TypeConstructor $ nonQualifiedName $ ProperName "Array")
+            `TypeApp`
+            (typeVar "a")
         }
       }
     , DeclDerive
@@ -67,7 +76,7 @@ actualModule = Module
           , Constraint { className: nonQualifiedName (ProperName "Partial"), args: [] }
           ]
         , instClass: nonQualifiedName $ ProperName "Foo"
-        , instTypes: singleton $ (TypeConstructor $ nonQualifiedName $ ProperName "Tuple") `TypeApp` (typeVar "a") `TypeApp` (typeVar "b")
+        , instTypes: NonEmpty.singleton $ (TypeConstructor $ nonQualifiedName $ ProperName "Tuple") `TypeApp` (typeVar "a") `TypeApp` (typeVar "b")
         }
       }
     ]

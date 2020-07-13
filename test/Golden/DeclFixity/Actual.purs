@@ -4,13 +4,13 @@ import Language.PS.CST.Sugar (mkModuleName, nonQualifiedName)
 import Language.PS.CST.Types (Declaration(..), Fixity(..), FixityOp(..), Ident(..), Module(..), OpName(..), ProperName(..))
 
 import Data.Maybe (Maybe(..))
-import Data.NonEmpty ((:|))
+import Data.Array.NonEmpty as NonEmpty
 import Prelude (($))
 import Data.Either (Either(..))
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "DeclFixity" :| []
+  { moduleName: mkModuleName $ NonEmpty.cons' "DeclFixity" []
   , imports: []
   , exports: []
   , declarations:

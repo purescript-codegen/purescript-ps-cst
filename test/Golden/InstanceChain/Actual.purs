@@ -4,12 +4,12 @@ import Language.PS.CST.Sugar (mkModuleName, nonQualifiedExprIdent, nonQualifiedN
 import Language.PS.CST.Types (Declaration(..), Expr(..), Guarded(..), Ident(..), InstanceBinding(..), Module(..), ProperName(..), Type(..))
 
 import Data.Maybe (Maybe(..))
-import Data.NonEmpty ((:|))
+import Data.Array.NonEmpty as NonEmpty
 import Prelude (($))
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "InstanceChain" :| []
+  { moduleName: mkModuleName $ NonEmpty.cons' "InstanceChain" []
   , imports: []
   , exports: []
   , declarations:
@@ -17,20 +17,20 @@ actualModule = Module
       { comments: Nothing
       , instances:
         (
+          NonEmpty.cons'
           { head:
             { instName: Ident "fooBaz"
             , instConstraints: []
             , instClass: nonQualifiedName (ProperName "Foo")
-            , instTypes: (nonQualifiedNameTypeConstructor "Baz") :| []
+            , instTypes: NonEmpty.cons' (nonQualifiedNameTypeConstructor "Baz") []
             }
           , body: []
           }
-          :|
           [ { head:
               { instName: Ident "fooBaz"
               , instConstraints: []
               , instClass: nonQualifiedName (ProperName "Foo")
-              , instTypes: (nonQualifiedNameTypeConstructor "Baz") :| []
+              , instTypes: NonEmpty.cons' (nonQualifiedNameTypeConstructor "Baz") []
               }
             , body:
               [ InstanceBindingSignature { ident: Ident "foo", type_: numberType }
@@ -57,7 +57,17 @@ actualModule = Module
               { instName: Ident "fooBaz"
               , instConstraints: []
               , instClass: nonQualifiedName (ProperName "Foo")
-              , instTypes: (nonQualifiedNameTypeConstructor "Cor" `TypeApp` nonQualifiedNameTypeConstructor "Int") :| [nonQualifiedNameTypeConstructor "Gar" `TypeApp` nonQualifiedNameTypeConstructor "Int" `TypeApp` nonQualifiedNameTypeConstructor "Boolean"]
+              , instTypes: NonEmpty.cons'
+                ( nonQualifiedNameTypeConstructor "Cor"
+                  `TypeApp`
+                  nonQualifiedNameTypeConstructor "Int"
+                )
+                [ nonQualifiedNameTypeConstructor "Gar"
+                  `TypeApp`
+                  nonQualifiedNameTypeConstructor "Int"
+                  `TypeApp`
+                  nonQualifiedNameTypeConstructor "Boolean"
+                ]
               }
             , body:
               [ InstanceBindingName

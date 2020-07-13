@@ -3,7 +3,7 @@ module Test.Golden.DeclNewtype.Actual where
 import Language.PS.CST.Sugar (arrayType, booleanType, kindNamed, maybeType, mkModuleName, mkRowLabels, nonQualifiedName, nonQualifiedNameTypeConstructor, numberType, qualifiedName, stringType, typeRecord, typeVar, typeVarName)
 import Language.PS.CST.Types (Constraint(..), DataHead(..), Declaration(..), Ident(..), Kind(..), Module(..), OpName(..), ProperName(..), Row(..), Type(..), TypeVarBinding(..), (====>>), (====>>>))
 import Data.Maybe (Maybe(..))
-import Data.NonEmpty ((:|))
+import Data.Array.NonEmpty as NonEmpty
 import Data.Tuple.Nested ((/\))
 import Prelude (($))
 
@@ -16,7 +16,7 @@ head =
 
 dataMapMap :: Type -> Type -> Type
 dataMapMap x y =
-  (TypeConstructor $ qualifiedName (mkModuleName $ "Data" :| ["Map"]) (ProperName "Map"))
+  (TypeConstructor $ qualifiedName (mkModuleName $ NonEmpty.cons' "Data" ["Map"]) (ProperName "Map"))
   `TypeApp`
   x
   `TypeApp`
@@ -30,7 +30,7 @@ declFooNewtype type_ = DeclNewtype { comments: Nothing, head, name: ProperName "
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "DeclNewtype" :| []
+  { moduleName: mkModuleName $ NonEmpty.cons' "DeclNewtype" []
   , imports: []
   , exports: []
   , declarations:
@@ -114,12 +114,12 @@ actualModule = Module
       , rowTail: Nothing
       }
     , declFooNewtype $ TypeForall
-      ((typeVarName "a") :| [(TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )])
+      (NonEmpty.cons' (typeVarName "a") [(TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )])
       (arrayType $ typeVar "a")
     , declFooNewtype $ (arrayType $ typeVar "a") ====>> (maybeType $ typeVar "a")
     , declFooNewtype $ TypeOp (nonQualifiedNameTypeConstructor "Array") (nonQualifiedName $ OpName "~>") (nonQualifiedNameTypeConstructor "Maybe")
     , declFooNewtype $ TypeForall
-      ((typeVarName "f") :| [])
+      (NonEmpty.cons' (typeVarName "f") [])
       ( TypeConstrained
         (Constraint { className: nonQualifiedName $ ProperName "Functor", args: [typeVar "f"] })
         (TypeOp (typeVar "f") (nonQualifiedName $ OpName "~>") (nonQualifiedNameTypeConstructor "Maybe"))

@@ -5,15 +5,15 @@ import Language.PS.CST.Types
 import Language.PS.CST.Sugar (mkModuleName)
 import Prelude (map, ($))
 
-import Data.NonEmpty ((:|))
+import Data.Array.NonEmpty as NonEmpty
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "Exports" :| []
+  { moduleName: mkModuleName $ NonEmpty.cons' "Exports" []
   , imports: []
   , exports:
-      [ ExportModule (mkModuleName $ "A" :| [])
-      , ExportModule (mkModuleName $ "A" :| ["B"])
+      [ ExportModule (mkModuleName $ NonEmpty.cons' "A" [])
+      , ExportModule (mkModuleName $ NonEmpty.cons' "A" ["B"])
       , ExportClass (ProperName "A")
       , ExportKind (ProperName "A")
       , ExportTypeOp (OpName "||")
