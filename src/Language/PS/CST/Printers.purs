@@ -256,7 +256,7 @@ printBinder (BinderOp binderLeft operator binderRight) = printBinder binderLeft 
 
 printRecordLabeled :: ∀ a . (a -> Box) -> RecordLabeled a -> Box
 printRecordLabeled _ (RecordPun ident) = textFromNewtype ident
-printRecordLabeled print (RecordField label a) = textFromNewtype label <<>> text ":" <<>> print a
+printRecordLabeled print (RecordField label a) = textFromNewtype label <<>> text ":" <<+>> print a
 
 printExpr :: Expr -> Box
 printExpr (ExprHole hole) = text "?" <<>> textFromNewtype hole
@@ -269,7 +269,7 @@ printExpr (ExprString string) = text $ show string
 printExpr (ExprNumber (Left int)) = text $ show int
 printExpr (ExprNumber (Right num)) = text $ show num
 printExpr (ExprArray array) = text "[" <<>> (punctuateH left (text ", ") $ map printExpr array) <<>> text "]"
-printExpr (ExprRecord arrayRecordLabeled) = punctuateH left (text ", ") $ map (printRecordLabeled printExpr) arrayRecordLabeled
+printExpr (ExprRecord arrayRecordLabeled) = text "{" <<+>> (punctuateH left (text ", ") $ map (printRecordLabeled printExpr) arrayRecordLabeled) <<+>> text "}"
 printExpr (ExprTyped expr type_) = printExpr expr <<+>> text "::" <<+>> printType PrintType_OneLine type_
 printExpr (ExprInfix exprLeft operator exprRight) = printExpr exprLeft <<+>> printExpr operator <<+>> printExpr exprRight
 printExpr (ExprOp exprLeft operator exprRight) = printExpr exprLeft <<+>> printQualifiedName_AnyOpNameType operator <<+>> printExpr exprRight
