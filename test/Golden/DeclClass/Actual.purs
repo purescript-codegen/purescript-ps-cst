@@ -4,12 +4,12 @@ import Language.PS.CST.Sugar (mkModuleName, nonQualifiedName, typeVar, typeVarNa
 import Language.PS.CST.Types (ClassFundep(..), Comments(..), Constraint(..), Declaration(..), Ident(..), Module(..), ProperName(..), TypeVarBinding(..), (====>>))
 
 import Data.Maybe (Maybe(..))
-import Data.NonEmpty ((:|), singleton)
+import Data.Array.NonEmpty as NonEmpty
 import Prelude (($))
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "DeclClass" :| []
+  { moduleName: mkModuleName $ NonEmpty.cons' "DeclClass" []
   , imports: []
   , exports: []
   , declarations:
@@ -43,7 +43,7 @@ actualModule = Module
         { name: ProperName "FunDep"
         , vars: [typeVarName "a", typeVarName "b"]
         , super: []
-        , fundeps: [(singleton (Ident "a")) `FundepDetermines` (singleton (Ident "b"))]
+        , fundeps: [(NonEmpty.singleton (Ident "a")) `FundepDetermines` (NonEmpty.singleton (Ident "b"))]
         }
       , methods: []
       }
@@ -54,8 +54,8 @@ actualModule = Module
         , vars: [typeVarName "a", typeVarName "b", typeVarName "c", typeVarName "d", typeVarName "e"]
         , super: []
         , fundeps:
-          [ ((Ident "b" :| [(Ident "c")])) `FundepDetermines` (singleton (Ident "d"))
-          , ((Ident "d" :| [])) `FundepDetermines` ((Ident "b" :| [(Ident "c")]))
+          [ ((NonEmpty.cons' (Ident "b") [(Ident "c")])) `FundepDetermines` (NonEmpty.singleton (Ident "d"))
+          , ((NonEmpty.cons' (Ident "d") [])) `FundepDetermines` ((NonEmpty.cons' (Ident "b") [(Ident "c")]))
           ]
         }
       , methods: []
@@ -93,7 +93,7 @@ actualModule = Module
         , super:
           [ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [typeVar "m", typeVar "c"] }
           ]
-        , fundeps: [(singleton (Ident "m")) `FundepDetermines` (singleton (Ident "c"))]
+        , fundeps: [(NonEmpty.singleton (Ident "m")) `FundepDetermines` (NonEmpty.singleton (Ident "c"))]
         }
       , methods: []
       }

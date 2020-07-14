@@ -5,12 +5,12 @@ import Language.PS.CST.Types (Declaration(..), Foreign(..), Ident(..), Kind(..),
 import Prelude (($))
 
 import Data.Maybe (Maybe(..))
-import Data.NonEmpty ((:|))
+import Data.Array.NonEmpty as NonEmpty
 import Data.Tuple.Nested ((/\))
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "DeclForeign" :| []
+  { moduleName: mkModuleName $ NonEmpty.cons' "DeclForeign" []
   , imports: []
   , exports: []
   , declarations:
@@ -26,7 +26,7 @@ actualModule = Module
       { comments: Nothing
       , foreign_: ForeignValue
         { ident: Ident "main_"
-        , type_: TypeForall ((typeVarName "e") :| []) (
+        , type_: TypeForall (NonEmpty.cons' (typeVarName "e") []) (
             (TypeConstructor $ nonQualifiedName $ ProperName "Eff")
             `TypeApp`
             (TypeRow $ Row { rowLabels: mkRowLabels [ "console" /\ nonQualifiedNameTypeConstructor "CONSOLE", "foo" /\ nonQualifiedNameTypeConstructor "FOO" ], rowTail: Just $ typeVar "e" })

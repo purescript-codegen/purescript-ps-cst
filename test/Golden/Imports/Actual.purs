@@ -5,26 +5,26 @@ import Language.PS.CST.Types
 import Language.PS.CST.Sugar (mkModuleName)
 import Prelude (map, ($))
 
-import Data.NonEmpty ((:|))
+import Data.Array.NonEmpty as NonEmpty
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "Foo" :| []
+  { moduleName: mkModuleName $ NonEmpty.cons' "Foo" []
   , imports:
     [ ImportDecl
-      { moduleName: mkModuleName $ "Prelude" :| []
+      { moduleName: mkModuleName $ NonEmpty.cons' "Prelude" []
       , names: []
       , qualification: Nothing
       }
     , ImportDecl
-      { moduleName: mkModuleName $ "Data" :| ["Maybe"]
+      { moduleName: mkModuleName $ NonEmpty.cons' "Data" ["Maybe"]
       , names:
         [ ImportType (ProperName "Maybe") Nothing
         ]
       , qualification: Nothing
       }
     , ImportDecl
-      { moduleName: mkModuleName $ "Prelude" :| []
+      { moduleName: mkModuleName $ NonEmpty.cons' "Prelude" []
       , names:
         [ ImportClass (ProperName "EuclideanRing")
         , ImportKind (ProperName "MyKind")
@@ -38,17 +38,17 @@ actualModule = Module
       , qualification: Nothing
       }
     , ImportDecl
-      { moduleName: mkModuleName $ "Data" :| ["Array"]
+      { moduleName: mkModuleName $ NonEmpty.cons' "Data" ["Array"]
       , names:
         [ ImportValue (Ident "head")
         , ImportValue (Ident "tail")
         ]
-      , qualification: Just $ mkModuleName $ "Array" :| []
+      , qualification: Just $ mkModuleName $ NonEmpty.cons' "Array" []
       }
     , ImportDecl
-      { moduleName: mkModuleName $ "Data" :| ["List"]
+      { moduleName: mkModuleName $ NonEmpty.cons' "Data" ["List"]
       , names: []
-      , qualification: Just $ mkModuleName $ "My" :| ["Data", "List"]
+      , qualification: Just $ mkModuleName $ NonEmpty.cons' "My" ["Data", "List"]
       }
     ]
   , exports: []

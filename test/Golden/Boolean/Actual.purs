@@ -3,13 +3,13 @@ module Test.Golden.Boolean.Actual where
 import Language.PS.CST.Types
 
 import Data.Maybe (Maybe(..))
-import Data.NonEmpty ((:|))
+import Data.Array.NonEmpty as NonEmpty
 import Language.PS.CST.Sugar (booleanType, mkModuleName)
 import Prelude (($))
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "Foo" :| []
+  { moduleName: mkModuleName $ NonEmpty.cons' "Foo" []
   , imports: []
   , exports: []
   , declarations:

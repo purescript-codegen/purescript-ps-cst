@@ -12,7 +12,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
-import Data.NonEmpty (NonEmpty)
+import Data.Array.NonEmpty (NonEmptyArray)
 
 -- | No need for imports list as they are collected from declarations
 -- | during final codegen.
@@ -43,7 +43,7 @@ derive instance genericComments :: Generic Comments _
 derive instance eqComments :: Eq Comments
 derive instance ordComments :: Ord Comments
 
-newtype ModuleName = ModuleName (NonEmpty Array (ProperName ProperNameType_Namespace))
+newtype ModuleName = ModuleName (NonEmptyArray (ProperName ProperNameType_Namespace))
 derive instance newtypeModuleName :: Newtype ModuleName _
 derive instance genericModuleName :: Generic ModuleName _
 derive instance eqModuleName :: Eq ModuleName
@@ -135,7 +135,7 @@ data Declaration
   | DeclType          { comments :: Maybe Comments, head :: DataHead, type_ :: Type }
   | DeclNewtype       { comments :: Maybe Comments, head :: DataHead, name :: ProperName ProperNameType_ConstructorName, type_ :: Type }
   | DeclClass         { comments :: Maybe Comments, head :: ClassHead, methods :: Array { ident :: Ident, type_ :: Type } }
-  | DeclInstanceChain { comments :: Maybe Comments, instances :: NonEmpty Array Instance }
+  | DeclInstanceChain { comments :: Maybe Comments, instances :: NonEmptyArray Instance }
   | DeclDerive        { comments :: Maybe Comments, deriveType :: DeclDeriveType, head :: InstanceHead }
   | DeclSignature     { comments :: Maybe Comments, ident :: Ident, type_ :: Type }
   | DeclValue         { comments :: Maybe Comments, valueBindingFields :: ValueBindingFields }
@@ -157,7 +157,7 @@ type InstanceHead =
   { instName :: Ident
   , instConstraints :: Array Constraint
   , instClass :: QualifiedName (ProperName ProperNameType_ClassName)
-  , instTypes :: NonEmpty Array Type
+  , instTypes :: NonEmptyArray Type
   }
 
 data Foreign
@@ -200,7 +200,7 @@ data Type
   | TypeRow Row
   | TypeRecord Row
   | TypeApp Type Type
-  | TypeForall (NonEmpty Array TypeVarBinding) Type
+  | TypeForall (NonEmptyArray TypeVarBinding) Type
   | TypeArr Type Type
   | TypeKinded Type Kind
   | TypeOp Type (QualifiedName (OpName OpNameType_TypeOpName)) Type -- like TypeArr, but with custom type alias
@@ -294,8 +294,8 @@ derive instance ordConstraint :: Ord Constraint
 -- instance showConstraint :: Show Constraint where show = genericShow
 
 data ClassFundep
-  = FundepDetermines (NonEmpty Array Ident) (NonEmpty Array Ident)
-  -- | FundepDetermined (NonEmpty Array Ident) -- parser is not allowing it (i.e. `class Foo a | a`)?
+  = FundepDetermines (NonEmptyArray Ident) (NonEmptyArray Ident)
+  -- | FundepDetermined (NonEmptyArray Ident) -- parser is not allowing it (i.e. `class Foo a | a`)?
 derive instance genericClassFundep :: Generic ClassFundep _
 derive instance eqClassFundep :: Eq ClassFundep
 derive instance ordClassFundep :: Ord ClassFundep
@@ -348,7 +348,7 @@ derive instance ordBinder :: Ord Binder
 
 data Guarded
   = Unconditional Where
-  | Guarded (NonEmpty Array GuardedExpr)
+  | Guarded (NonEmptyArray GuardedExpr)
 derive instance genericGuarded :: Generic Guarded _
 derive instance eqGuarded :: Eq Guarded
 derive instance ordGuarded :: Ord Guarded
@@ -367,7 +367,7 @@ derive instance eqLetBinding :: Eq LetBinding
 derive instance ordLetBinding :: Ord LetBinding
 
 type GuardedExpr =
-  { patterns :: NonEmpty Array PatternGuard
+  { patterns :: NonEmptyArray PatternGuard
   , where_ :: Where
   }
 
@@ -394,7 +394,7 @@ data Expr
   | ExprOpName (QualifiedName (OpName OpNameType_ValueOpName))
   | ExprNegate Expr -- ????
   | ExprRecordAccessor RecordAccessor
-  | ExprRecordUpdate Expr (NonEmpty Array RecordUpdate)
+  | ExprRecordUpdate Expr (NonEmptyArray RecordUpdate)
   | ExprApp Expr Expr
   | ExprLambda Lambda
   | ExprIf IfThenElse
@@ -408,18 +408,18 @@ derive instance ordExpr :: Ord Expr
 
 type RecordAccessor =
   { recExpr :: Expr
-  , recPath :: NonEmpty Array Label
+  , recPath :: NonEmptyArray Label
   }
 
 data RecordUpdate
   = RecordUpdateLeaf Label Expr
-  | RecordUpdateBranch Label (NonEmpty Array RecordUpdate)
+  | RecordUpdateBranch Label (NonEmptyArray RecordUpdate)
 derive instance genericRecordUpdate :: Generic RecordUpdate _
 derive instance eqRecordUpdate :: Eq RecordUpdate
 derive instance ordRecordUpdate :: Ord RecordUpdate
 
 type Lambda =
-  { binders :: NonEmpty Array Binder
+  { binders :: NonEmptyArray Binder
   , body :: Expr
   }
 
@@ -430,19 +430,19 @@ type IfThenElse =
   }
 
 type CaseOf =
-  { head :: NonEmpty Array Expr
-  , branches :: NonEmpty Array { binders :: NonEmpty Array Binder, body :: Guarded }
+  { head :: NonEmptyArray Expr
+  , branches :: NonEmptyArray { binders :: NonEmptyArray Binder, body :: Guarded }
   }
 
 type LetIn =
   { body :: Expr
-  , bindings :: NonEmpty Array LetBinding
+  , bindings :: NonEmptyArray LetBinding
   }
 
-type DoBlock = NonEmpty Array DoStatement
+type DoBlock = NonEmptyArray DoStatement
 
 data DoStatement
-  = DoLet (NonEmpty Array LetBinding)
+  = DoLet (NonEmptyArray LetBinding)
   | DoDiscard Expr
   | DoBind { binder :: Binder, expr :: Expr }
 derive instance genericDoStatement :: Generic DoStatement _

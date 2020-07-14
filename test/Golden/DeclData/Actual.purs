@@ -3,13 +3,13 @@ module Test.Golden.DeclData.Actual where
 import Prelude (($))
 
 import Data.Maybe (Maybe(..))
-import Data.NonEmpty ((:|))
+import Data.Array.NonEmpty as NonEmpty
 import Language.PS.CST.Sugar (mkModuleName)
 import Language.PS.CST.Types (Comments(..), DataCtor(..), DataHead(..), Declaration(..), Module(..), ProperName(..))
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "DeclData" :| []
+  { moduleName: mkModuleName $ NonEmpty.cons' "DeclData" []
   , imports: []
   , exports: []
   , declarations:

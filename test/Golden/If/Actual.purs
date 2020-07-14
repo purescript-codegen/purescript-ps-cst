@@ -4,12 +4,12 @@ import Language.PS.CST.Sugar (mkModuleName)
 import Language.PS.CST.Types (Declaration(..), Expr(..), Guarded(..), Ident(..), Module(..))
 
 import Data.Maybe (Maybe(..))
-import Data.NonEmpty ((:|))
+import Data.Array.NonEmpty as NonEmpty
 import Prelude (($))
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "Foo" :| []
+  { moduleName: mkModuleName $ NonEmpty.cons' "Foo" []
   , imports: []
   , exports: []
   , declarations:

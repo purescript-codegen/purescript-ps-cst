@@ -5,12 +5,12 @@ import Language.PS.CST.Types (Binder(..), Declaration(..), Expr(..), Guarded(..)
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.NonEmpty ((:|))
+import Data.Array.NonEmpty as NonEmpty
 import Prelude (($))
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "Foo" :| []
+  { moduleName: mkModuleName $ NonEmpty.cons' "Foo" []
   , imports: []
   , exports: []
   , declarations:
@@ -22,26 +22,27 @@ actualModule = Module
         , guarded: Unconditional
             { expr:
               ExprCase
-              { head: nonQualifiedExprIdent "foo" :| []
+              { head: NonEmpty.cons' (nonQualifiedExprIdent "foo") []
               , branches:
-                { binders: BinderConstructor { name: nonQualifiedName (ProperName "Just"), args: [BinderVar (Ident "a")] } :| []
+                NonEmpty.cons'
+                { binders: NonEmpty.cons' (BinderConstructor { name: nonQualifiedName (ProperName "Just"), args: [BinderVar (Ident "a")] }) []
                 , body: Unconditional { expr: ExprBoolean true, whereBindings: [] }
                 }
-                :|
-                [ { binders: BinderConstructor { name: nonQualifiedName (ProperName "Nothing"), args: [] } :| []
+                [ { binders: NonEmpty.cons' (BinderConstructor { name: nonQualifiedName (ProperName "Nothing"), args: [] }) []
                   , body: Unconditional { expr: ExprBoolean false, whereBindings: [] }
                   }
-                , { binders: BinderString "FOO" :| []
+                , { binders: NonEmpty.cons' (BinderString "FOO") []
                   , body: Unconditional
                     { expr:
                       ExprCase
                       { head:
-                        ExprIf
-                        { cond: ExprBoolean true
-                        , true_: ExprBoolean true
-                        , false_: ExprBoolean false
-                        }
-                        :|
+                        NonEmpty.cons'
+                        ( ExprIf
+                          { cond: ExprBoolean true
+                          , true_: ExprBoolean true
+                          , false_: ExprBoolean false
+                          }
+                        )
                         [ ExprIf
                           { cond: ExprBoolean true
                           , true_: ExprBoolean true
@@ -49,32 +50,33 @@ actualModule = Module
                           }
                         ]
                       , branches:
-                        { binders: BinderConstructor { name: nonQualifiedName (ProperName "Just"), args: [BinderVar (Ident "a")] } :| []
+                        NonEmpty.cons'
+                        { binders: NonEmpty.cons' (BinderConstructor { name: nonQualifiedName (ProperName "Just"), args: [BinderVar (Ident "a")] }) []
                         , body: Unconditional { expr: ExprBoolean true, whereBindings: [] }
                         }
-                        :|
                         []
                       }
                     , whereBindings: []
                     }
                   }
-                , { binders: BinderNumber (Right 1.1) :| []
+                , { binders: NonEmpty.cons' (BinderNumber (Right 1.1)) []
                   , body: Unconditional
                     { expr:
                       ExprCase
                       { head:
-                        ExprIf
-                        { cond: ExprBoolean true
-                        , true_: ExprBoolean true
-                        , false_: ExprBoolean false
-                        }
-                        :|
+                        NonEmpty.cons'
+                        ( ExprIf
+                          { cond: ExprBoolean true
+                          , true_: ExprBoolean true
+                          , false_: ExprBoolean false
+                          }
+                        )
                         []
                       , branches:
-                        { binders: BinderConstructor { name: nonQualifiedName (ProperName "Just"), args: [BinderVar (Ident "a")] } :| []
+                        NonEmpty.cons'
+                        { binders: NonEmpty.cons' (BinderConstructor { name: nonQualifiedName (ProperName "Just"), args: [BinderVar (Ident "a")] }) []
                         , body: Unconditional { expr: ExprBoolean true, whereBindings: [] }
                         }
-                        :|
                         []
                       }
                     , whereBindings:
@@ -89,13 +91,13 @@ actualModule = Module
                       ]
                     }
                   }
-                , { binders: BinderNamed
+                , { binders: NonEmpty.singleton $ BinderNamed
                     { ident: Ident "a"
                     , binder: BinderConstructor
                       { name: nonQualifiedName (ProperName "Just")
                       , args: [BinderVar (Ident "a")]
                       }
-                    } :| []
+                    }
                   , body: Unconditional
                     { expr: ExprBoolean false
                     , whereBindings: []

@@ -5,12 +5,12 @@ import Language.PS.CST.Types (Binder(..), Declaration(..), Expr(..), Guarded(..)
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.NonEmpty ((:|))
+import Data.Array.NonEmpty as NonEmpty
 import Prelude (($))
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "MultilinePatternMatchingInLet" :| []
+  { moduleName: mkModuleName $ NonEmpty.cons' "MultilinePatternMatchingInLet" []
   , imports: []
   , exports: []
   , declarations:
@@ -27,12 +27,12 @@ actualModule = Module
         , guarded: Unconditional
             { expr: ExprLet
               { bindings:
+                NonEmpty.cons'
                 ( LetBindingSignature
                   { ident: Ident "psModuleFile"
                   , type_: nonQualifiedNameTypeConstructor "ModulePath" ====>> nonQualifiedNameTypeConstructor "Int"
                   }
                 )
-                :|
                 [ LetBindingName
                   { name: Ident "psModuleFile"
                   , binders:

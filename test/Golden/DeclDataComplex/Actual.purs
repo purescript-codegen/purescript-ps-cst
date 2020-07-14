@@ -4,13 +4,13 @@ import Language.PS.CST.Sugar (arrayType, booleanType, kindNamed, maybeType, mkMo
 import Language.PS.CST.Types (Constraint(..), DataCtor(..), DataHead(..), Declaration(..), Ident(..), Kind(..), Module(..), OpName(..), ProperName(..), Row(..), Type(..), TypeVarBinding(..), (====>>), (====>>>))
 
 import Data.Maybe (Maybe(..))
-import Data.NonEmpty ((:|))
+import Data.Array.NonEmpty as NonEmpty
 import Data.Tuple.Nested ((/\))
 import Prelude (($))
 
 dataMapMap :: Type -> Type -> Type
 dataMapMap x y =
-  (TypeConstructor $ qualifiedName (mkModuleName $ "Data" :| ["Map"]) (ProperName "Map"))
+  (TypeConstructor $ qualifiedName (mkModuleName $ NonEmpty.cons' "Data" ["Map"]) (ProperName "Map"))
   `TypeApp`
   x
   `TypeApp`
@@ -21,7 +21,7 @@ myExtension = nonQualifiedNameTypeConstructor "MyExtension"
 
 actualModule :: Module
 actualModule = Module
-  { moduleName: mkModuleName $ "DeclDataComplex" :| []
+  { moduleName: mkModuleName $ NonEmpty.singleton "DeclDataComplex"
   , imports: []
   , exports: []
   , declarations:
@@ -166,12 +166,12 @@ actualModule = Module
               , rowTail: Nothing
               }
             , TypeForall
-              ((typeVarName "a") :| [(TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )])
+              (NonEmpty.cons' (typeVarName "a") [(TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )])
               (arrayType $ typeVar "a")
             , (arrayType $ typeVar "a") ====>> (maybeType $ typeVar "a")
             , TypeOp (nonQualifiedNameTypeConstructor "Array") (nonQualifiedName $ OpName "~>") (nonQualifiedNameTypeConstructor "Maybe")
             , TypeForall
-              ((typeVarName "f") :| [])
+              (NonEmpty.singleton (typeVarName "f"))
               (TypeConstrained
                 (Constraint { className: nonQualifiedName $ ProperName "Functor", args: [typeVar "f"] })
                 (TypeOp (typeVar "f") (nonQualifiedName $ OpName "~>") (nonQualifiedNameTypeConstructor "Maybe"))
@@ -192,7 +192,7 @@ actualModule = Module
         , DataCtor
           { dataCtorName: ProperName "Baz"
           , dataCtorFields:
-            [ TypeConstructor $ qualifiedName (mkModuleName $ "Prelude" :| []) (ProperName "Boolean")
+            [ TypeConstructor $ qualifiedName (mkModuleName $ NonEmpty.singleton "Prelude") (ProperName "Boolean")
             ]
           }
         ]

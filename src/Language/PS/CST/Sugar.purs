@@ -4,10 +4,10 @@ import Language.PS.CST.Types (Expr(..), Ident(..), Kind(..), Label(..), ModuleNa
 import Prelude (map, ($), (<<<))
 
 import Data.Maybe (Maybe(..))
-import Data.NonEmpty (NonEmpty)
+import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Tuple.Nested (type (/\), (/\))
 
-mkModuleName :: NonEmpty Array String -> ModuleName
+mkModuleName :: NonEmptyArray String -> ModuleName
 mkModuleName = ModuleName <<< map ProperName
 
 nonQualifiedName :: ∀ a . a -> QualifiedName a
