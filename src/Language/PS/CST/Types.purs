@@ -1,9 +1,5 @@
 module Language.PS.CST.Types where
 
--- | This module is somewhat inspired by `purescript-cst` types.
--- | I've tried to preserve constructor names to simplify
--- | further "copy and paste based development".
-
 import Prelude
 
 import Data.Either (Either)
@@ -14,8 +10,6 @@ import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
 import Data.Array.NonEmpty (NonEmptyArray)
 
--- | No need for imports list as they are collected from declarations
--- | during final codegen.
 newtype Module = Module
   { moduleName :: ModuleName
   , imports :: Array ImportDecl
@@ -465,17 +459,6 @@ type Instance =
   { head :: InstanceHead
   , body :: Array InstanceBinding
   }
-
--- TODO: add `_` postfix during printing for reservedNames
--- reservedNames :: Set String
--- reservedNames = Set.fromFoldable
---   [ "ado" , "case" , "class" , "data"
---   , "derive" , "do" , "else" , "false"
---   , "forall" , "foreign" , "import" , "if"
---   , "in" , "infix" , "infixl" , "infixr"
---   , "instance" , "let" , "module" , "newtype"
---   , "of" , "true" , "type" , "where"
---   ]
 
 infixl 5 ExprLambda as ====>
 infixr 5 TypeArr as ====>>
