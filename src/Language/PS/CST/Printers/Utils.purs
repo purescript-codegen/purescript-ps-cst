@@ -1,20 +1,19 @@
 module Language.PS.CST.Printers.Utils where
 
-import Language.PS.CST.Types (ModuleName(..), ProperName, ProperNameType_ConstructorName)
-import Prelude (identity, map, (#), (<<<), (>>>))
-import Text.PrettyPrint.Boxes (Box, emptyBox, hsep, left, nullBox, punctuateH, text, vsep, (//), (<<>>))
-
 import Data.Foldable (class Foldable)
 import Data.List (List(..), (:))
 import Data.List (fromFoldable) as List
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
--- import Debug.Trace (trace)
+import Language.PS.CST.Types (ModuleName(..), ProperName, ProperNameType_ConstructorName)
+import Language.PS.CST.Utils (appendUnderscoreIfReserved)
+import Prelude (identity, map, (#), (<<<), (>>>))
+import Text.PrettyPrint.Boxes (Box, emptyBox, hsep, left, nullBox, punctuateH, text, vsep, (//), (<<>>))
 
-line :: ∀ f. Foldable f ⇒ f Box → Box
+line :: ∀ f. Foldable f => f Box -> Box
 line = hsep 1 left
 
-lines :: ∀ f. Foldable f ⇒ f Box → Box
+lines :: ∀ f. Foldable f => f Box -> Box
 lines = vsep 0 left
 
 emptyRow :: Box
@@ -35,11 +34,11 @@ wrapInParentheses x = text "(" <<>> x <<>> text ")"
 wrapInDoubleQuotes :: Box -> Box
 wrapInDoubleQuotes x = text "\"" <<>> x <<>> text "\""
 
-punctuateWithComma :: ∀ f. Foldable f ⇒ f Box → Box
+punctuateWithComma :: ∀ f. Foldable f => f Box -> Box
 punctuateWithComma = punctuateH left (text ", ")
 
-textFromNewtype :: ∀ x. Newtype x String ⇒ x → Box
-textFromNewtype = text <<< unwrap
+textFromNewtype :: ∀ x. Newtype x String => x -> Box
+textFromNewtype = text <<< appendUnderscoreIfReserved <<< unwrap
 
 twoSpaceIdentation :: Box
 twoSpaceIdentation = emptyBox 0 2
