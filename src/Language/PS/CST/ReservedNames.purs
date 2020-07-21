@@ -1,4 +1,4 @@
-module Language.PS.CST.Utils where
+module Language.PS.CST.ReservedNames where
 
 import Prelude
 import Data.Set (Set)
@@ -36,4 +36,10 @@ appendUnderscoreIfReserved :: String -> String
 appendUnderscoreIfReserved str =
   if Set.member str reservedNames
     then str <> "_"
+    else str
+
+quoteIfReserved :: String -> String
+quoteIfReserved str =
+  if Set.member str reservedNames
+    then "\"" <> str <> "\""
     else str

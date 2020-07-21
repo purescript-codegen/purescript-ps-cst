@@ -1,12 +1,15 @@
 module Language.PS.CST.Printers where
 
+import Prelude
+
 import Language.PS.CST.Printers.PrintImports (printImports)
 import Language.PS.CST.Printers.PrintModuleModuleNameAndExports (printModuleModuleNameAndExports)
 import Language.PS.CST.Printers.TypeLevel (PrintType_Style(..), printConstraint, printDataCtor, printDataHead, printFixity, printFundep, printKind, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printTypeVarBinding)
-import Language.PS.CST.Printers.Utils (emptyColumn, emptyRow, ifelse, lines, maybeWrapInParentheses, printAndConditionallyAddNewlinesBetween, textFromNewtype, twoSpaceIdentation, wrapInParentheses)
+import Language.PS.CST.Printers.Utils (emptyColumn, emptyRow, ifelse, lines, maybeWrapInParentheses, printAndConditionallyAddNewlinesBetween, twoSpaceIdentation, wrapInParentheses)
 import Language.PS.CST.Types (Binder(..), Comments(..), DeclDeriveType(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), Module(..), RecordLabeled(..), RecordUpdate(..), Type(..), ValueBindingFields)
-import Prelude (flip, map, show, (#), ($), (<#>), (<<<), (==))
+import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
 
+import Data.Newtype (unwrap)
 import Data.Either (Either(..))
 import Data.Foldable (any, null)
 import Data.FunctorWithIndex (mapWithIndex)
@@ -92,22 +95,22 @@ printDeclaration (DeclNewtype { comments, head, name, type_ }) =
     printedType :: Box
     printedType = maybeWrapInParentheses (doWrap type_) $ printType PrintType_Multiline $ type_
   in
-    printMaybeComments comments // (printDataHead (text "newtype") head <<+>> text "=" <<+>> (textFromNewtype name <<+>> printedType))
+    printMaybeComments comments // (printDataHead (text "newtype") head <<+>> text "=" <<+>> ((text <<< appendUnderscoreIfReserved <<< unwrap) name <<+>> printedType))
 printDeclaration (DeclFixity { comments, fixityFields: { keyword, precedence, operator } }) =
   let
     printFixityOp :: FixityOp -> Box
-    printFixityOp (FixityValue (Left qualifiedIdent) opName) = printQualifiedName_Ident qualifiedIdent <<+>> text "as" <<+>> textFromNewtype opName
-    printFixityOp (FixityValue (Right qualifiedPropName) opName) = printQualifiedName_AnyProperNameType qualifiedPropName <<+>> text "as" <<+>> textFromNewtype opName
-    printFixityOp (FixityType qualifiedPropName opName) = text "type" <<+>> printQualifiedName_AnyProperNameType qualifiedPropName <<+>> text "as" <<+>> textFromNewtype opName
+    printFixityOp (FixityValue (Left qualifiedIdent) opName) = printQualifiedName_Ident qualifiedIdent <<+>> text "as" <<+>> (text <<< appendUnderscoreIfReserved <<< unwrap) opName
+    printFixityOp (FixityValue (Right qualifiedPropName) opName) = printQualifiedName_AnyProperNameType qualifiedPropName <<+>> text "as" <<+>> (text <<< appendUnderscoreIfReserved <<< unwrap) opName
+    printFixityOp (FixityType qualifiedPropName opName) = text "type" <<+>> printQualifiedName_AnyProperNameType qualifiedPropName <<+>> text "as" <<+>> (text <<< appendUnderscoreIfReserved <<< unwrap) opName
   in
     printMaybeComments comments // (printFixity keyword <<+>> text (show precedence) <<+>> printFixityOp operator)
 printDeclaration (DeclForeign { comments, foreign_ }) =
   printMaybeComments comments //
     ( text "foreign" <<+>> text "import" <<+>>
         case foreign_ of
-           (ForeignValue { ident, type_ }) -> textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
-           (ForeignData { name, kind_ }) -> text "data" <<+>> textFromNewtype name <<+>> text "::" <<+>> printKind kind_
-           (ForeignKind { name }) -> text "kind" <<+>> textFromNewtype name
+           (ForeignValue { ident, type_ }) -> (text <<< appendUnderscoreIfReserved <<< unwrap) ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
+           (ForeignData { name, kind_ }) -> text "data" <<+>> (text <<< appendUnderscoreIfReserved <<< unwrap) name <<+>> text "::" <<+>> printKind kind_
+           (ForeignKind { name }) -> text "kind" <<+>> (text <<< appendUnderscoreIfReserved <<< unwrap) name
     )
 printDeclaration (DeclDerive { comments, deriveType, head: { instName, instConstraints, instClass, instTypes } }) =
   let
@@ -132,7 +135,7 @@ printDeclaration (DeclDerive { comments, deriveType, head: { instName, instConst
 
     types' = punctuateH left (emptyColumn) $ map (\type_ -> maybeWrapInParentheses (doWrap type_) $ printType PrintType_OneLine type_) instTypes
    in
-   printMaybeComments comments // (text "derive" <<>> deriveType' <<+>> text "instance" <<+>> textFromNewtype instName <<+>> text "::" <<>> constraints' <<+>> printQualifiedName_AnyProperNameType instClass <<+>> types')
+   printMaybeComments comments // (text "derive" <<>> deriveType' <<+>> text "instance" <<+>> (text <<< appendUnderscoreIfReserved <<< unwrap) instName <<+>> text "::" <<>> constraints' <<+>> printQualifiedName_AnyProperNameType instClass <<+>> types')
 printDeclaration (DeclClass { comments, head: { name, vars, super, fundeps }, methods }) =
   let
     printedVars =
@@ -151,7 +154,7 @@ printDeclaration (DeclClass { comments, head: { name, vars, super, fundeps }, me
         then nullBox
         else emptyColumn <<>> text "|" <<+>> (fundeps # map printFundep # punctuateH left (text ", "))
 
-    printedHeader = text "class" <<+>> printedSuper <<>> textFromNewtype name <<>> printedVars <<>> printedFundeps
+    printedHeader = text "class" <<+>> printedSuper <<>> (text <<< appendUnderscoreIfReserved <<< unwrap) name <<>> printedVars <<>> printedFundeps
    in
     if null methods
       then printMaybeComments comments // printedHeader
@@ -159,7 +162,7 @@ printDeclaration (DeclClass { comments, head: { name, vars, super, fundeps }, me
         printMaybeComments comments //
           ( printedHeader <<+>> (text "where")
             // (methods
-                <#> (\({ ident, type_ }) -> textFromNewtype ident <<+>> text "::" <<+>> (printType PrintType_Multiline type_))
+                <#> (\({ ident, type_ }) -> (text <<< appendUnderscoreIfReserved <<< unwrap) ident <<+>> text "::" <<+>> (printType PrintType_Multiline type_))
                 <#> (twoSpaceIdentation <<>> _)
                 # vcat left
                 )
@@ -169,7 +172,7 @@ printDeclaration (DeclInstanceChain { comments, instances }) =
     printInstance :: Instance -> Box
     printInstance { head: { instName, instConstraints, instClass, instTypes }, body } =
       let
-        head = text "instance" <<+>> textFromNewtype instName <<+>> text "::" <<+>> printQualifiedName_AnyProperNameType instClass
+        head = text "instance" <<+>> (text <<< appendUnderscoreIfReserved <<< unwrap) instName <<+>> text "::" <<+>> printQualifiedName_AnyProperNameType instClass
 
         doWrap :: Type -> Boolean
         doWrap (TypeApp _ _) = true
@@ -196,11 +199,11 @@ printDeclaration (DeclInstanceChain { comments, instances }) =
             // (firstRow <<+>> text "where")
             // (twoSpaceIdentation <<>> printedBody)
    in instances <#> printInstance # punctuateV left (nullBox /+/ text "else" /+/ nullBox)
-printDeclaration (DeclSignature { comments, ident, type_ }) = printMaybeComments comments // (textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_)
+printDeclaration (DeclSignature { comments, ident, type_ }) = printMaybeComments comments // ((text <<< appendUnderscoreIfReserved <<< unwrap) ident <<+>> text "::" <<+>> printType PrintType_Multiline type_)
 printDeclaration (DeclValue { comments, valueBindingFields }) = printMaybeComments comments // (printValueBindingFields valueBindingFields)
 
 printInstanceBinding :: InstanceBinding -> Box
-printInstanceBinding (InstanceBindingSignature { ident, type_ }) = textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
+printInstanceBinding (InstanceBindingSignature { ident, type_ }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
 printInstanceBinding (InstanceBindingName valueBindingFields) = printValueBindingFields valueBindingFields
 
 printValueBindingFields :: ValueBindingFields -> Box
@@ -211,7 +214,7 @@ printValueBindingFields { name, binders, guarded } =
         then nullBox
         else (punctuateH left emptyColumn $ map printBinder binders) <<>> emptyColumn
 
-    printedHead = textFromNewtype name <<+>> printedBinders <<>> text "="
+    printedHead = (text <<< appendUnderscoreIfReserved <<< unwrap) name <<+>> printedBinders <<>> text "="
    in printGuarded printedHead guarded
 
 printGuarded :: Box -> Guarded -> Box
@@ -240,8 +243,8 @@ exprShouldBeOnNextLine _ = false
 
 printBinder :: Binder -> Box
 printBinder BinderWildcard = text "_"
-printBinder (BinderVar ident) = textFromNewtype ident
-printBinder (BinderNamed { ident, binder }) = textFromNewtype ident <<>> text "@" <<>> (wrapInParentheses $ printBinder binder)
+printBinder (BinderVar ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
+printBinder (BinderNamed { ident, binder }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <<>> text "@" <<>> (wrapInParentheses $ printBinder binder)
 printBinder (BinderConstructor { name, args: [] }) = printQualifiedName_AnyProperNameType name
 printBinder (BinderConstructor { name, args }) = printQualifiedName_AnyProperNameType name <<+>> (punctuateH left emptyColumn $ map printBinder args)
 printBinder (BinderBoolean boolean) = text $ show boolean
@@ -255,11 +258,11 @@ printBinder (BinderTyped binder type_) = printBinder binder <<+>> text "::" <<+>
 printBinder (BinderOp binderLeft operator binderRight) = printBinder binderLeft <<+>> printQualifiedName_AnyOpNameType operator <<+>> printBinder binderRight
 
 printRecordLabeled :: ∀ a . (a -> Box) -> RecordLabeled a -> Box
-printRecordLabeled _ (RecordPun ident) = textFromNewtype ident
-printRecordLabeled print (RecordField label a) = textFromNewtype label <<>> text ":" <<+>> print a
+printRecordLabeled _ (RecordPun ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
+printRecordLabeled print (RecordField label a) = (text <<< appendUnderscoreIfReserved <<< unwrap) label <<>> text ":" <<+>> print a
 
 printExpr :: Expr -> Box
-printExpr (ExprHole hole) = text "?" <<>> textFromNewtype hole
+printExpr (ExprHole hole) = text "?" <<>> (text <<< appendUnderscoreIfReserved <<< unwrap) hole
 printExpr ExprSection = text "_"
 printExpr (ExprIdent qualifiedIdent) = printQualifiedName_Ident qualifiedIdent
 printExpr (ExprConstructor qualifiedPropName) = printQualifiedName_AnyProperNameType qualifiedPropName
@@ -275,7 +278,7 @@ printExpr (ExprInfix exprLeft operator exprRight) = printExpr exprLeft <<+>> pri
 printExpr (ExprOp exprLeft operator exprRight) = printExpr exprLeft <<+>> printQualifiedName_AnyOpNameType operator <<+>> printExpr exprRight
 printExpr (ExprOpName opName) = printQualifiedName_AnyOpNameType opName
 printExpr (ExprNegate expr) = text "-" <<>> printExpr expr
-printExpr (ExprRecordAccessor { recExpr, recPath }) = printExpr recExpr <<>> text "." <<>> (punctuateH left (text ".") $ map textFromNewtype recPath)
+printExpr (ExprRecordAccessor { recExpr, recPath }) = printExpr recExpr <<>> text "." <<>> (punctuateH left (text ".") $ map (text <<< appendUnderscoreIfReserved <<< unwrap) recPath)
 printExpr (ExprRecordUpdate expr recordUpdates) = wrapInParentheses $ printExpr expr <<+>> printRecordUpdates recordUpdates
 printExpr (ExprApp exprLeft exprRight) =
   let
@@ -365,7 +368,7 @@ printExpr (ExprDo doStatements) = nullBox -- TODO
 printExpr (ExprAdo { statements, result }) = nullBox -- TODO
 
 printLetBinding :: LetBinding -> Box
-printLetBinding (LetBindingSignature { ident, type_ }) = textFromNewtype ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
+printLetBinding (LetBindingSignature { ident, type_ }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
 printLetBinding (LetBindingName valueBindingFields) = printValueBindingFields valueBindingFields
 printLetBinding (LetBindingPattern { binder, where_: { expr, whereBindings } }) = printBinder binder /+/ printExpr expr // text "where" // (vsep 1 left $ map printLetBinding whereBindings)
 
@@ -373,5 +376,5 @@ printRecordUpdates :: NonEmptyArray RecordUpdate -> Box
 printRecordUpdates recordUpdates = text "{" <<+>> (punctuateH left (text ",") $ map printRecordUpdate recordUpdates) <<+>> text "}"
 
 printRecordUpdate :: RecordUpdate -> Box
-printRecordUpdate (RecordUpdateLeaf label expr) = textFromNewtype label <<+>> text "=" <<+>> printExpr expr
-printRecordUpdate (RecordUpdateBranch label recordUpdates) = textFromNewtype label <<+>> text "=" <<+>> printRecordUpdates recordUpdates
+printRecordUpdate (RecordUpdateLeaf label expr) = (text <<< appendUnderscoreIfReserved <<< unwrap) label <<+>> text "=" <<+>> printExpr expr
+printRecordUpdate (RecordUpdateBranch label recordUpdates) = (text <<< appendUnderscoreIfReserved <<< unwrap) label <<+>> text "=" <<+>> printRecordUpdates recordUpdates

@@ -1,8 +1,10 @@
 module Language.PS.CST.Printers.TypeLevel where
 
-import Language.PS.CST.Printers.Utils (emptyColumn, ifelse, maybeWrapInParentheses, printModuleName, textFromNewtype, wrapInDoubleQuotes, wrapInParentheses)
+import Prelude
+
+import Language.PS.CST.Printers.Utils (emptyColumn, ifelse, maybeWrapInParentheses, printModuleName, wrapInDoubleQuotes, wrapInParentheses)
 import Language.PS.CST.Types (ClassFundep(..), Constraint(..), DataCtor(..), DataHead(..), Fixity(..), Ident, Kind(..), Label, OpName, ProperName, QualifiedName(..), Row(..), Type(..), TypeVarBinding(..))
-import Prelude (flip, identity, map, (#), ($), (<#>), (==))
+import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
 
 import Data.Array (snoc) as Array
 import Data.Foldable (null)
@@ -13,7 +15,7 @@ import Data.Newtype (unwrap)
 import Text.PrettyPrint.Boxes (Box, left, punctuateH, text, vcat, (<<+>>), (<<>>))
 
 printFundep :: ClassFundep -> Box
-printFundep (FundepDetermines lefts rights) = (punctuateH left emptyColumn $ map textFromNewtype lefts) <<+>> text "->" <<+>> (punctuateH left emptyColumn $ map textFromNewtype rights)
+printFundep (FundepDetermines lefts rights) = (punctuateH left emptyColumn $ map (text <<< appendUnderscoreIfReserved <<< unwrap) lefts) <<+>> text "->" <<+>> (punctuateH left emptyColumn $ map (text <<< appendUnderscoreIfReserved <<< unwrap) rights)
 
 printFixity :: Fixity -> Box
 printFixity Infix  = text "infix"
@@ -36,7 +38,7 @@ printDataCtor (DataCtor dataCtor) =
     printType' :: Type -> Box
     printType' type_ = maybeWrapInParentheses (doWrap type_) $ printType context $ type_
 
-    name = textFromNewtype dataCtor.dataCtorName
+    name = (text <<< appendUnderscoreIfReserved <<< unwrap) dataCtor.dataCtorName
 
     fields = dataCtor.dataCtorFields <#> printType'
 
@@ -47,15 +49,15 @@ printDataCtor (DataCtor dataCtor) =
 printDataHead :: Box -> DataHead -> Box
 printDataHead reservedWord (DataHead dataHead) =
   let
-    head = reservedWord <<+>> textFromNewtype dataHead.dataHdName
+    head = reservedWord <<+>> (text <<< appendUnderscoreIfReserved <<< unwrap) dataHead.dataHdName
 
     vars = map printTypeVarBinding dataHead.dataHdVars
   in
     if null vars then head else head <<+>> punctuateH left (emptyColumn) vars
 
 printTypeVarBinding :: TypeVarBinding -> Box
-printTypeVarBinding (TypeVarName ident) = textFromNewtype ident
-printTypeVarBinding (TypeVarKinded ident kind_) = wrapInParentheses $ textFromNewtype ident <<+>> text "::" <<+>> printKind kind_
+printTypeVarBinding (TypeVarName ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
+printTypeVarBinding (TypeVarKinded ident kind_) = wrapInParentheses $ (text <<< appendUnderscoreIfReserved <<< unwrap) ident <<+>> text "::" <<+>> printKind kind_
 
 printKind :: Kind -> Box
 printKind (KindName qualifiedKindName) = printQualifiedName_AnyProperNameType qualifiedKindName
@@ -74,18 +76,18 @@ printKind (KindRow kind_) = text "#" <<+>> printKind kind_
 
 printQualifiedName_Ident :: QualifiedName Ident -> Box
 printQualifiedName_Ident (QualifiedName qualifiedName) = case qualifiedName.qualModule of
-  Nothing -> textFromNewtype qualifiedName.qualName
-  (Just moduleName) -> printModuleName moduleName <<>> text "." <<>> textFromNewtype qualifiedName.qualName
+  Nothing -> (text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName
+  (Just moduleName) -> printModuleName moduleName <<>> text "." <<>> (text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName
 
 printQualifiedName_AnyProperNameType :: ∀ proxy. QualifiedName (ProperName proxy) -> Box
 printQualifiedName_AnyProperNameType (QualifiedName qualifiedName) = case qualifiedName.qualModule of
-  Nothing -> textFromNewtype qualifiedName.qualName
-  (Just moduleName) -> printModuleName moduleName <<>> text "." <<>> textFromNewtype qualifiedName.qualName
+  Nothing -> (text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName
+  (Just moduleName) -> printModuleName moduleName <<>> text "." <<>> (text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName
 
 printQualifiedName_AnyOpNameType :: ∀ proxy. QualifiedName (OpName proxy) -> Box
 printQualifiedName_AnyOpNameType (QualifiedName qualifiedName) = case qualifiedName.qualModule of
-  Nothing -> textFromNewtype qualifiedName.qualName
-  (Just moduleName) -> printModuleName moduleName <<>> text "." <<>> wrapInParentheses (textFromNewtype qualifiedName.qualName)
+  Nothing -> (text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName
+  (Just moduleName) -> printModuleName moduleName <<>> text "." <<>> wrapInParentheses ((text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName)
 
 -- Prefer multiline when first enter the rendering function, prefer one line when inside of row extensions (i.e. `MyExt + MyOtherExt` in `( foo :: Bar | MyExt + MyOtherExt )`)
 data PrintType_Style
@@ -93,10 +95,10 @@ data PrintType_Style
   | PrintType_OneLine
 
 printType :: PrintType_Style -> Type -> Box
-printType printType_Style (TypeVar ident) = textFromNewtype ident
+printType printType_Style (TypeVar ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
 printType printType_Style (TypeConstructor qualifiedTypeName) = printQualifiedName_AnyProperNameType qualifiedTypeName
 printType printType_Style TypeWildcard = text "_"
-printType printType_Style (TypeHole ident) = text "?" <<>> textFromNewtype ident
+printType printType_Style (TypeHole ident) = text "?" <<>> (text <<< appendUnderscoreIfReserved <<< unwrap) ident
 printType printType_Style (TypeString string) = wrapInDoubleQuotes $ text string
 printType printType_Style (TypeRow row) = printRowLikeType printType_Style (text "(") (text ")") row
 printType printType_Style (TypeRecord row) = printRowLikeType printType_Style (text "{") (text "}") row
@@ -203,4 +205,4 @@ printRowLikeType PrintType_Multiline leftWrapper rightWrapper row@(Row { rowLabe
     printedRowLabels
 
 printRowLabel :: PrintType_Style -> { label :: Label, type_ :: Type } -> Box
-printRowLabel printType_Style { label, type_ } = textFromNewtype label <<+>> text "::" <<+>> printType printType_Style type_
+printRowLabel printType_Style { label, type_ } = (text <<< appendUnderscoreIfReserved <<< unwrap) label <<+>> text "::" <<+>> printType printType_Style type_
