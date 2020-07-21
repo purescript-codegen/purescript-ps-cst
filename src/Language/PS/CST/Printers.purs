@@ -7,7 +7,7 @@ import Language.PS.CST.Printers.PrintModuleModuleNameAndExports (printModuleModu
 import Language.PS.CST.Printers.TypeLevel (PrintType_Style(..), printConstraint, printDataCtor, printDataHead, printFixity, printFundep, printKind, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printTypeVarBinding)
 import Language.PS.CST.Printers.Utils (emptyColumn, emptyRow, ifelse, lines, maybeWrapInParentheses, printAndConditionallyAddNewlinesBetween, twoSpaceIdentation, wrapInParentheses)
 import Language.PS.CST.Types (Binder(..), Comments(..), DeclDeriveType(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), Module(..), RecordLabeled(..), RecordUpdate(..), Type(..), ValueBindingFields)
-import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
+import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
 
 import Data.Newtype (unwrap)
 import Data.Either (Either(..))
@@ -258,8 +258,8 @@ printBinder (BinderTyped binder type_) = printBinder binder <<+>> text "::" <<+>
 printBinder (BinderOp binderLeft operator binderRight) = printBinder binderLeft <<+>> printQualifiedName_AnyOpNameType operator <<+>> printBinder binderRight
 
 printRecordLabeled :: ∀ a . (a -> Box) -> RecordLabeled a -> Box
-printRecordLabeled _ (RecordPun ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
-printRecordLabeled print (RecordField label a) = (text <<< appendUnderscoreIfReserved <<< unwrap) label <<>> text ":" <<+>> print a
+printRecordLabeled _ (RecordPun ident) = (text <<< quoteIfReserved <<< unwrap) ident
+printRecordLabeled print (RecordField label a) = (text <<< quoteIfReserved <<< unwrap) label <<>> text ":" <<+>> print a
 
 printExpr :: Expr -> Box
 printExpr (ExprHole hole) = text "?" <<>> (text <<< appendUnderscoreIfReserved <<< unwrap) hole
