@@ -4,7 +4,7 @@ import Prelude
 
 import Language.PS.CST.Printers.Utils (emptyColumn, ifelse, maybeWrapInParentheses, printModuleName, wrapInDoubleQuotes, wrapInParentheses)
 import Language.PS.CST.Types (ClassFundep(..), Constraint(..), DataCtor(..), DataHead(..), Fixity(..), Ident, Kind(..), Label, OpName, ProperName, QualifiedName(..), Row(..), Type(..), TypeVarBinding(..))
-import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
+import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
 
 import Data.Array (snoc) as Array
 import Data.Foldable (null)
@@ -205,4 +205,4 @@ printRowLikeType PrintType_Multiline leftWrapper rightWrapper row@(Row { rowLabe
     printedRowLabels
 
 printRowLabel :: PrintType_Style -> { label :: Label, type_ :: Type } -> Box
-printRowLabel printType_Style { label, type_ } = (text <<< appendUnderscoreIfReserved <<< unwrap) label <<+>> text "::" <<+>> printType printType_Style type_
+printRowLabel printType_Style { label, type_ } = (text <<< quoteIfReserved <<< unwrap) label <<+>> text "::" <<+>> printType printType_Style type_
