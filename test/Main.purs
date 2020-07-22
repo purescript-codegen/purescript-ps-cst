@@ -38,6 +38,7 @@ import Test.Golden.Case.Actual                                   as Test.Golden.
 import Test.Golden.If.Actual                                     as Test.Golden.If.Actual
 import Test.Golden.Instance.Actual                               as Test.Golden.Instance.Actual
 import Test.Golden.InstanceChain.Actual                          as Test.Golden.InstanceChain.Actual
+import Test.Golden.ExprRecord.Actual                             as Test.Golden.ExprRecord.Actual
 
 type GoldenTest =
   { name :: String
@@ -73,6 +74,7 @@ goldenTests =
   , { name: "If", actualModule: Test.Golden.If.Actual.actualModule }
   , { name: "Instance", actualModule: Test.Golden.Instance.Actual.actualModule }
   , { name: "InstanceChain", actualModule: Test.Golden.InstanceChain.Actual.actualModule }
+  , { name: "ExprRecord", actualModule: Test.Golden.ExprRecord.Actual.actualModule }
   ]
 
 addText :: GoldenTest -> Aff GoldenTestWithExpected
