@@ -2,13 +2,20 @@ module Language.PS.CST.Types.Shared where
 
 import Prelude
 
-import Data.Either (Either)
-import Data.Either.Nested (type (\/))
+import Control.Monad.State (State, modify_)
+import Data.Array as Array
+import Data.Array.NonEmpty (NonEmptyArray)
+import Data.Either (Either(..))
+import Data.Foldable (class Foldable, foldlDefault, foldrDefault)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
+import Data.Maybe (fromMaybe) as Maybe
 import Data.Newtype (class Newtype)
-import Data.Array.NonEmpty (NonEmptyArray)
+import Data.Traversable (class Traversable, traverse)
+import Unsafe.Coerce (unsafeCoerce)
+import Data.Tuple.Nested
+import Data.Either.Nested
 
 data Comments
   -- | Rendered as
@@ -73,25 +80,54 @@ derive instance ordProperName :: Ord (ProperName proxy)
 instance showProperName :: Show (ProperName proxy) where
   show (ProperName string) = "(ProperName" <> show string <> ")"
 
-data DataMembers
-  = DataAll
-  | DataEnumerated (Array (ProperName ProperNameType_ConstructorName))
-derive instance genericDataMembers :: Generic DataMembers _
-derive instance eqDataMembers :: Eq DataMembers
-derive instance ordDataMembers :: Ord DataMembers
-instance showDataMembers :: Show DataMembers where show = genericShow
-
 data Declaration qualifiedName
-  = DeclData          { comments :: Maybe Comments, head :: DataHead qualifiedName, constructors :: Array (DataCtor qualifiedName) }
-  | DeclType          { comments :: Maybe Comments, head :: DataHead qualifiedName, type_ :: Type qualifiedName }
-  | DeclNewtype       { comments :: Maybe Comments, head :: DataHead qualifiedName, name :: ProperName ProperNameType_ConstructorName, type_ :: Type qualifiedName }
-  | DeclClass         { comments :: Maybe Comments, head :: ClassHead qualifiedName, methods :: Array { ident :: Ident, type_ :: Type qualifiedName } }
-  | DeclInstanceChain { comments :: Maybe Comments, instances :: NonEmptyArray (Instance qualifiedName) }
-  | DeclDerive        { comments :: Maybe Comments, deriveType :: DeclDeriveType, head :: InstanceHead qualifiedName }
-  | DeclSignature     { comments :: Maybe Comments, ident :: Ident, type_ :: Type qualifiedName }
-  | DeclValue         { comments :: Maybe Comments, valueBindingFields :: ValueBindingFields qualifiedName }
-  | DeclFixity        { comments :: Maybe Comments, fixityFields :: FixityFields qualifiedName }
-  | DeclForeign       { comments :: Maybe Comments, foreign_ :: Foreign qualifiedName }
+  = DeclData
+    { comments :: Maybe Comments
+    , head :: DataHead qualifiedName
+    , constructors :: Array (DataCtor qualifiedName)
+    }
+  | DeclType
+    { comments :: Maybe Comments
+    , head :: DataHead qualifiedName
+    , type_ :: Type qualifiedName
+    }
+  | DeclNewtype
+    { comments :: Maybe Comments
+    , head :: DataHead qualifiedName
+    , name :: ProperName ProperNameType_ConstructorName
+    , type_ :: Type qualifiedName
+    }
+  | DeclClass
+    { comments :: Maybe Comments
+    , head :: ClassHead qualifiedName
+    , methods :: Array { ident :: Ident, type_ :: Type qualifiedName }
+    }
+  | DeclInstanceChain
+    { comments :: Maybe Comments
+    , instances :: NonEmptyArray (Instance qualifiedName)
+    }
+  | DeclDerive
+    { comments :: Maybe Comments
+    , deriveType :: DeclDeriveType
+    , head :: InstanceHead qualifiedName
+    }
+  | DeclSignature
+    { comments :: Maybe Comments
+    , ident :: Ident
+    , type_ :: Type qualifiedName
+    }
+  | DeclValue
+    { comments :: Maybe Comments
+    , valueBindingFields :: ValueBindingFields qualifiedName
+    }
+  | DeclFixity
+    { comments :: Maybe Comments
+    , fixityFields :: FixityFields qualifiedName
+    }
+  | DeclForeign
+    { comments :: Maybe Comments
+    , foreign_ :: Foreign qualifiedName
+    }
 -- | derive instance genericDeclaration :: Generic Declaration _
 -- | derive instance eqDeclaration :: Eq Declaration
 -- | derive instance ordDeclaration :: Ord Declaration
@@ -212,7 +248,7 @@ derive instance ordLabel :: Ord Label
 instance showLabel :: Show Label where show = genericShow
 
 newtype Row qualifiedName = Row
-  { rowLabels :: Array { label :: Label, type_ :: (Type qualifiedName) }
+  { rowLabels :: Array { label :: Label, type_ :: Type qualifiedName }
   , rowTail :: Maybe (Type qualifiedName)
   }
 -- | derive instance newtypeRow :: Newtype Row _
@@ -257,6 +293,20 @@ type ValueBindingFields qualifiedName =
 data RecordLabeled a
   = RecordPun Ident
   | RecordField Label a
+derive instance functorRecordLabeled :: Functor RecordLabeled
+
+instance foldableRecordLabeled :: Foldable RecordLabeled where
+  foldMap f (RecordPun ident) = mempty
+  foldMap f (RecordField label a) = f a
+  foldl f x = foldlDefault f x
+  foldr f x = foldrDefault f x
+
+instance traversableRecordLabeled :: Traversable RecordLabeled where
+  traverse _ (RecordPun ident)  = pure (RecordPun ident)
+  traverse f (RecordField label x) = RecordField label <$> f x
+  sequence (RecordPun ident)  = pure (RecordPun ident)
+  sequence (RecordField label x) = RecordField label <$> x
+
 derive instance genericRecordLabeled :: Generic (RecordLabeled a) _
 derive instance eqRecordLabeled :: Eq a => Eq (RecordLabeled a)
 derive instance ordRecordLabeled :: Ord a => Ord (RecordLabeled a)
@@ -267,7 +317,7 @@ instance showRecordLabeled :: Show a => Show (RecordLabeled a) where
 data Binder qualifiedName
   = BinderWildcard
   | BinderVar Ident
-  | BinderNamed { ident :: Ident, binder :: (Binder qualifiedName) }
+  | BinderNamed { ident :: Ident, binder :: Binder qualifiedName }
   | BinderConstructor { name :: qualifiedName (ProperName ProperNameType_ConstructorName), args :: Array (Binder qualifiedName) }
   | BinderBoolean Boolean
   | BinderChar Char
@@ -275,9 +325,10 @@ data Binder qualifiedName
   | BinderNumber (Either Int Number)
   | BinderArray (Array (Binder qualifiedName))
   | BinderRecord (Array (RecordLabeled (Binder qualifiedName)))
-  -- | BinderParens Binder -- no need
   | BinderTyped (Binder qualifiedName) (Type qualifiedName)
   | BinderOp (Binder qualifiedName) (qualifiedName (OpName OpNameType_ValueOpName)) (Binder qualifiedName)
+  -- | BinderParens Binder -- no need
+
 -- | derive instance genericBinder :: Generic Binder _
 -- | derive instance eqBinder :: Eq Binder
 -- | derive instance ordBinder :: Ord Binder
@@ -291,14 +342,14 @@ data Guarded qualifiedName
 -- | derive instance ordGuarded :: Ord Guarded
 
 type Where qualifiedName =
-  { expr :: (Expr qualifiedName)
+  { expr :: Expr qualifiedName
   , whereBindings :: Array (LetBinding qualifiedName)
   }
 
 data LetBinding qualifiedName
   = LetBindingSignature { ident :: Ident, type_ :: Type qualifiedName }
   | LetBindingName (ValueBindingFields qualifiedName)
-  | LetBindingPattern { binder :: (Binder qualifiedName), where_ :: (Where qualifiedName) }
+  | LetBindingPattern { binder :: Binder qualifiedName, where_ :: Where qualifiedName }
 -- | derive instance genericLetBinding :: Generic (LetBinding qualifiedName) _
 -- | derive instance eqLetBinding :: Eq (LetBinding qualifiedName)
 -- | derive instance ordLetBinding :: Ord (LetBinding qualifiedName)
@@ -310,7 +361,7 @@ type GuardedExpr qualifiedName =
 
 type PatternGuard qualifiedName =
   { binder :: Maybe (Binder qualifiedName)
-  , expr :: (Expr qualifiedName)
+  , expr :: Expr qualifiedName
   }
 
 data Expr qualifiedName
@@ -324,7 +375,6 @@ data Expr qualifiedName
   | ExprNumber (Either Int Number)
   | ExprArray (Array (Expr qualifiedName))
   | ExprRecord (Array (RecordLabeled (Expr qualifiedName)))
-  -- | ExprParens Expr -- no need
   | ExprTyped (Expr qualifiedName) (Type qualifiedName)
   | ExprInfix (Expr qualifiedName) (Expr qualifiedName) (Expr qualifiedName) -- e.g. `1 : 2 : Nil`
   | ExprOp (Expr qualifiedName) (qualifiedName (OpName OpNameType_ValueOpName)) (Expr qualifiedName)
@@ -339,6 +389,7 @@ data Expr qualifiedName
   | ExprLet (LetIn qualifiedName)
   | ExprDo (NonEmptyArray (DoStatement qualifiedName))
   | ExprAdo (AdoBlock qualifiedName)
+  -- | ExprParens Expr -- no need
 -- | derive instance genericExpr :: Generic Expr _
 -- | derive instance eqExpr :: Eq Expr
 -- | derive instance ordExpr :: Ord Expr
@@ -357,13 +408,13 @@ data RecordUpdate qualifiedName
 
 type Lambda qualifiedName =
   { binders :: NonEmptyArray (Binder qualifiedName)
-  , body :: (Expr qualifiedName)
+  , body :: Expr qualifiedName
   }
 
 type IfThenElse qualifiedName =
-  { cond :: (Expr qualifiedName)
-  , true_ :: (Expr qualifiedName)
-  , false_ :: (Expr qualifiedName)
+  { cond :: Expr qualifiedName
+  , true_ :: Expr qualifiedName
+  , false_ :: Expr qualifiedName
   }
 
 type CaseOf qualifiedName =
@@ -372,7 +423,7 @@ type CaseOf qualifiedName =
   }
 
 type LetIn qualifiedName =
-  { body :: (Expr qualifiedName)
+  { body :: Expr qualifiedName
   , bindings :: NonEmptyArray (LetBinding qualifiedName)
   }
 
@@ -386,7 +437,7 @@ data DoStatement qualifiedName
 
 type AdoBlock qualifiedName =
   { statements :: Array (DoStatement qualifiedName)
-  , result :: (Expr qualifiedName)
+  , result :: Expr qualifiedName
   }
 
 data InstanceBinding qualifiedName

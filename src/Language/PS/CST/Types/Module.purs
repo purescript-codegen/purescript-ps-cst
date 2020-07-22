@@ -32,6 +32,14 @@ derive instance eqImportDecl :: Eq ImportDecl
 derive instance ordImportDecl :: Ord ImportDecl
 instance showImportDecl :: Show ImportDecl where show = genericShow
 
+data DataMembers
+  = DataAll
+  | DataEnumerated (Array (ProperName ProperNameType_ConstructorName))
+derive instance genericDataMembers :: Generic DataMembers _
+derive instance eqDataMembers :: Eq DataMembers
+derive instance ordDataMembers :: Ord DataMembers
+instance showDataMembers :: Show DataMembers where show = genericShow
+
 data Import
   = ImportValue Ident
   | ImportOp (OpName OpNameType_ValueOpName) -- e.g. "&&" function/value, rendered in parentheses
