@@ -17,4 +17,3 @@ findOrNew find new array =
   case Array.findIndex find array of
        Nothing -> Array.snoc array (new unit)
        Just index -> array
-

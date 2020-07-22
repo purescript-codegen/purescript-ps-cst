@@ -25,11 +25,13 @@ type App = State (Array ImportDecl)
 processSmartQualifiedName
   :: forall a
    . (a -> Import -> Boolean)
+  -> (a -> Import -> Import)
   -> (a -> Import)
   -> SmartQualifiedName a
   -> App (QualifiedName a)
 processSmartQualifiedName
   smartFindEqToName
+  smartModify
   smartCreateNew
   (SmartQualifiedName smartQualifiedName) =
   case smartQualifiedName.importType of
@@ -43,8 +45,9 @@ processSmartQualifiedName
             (\(ImportDecl import_) ->
               ImportDecl $ import_
                 { names =
-                  findOrNew
+                  findAndModifyOrNew
                   (smartFindEqToName smartQualifiedName.name)
+                  (smartModify smartQualifiedName.name)
                   (\_ -> smartCreateNew smartQualifiedName.name)
                   import_.names
                 }
@@ -66,8 +69,9 @@ processSmartQualifiedName
             (\(ImportDecl import_) ->
               ImportDecl $ import_
                 { names =
-                  findOrNew
+                  findAndModifyOrNew
                   (smartFindEqToName smartQualifiedName.name)
+                  (smartModify smartQualifiedName.name)
                   (\_ -> smartCreateNew smartQualifiedName.name)
                   import_.names
                 }
@@ -89,8 +93,9 @@ processSmartQualifiedName
             (\(ImportDecl import_) ->
               ImportDecl $ import_
                 { names =
-                  findOrNew
+                  findAndModifyOrNew
                   (smartFindEqToName smartQualifiedName.name)
+                  (smartModify smartQualifiedName.name)
                   (\_ -> smartCreateNew smartQualifiedName.name)
                   import_.names
                 }
@@ -103,7 +108,7 @@ processSmartQualifiedName
             )
           pure $ QualifiedName { qualModule: Just customModule, qualName: smartQualifiedName.name }
 
--- For each 6 of Import constructors
+-- For each 6 of Import constructors (plus processSmartQualifiedNameTypeConstructor)
 processSmartQualifiedNameValue :: SmartQualifiedName Ident -> App (QualifiedName Ident)
 processSmartQualifiedNameValue = processSmartQualifiedName
   (\expectedName ->
@@ -111,6 +116,7 @@ processSmartQualifiedNameValue = processSmartQualifiedName
       ImportValue name' -> name' == expectedName
       _ -> false
   )
+  (\_name currentImport -> currentImport)
   ImportValue
 
 processSmartQualifiedNameOp :: SmartQualifiedName (OpName OpNameType_ValueOpName) -> App (QualifiedName (OpName OpNameType_ValueOpName))
@@ -120,8 +126,10 @@ processSmartQualifiedNameOp = processSmartQualifiedName
       ImportOp name' -> name' == expectedName
       _ -> false
   )
+  (\name currentImport -> currentImport)
   ImportOp
 
+-- adds `import Module.Name (Foo)`
 processSmartQualifiedNameType :: SmartQualifiedName (ProperName ProperNameType_TypeName) -> App (QualifiedName (ProperName ProperNameType_TypeName))
 processSmartQualifiedNameType = processSmartQualifiedName
   (\expectedName ->
@@ -129,6 +137,18 @@ processSmartQualifiedNameType = processSmartQualifiedName
       ImportType name' _ -> name' == expectedName
       _ -> false
   )
+  (\name currentImport -> currentImport) -- if there is `import Module.Name (Foo(..))` - leave it as it is
+  (\name -> ImportType name Nothing) -- but if it is new - create without constructors `import Module.Name (Foo)`
+
+-- is like processSmartQualifiedNameType, but adds -- adds `import Module.Name (Foo(..))`
+processSmartQualifiedNameTypeConstructor :: SmartQualifiedName (ProperName ProperNameType_ConstructorName) -> App (QualifiedName (ProperName ProperNameType_ConstructorName))
+processSmartQualifiedNameTypeConstructor = processSmartQualifiedName
+  (\expectedName ->
+    case _ of
+      ImportType name' _ -> name' == expectedName
+      _ -> false
+  )
+  (\name _currentImport -> ImportType name (Just DataAll))
   (\name -> ImportType name (Just DataAll))
 
 processSmartQualifiedNameTypeOp :: SmartQualifiedName (OpName OpNameType_TypeOpName) -> App (QualifiedName (OpName OpNameType_TypeOpName))
@@ -138,6 +158,7 @@ processSmartQualifiedNameTypeOp = processSmartQualifiedName
       ImportTypeOp name' -> name' == expectedName
       _ -> false
   )
+  (\name currentImport -> currentImport)
   ImportTypeOp
 
 processSmartQualifiedNameClass :: SmartQualifiedName (ProperName ProperNameType_ClassName) -> App (QualifiedName (ProperName ProperNameType_ClassName))
@@ -147,6 +168,7 @@ processSmartQualifiedNameClass = processSmartQualifiedName
       ImportClass name' -> name' == expectedName
       _ -> false
   )
+  (\name currentImport -> currentImport)
   ImportClass
 
 processSmartQualifiedNameKind :: SmartQualifiedName (ProperName ProperNameType_KindName) -> App (QualifiedName (ProperName ProperNameType_KindName))
@@ -156,6 +178,7 @@ processSmartQualifiedNameKind = processSmartQualifiedName
       ImportKind name' -> name' == expectedName
       _ -> false
   )
+  (\name currentImport -> currentImport)
   ImportKind
 
 ---------------------------------
@@ -265,7 +288,7 @@ processFixityOp (FixityValue (Left qualifiedIdent) opName) = do
   qualifiedIdent' <- processSmartQualifiedNameValue qualifiedIdent
   pure $ FixityValue (Left qualifiedIdent') opName
 processFixityOp (FixityValue (Right qualifiedProperName) opName) = do
-  qualifiedProperName' <- unsafeCoerce qualifiedProperName -- TODO
+  qualifiedProperName' <- processSmartQualifiedNameTypeConstructor qualifiedProperName
   pure $ FixityValue (Right qualifiedProperName') opName
 processFixityOp (FixityType properName opName) = do
   properName' <- processSmartQualifiedNameType properName
@@ -309,7 +332,7 @@ processBinder (BinderNamed binderNamed) = do
   binder <- processBinder binderNamed.binder
   pure $ BinderNamed { ident: binderNamed.ident, binder }
 processBinder (BinderConstructor binderConstructor) = do
-  name <- unsafeCoerce binderConstructor.name -- TODO
+  name <- processSmartQualifiedNameTypeConstructor binderConstructor.name
   args <- traverse processBinder binderConstructor.args
   pure $ BinderConstructor { name, args }
 processBinder (BinderArray binderArray) = do
@@ -379,7 +402,7 @@ processExpr :: Expr SmartQualifiedName -> App (Expr QualifiedName)
 processExpr (ExprHole ident)                = pure $ ExprHole ident
 processExpr ExprSection                     = pure $ ExprSection
 processExpr (ExprIdent ident)               = ExprIdent <$> processSmartQualifiedNameValue ident
-processExpr (ExprConstructor name)          = ExprConstructor <$> unsafeCoerce name -- TODO
+processExpr (ExprConstructor name)          = ExprConstructor <$> processSmartQualifiedNameTypeConstructor name
 processExpr (ExprBoolean x)                 = pure $ ExprBoolean x
 processExpr (ExprChar x)                    = pure $ ExprChar x
 processExpr (ExprString x)                  = pure $ ExprString x

@@ -13,7 +13,6 @@ import Data.Maybe (Maybe(..))
 import Data.Maybe (fromMaybe) as Maybe
 import Data.Newtype (class Newtype)
 import Data.Traversable (class Traversable, traverse)
-import Unsafe.Coerce (unsafeCoerce)
 import Data.Tuple.Nested
 import Data.Either.Nested
 
