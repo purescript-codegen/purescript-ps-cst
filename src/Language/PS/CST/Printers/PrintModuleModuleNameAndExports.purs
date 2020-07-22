@@ -2,9 +2,10 @@ module Language.PS.CST.Printers.PrintModuleModuleNameAndExports where
 
 import Prelude
 
-import Language.PS.CST.Types (DataMembers(..), Export(..), ModuleName)
-import Language.PS.CST.Printers.Utils (printConstructors, printModuleName, twoSpaceIdentation, wrapInParentheses)
+import Language.PS.CST.Types.Shared
+import Language.PS.CST.Types.Module
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
+import Language.PS.CST.Printers.Utils (printConstructors, printModuleName, twoSpaceIdentation, wrapInParentheses)
 
 import Text.PrettyPrint.Boxes (Box, left, nullBox, text, vcat, (//), (<<+>>), (<<>>))
 import Data.Newtype (unwrap)

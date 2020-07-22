@@ -5,7 +5,7 @@ import Prelude (($))
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
 import Language.PS.CST.Sugar (mkModuleName)
-import Language.PS.CST.Types (Comments(..), DataCtor(..), DataHead(..), Declaration(..), Module(..), ProperName(..))
+import Language.PS.CST.Types.Shared (Comments(..), DataCtor(..), DataHead(..), Declaration(..), Module(..), ProperName(..))
 
 actualModule :: Module
 actualModule = Module

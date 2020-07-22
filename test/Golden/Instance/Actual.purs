@@ -1,7 +1,7 @@
 module Test.Golden.Instance.Actual where
 
 import Language.PS.CST.Sugar (mkModuleName, nonQualifiedExprIdent, nonQualifiedName, nonQualifiedNameTypeConstructor, numberType)
-import Language.PS.CST.Types (Declaration(..), Expr(..), Guarded(..), Ident(..), InstanceBinding(..), Module(..), ProperName(..), Type(..))
+import Language.PS.CST.Types.Shared (Declaration(..), Expr(..), Guarded(..), Ident(..), InstanceBinding(..), Module(..), ProperName(..), Type(..))
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty

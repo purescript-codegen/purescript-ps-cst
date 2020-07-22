@@ -6,7 +6,9 @@ import Language.PS.CST.Printers.PrintImports (printImports)
 import Language.PS.CST.Printers.PrintModuleModuleNameAndExports (printModuleModuleNameAndExports)
 import Language.PS.CST.Printers.TypeLevel (PrintType_Style(..), printConstraint, printDataCtor, printDataHead, printFixity, printFundep, printKind, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printTypeVarBinding)
 import Language.PS.CST.Printers.Utils (emptyColumn, emptyRow, ifelse, lines, maybeWrapInParentheses, printAndConditionallyAddNewlinesBetween, twoSpaceIdentation, wrapInParentheses)
-import Language.PS.CST.Types (Binder(..), Comments(..), DeclDeriveType(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), Module(..), RecordLabeled(..), RecordUpdate(..), Type(..), ValueBindingFields)
+import Language.PS.CST.Types.Shared (Binder(..), Comments(..), DeclDeriveType(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), RecordLabeled(..), RecordUpdate(..), Type(..), ValueBindingFields)
+import Language.PS.CST.Types.Module
+import Language.PS.CST.Types.QualifiedName (QualifiedName(..))
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
 
 import Data.Newtype (unwrap)
@@ -31,22 +33,22 @@ printModule (Module { moduleName, imports, exports, declarations }) =
       , emptyRow
       ]
 
-shouldBeNoNewlineBetweenDeclarations :: Declaration -> Declaration -> Boolean
+shouldBeNoNewlineBetweenDeclarations :: Declaration QualifiedName -> Declaration QualifiedName -> Boolean
 shouldBeNoNewlineBetweenDeclarations (DeclSignature { ident }) (DeclValue { valueBindingFields: { name } }) = ident == name
 shouldBeNoNewlineBetweenDeclarations (DeclValue { valueBindingFields: { name } }) (DeclValue { valueBindingFields: { name: nameNext } }) = name == nameNext
 shouldBeNoNewlineBetweenDeclarations _ _ = false
 
-shouldBeNoNewlineBetweenLetBindings :: LetBinding -> LetBinding -> Boolean
+shouldBeNoNewlineBetweenLetBindings :: LetBinding QualifiedName -> LetBinding QualifiedName -> Boolean
 shouldBeNoNewlineBetweenLetBindings (LetBindingSignature { ident }) (LetBindingName { name }) = ident == name
 shouldBeNoNewlineBetweenLetBindings (LetBindingName { name }) (LetBindingName { name: nameNext }) = name == nameNext
 shouldBeNoNewlineBetweenLetBindings _ _ = false
 
-shouldBeNoNewlineBetweenInstanceBindings :: InstanceBinding -> InstanceBinding -> Boolean
+shouldBeNoNewlineBetweenInstanceBindings :: InstanceBinding QualifiedName -> InstanceBinding QualifiedName -> Boolean
 shouldBeNoNewlineBetweenInstanceBindings (InstanceBindingSignature { ident }) (InstanceBindingName { name }) = ident == name
 shouldBeNoNewlineBetweenInstanceBindings (InstanceBindingName { name }) (InstanceBindingName { name: nameNext }) = name == nameNext
 shouldBeNoNewlineBetweenInstanceBindings _ _ = false
 
-printDeclarations :: Array Declaration -> Box
+printDeclarations :: Array (Declaration QualifiedName) -> Box
 printDeclarations [] = nullBox
 printDeclarations declarations = emptyRow // printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenDeclarations printDeclaration declarations
 
@@ -57,7 +59,7 @@ printComments (BlockComments strings) = text "{-" // (strings <#> (\x -> twoSpac
 printMaybeComments :: Maybe Comments -> Box
 printMaybeComments = maybe nullBox printComments
 
-printDeclaration :: Declaration -> Box
+printDeclaration :: Declaration QualifiedName -> Box
 printDeclaration (DeclData { comments, head, constructors: [] }) = printMaybeComments comments // printDataHead (text "data") head
 printDeclaration (DeclData { comments, head, constructors }) =
   let
@@ -71,7 +73,7 @@ printDeclaration (DeclData { comments, head, constructors }) =
     printMaybeComments comments // printDataHead (text "data") head // printedCtors
 printDeclaration (DeclType { comments, head, type_ }) =
   let
-    doWrap :: Type -> Boolean
+    doWrap :: Type QualifiedName -> Boolean
     doWrap (TypeForall _ _) = true
     doWrap (TypeArr _ _) = true
     doWrap (TypeOp _ _ _) = true
@@ -84,7 +86,7 @@ printDeclaration (DeclType { comments, head, type_ }) =
     printMaybeComments comments // (printDataHead (text "type") head <<+>> text "=" <<+>> printedType)
 printDeclaration (DeclNewtype { comments, head, name, type_ }) =
   let
-    doWrap :: Type -> Boolean
+    doWrap :: Type QualifiedName -> Boolean
     doWrap (TypeApp _ _) = true
     doWrap (TypeForall _ _) = true
     doWrap (TypeArr _ _) = true
@@ -98,7 +100,7 @@ printDeclaration (DeclNewtype { comments, head, name, type_ }) =
     printMaybeComments comments // (printDataHead (text "newtype") head <<+>> text "=" <<+>> ((text <<< appendUnderscoreIfReserved <<< unwrap) name <<+>> printedType))
 printDeclaration (DeclFixity { comments, fixityFields: { keyword, precedence, operator } }) =
   let
-    printFixityOp :: FixityOp -> Box
+    printFixityOp :: FixityOp QualifiedName -> Box
     printFixityOp (FixityValue (Left qualifiedIdent) opName) = printQualifiedName_Ident qualifiedIdent <<+>> text "as" <<+>> (text <<< appendUnderscoreIfReserved <<< unwrap) opName
     printFixityOp (FixityValue (Right qualifiedPropName) opName) = printQualifiedName_AnyProperNameType qualifiedPropName <<+>> text "as" <<+>> (text <<< appendUnderscoreIfReserved <<< unwrap) opName
     printFixityOp (FixityType qualifiedPropName opName) = text "type" <<+>> printQualifiedName_AnyProperNameType qualifiedPropName <<+>> text "as" <<+>> (text <<< appendUnderscoreIfReserved <<< unwrap) opName
@@ -114,7 +116,7 @@ printDeclaration (DeclForeign { comments, foreign_ }) =
     )
 printDeclaration (DeclDerive { comments, deriveType, head: { instName, instConstraints, instClass, instTypes } }) =
   let
-    doWrap :: Type -> Boolean
+    doWrap :: Type QualifiedName -> Boolean
     doWrap (TypeApp _ _) = true
     doWrap (TypeForall _ _) = true
     doWrap (TypeArr _ _) = true
@@ -169,12 +171,12 @@ printDeclaration (DeclClass { comments, head: { name, vars, super, fundeps }, me
           )
 printDeclaration (DeclInstanceChain { comments, instances }) =
   let
-    printInstance :: Instance -> Box
+    printInstance :: Instance QualifiedName -> Box
     printInstance { head: { instName, instConstraints, instClass, instTypes }, body } =
       let
         head = text "instance" <<+>> (text <<< appendUnderscoreIfReserved <<< unwrap) instName <<+>> text "::" <<+>> printQualifiedName_AnyProperNameType instClass
 
-        doWrap :: Type -> Boolean
+        doWrap :: Type QualifiedName -> Boolean
         doWrap (TypeApp _ _) = true
         doWrap (TypeForall _ _) = true
         doWrap (TypeArr _ _) = true
@@ -202,11 +204,11 @@ printDeclaration (DeclInstanceChain { comments, instances }) =
 printDeclaration (DeclSignature { comments, ident, type_ }) = printMaybeComments comments // ((text <<< appendUnderscoreIfReserved <<< unwrap) ident <<+>> text "::" <<+>> printType PrintType_Multiline type_)
 printDeclaration (DeclValue { comments, valueBindingFields }) = printMaybeComments comments // (printValueBindingFields valueBindingFields)
 
-printInstanceBinding :: InstanceBinding -> Box
+printInstanceBinding :: InstanceBinding QualifiedName -> Box
 printInstanceBinding (InstanceBindingSignature { ident, type_ }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
 printInstanceBinding (InstanceBindingName valueBindingFields) = printValueBindingFields valueBindingFields
 
-printValueBindingFields :: ValueBindingFields -> Box
+printValueBindingFields :: ValueBindingFields QualifiedName -> Box
 printValueBindingFields { name, binders, guarded } =
   let
     printedBinders =
@@ -217,7 +219,7 @@ printValueBindingFields { name, binders, guarded } =
     printedHead = (text <<< appendUnderscoreIfReserved <<< unwrap) name <<+>> printedBinders <<>> text "="
    in printGuarded printedHead guarded
 
-printGuarded :: Box -> Guarded -> Box
+printGuarded :: Box -> Guarded QualifiedName -> Box
 printGuarded printedHead guarded =
   case guarded of
     (Unconditional where_) ->
@@ -235,13 +237,13 @@ printGuarded printedHead guarded =
               else printedHead <<+>> printExpr expr // printedBindings
     (Guarded _) -> nullBox -- TODO
 
-exprShouldBeOnNextLine :: Expr -> Boolean
+exprShouldBeOnNextLine :: Expr QualifiedName -> Boolean
 exprShouldBeOnNextLine (ExprLet _) = true
 exprShouldBeOnNextLine (ExprCase _) = true
 exprShouldBeOnNextLine (ExprIf _) = true
 exprShouldBeOnNextLine _ = false
 
-printBinder :: Binder -> Box
+printBinder :: Binder QualifiedName -> Box
 printBinder BinderWildcard = text "_"
 printBinder (BinderVar ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
 printBinder (BinderNamed { ident, binder }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <<>> text "@" <<>> (wrapInParentheses $ printBinder binder)
@@ -261,7 +263,7 @@ printRecordLabeled :: ∀ a . (a -> Box) -> RecordLabeled a -> Box
 printRecordLabeled _ (RecordPun ident) = (text <<< quoteIfReserved <<< unwrap) ident
 printRecordLabeled print (RecordField label a) = (text <<< quoteIfReserved <<< unwrap) label <<>> text ":" <<+>> print a
 
-printExpr :: Expr -> Box
+printExpr :: Expr QualifiedName -> Box
 printExpr (ExprHole hole) = text "?" <<>> (text <<< appendUnderscoreIfReserved <<< unwrap) hole
 printExpr ExprSection = text "_"
 printExpr (ExprIdent qualifiedIdent) = printQualifiedName_Ident qualifiedIdent
@@ -322,7 +324,7 @@ printExpr (ExprIf { cond, true_, false_ }) =
     // printedFalse
 printExpr (ExprCase { head, branches }) =
   let
-    printBranch :: { binders :: NonEmptyArray Binder, body :: Guarded } -> Box
+    printBranch :: { binders :: NonEmptyArray (Binder QualifiedName), body :: Guarded QualifiedName } -> Box
     printBranch { binders, body } =
       let
         printedHead = (punctuateH left (text ", ") $ map printBinder binders) <<+>> text "->"
@@ -337,7 +339,7 @@ printExpr (ExprCase { head, branches }) =
           ExprDo _ -> true
           ExprAdo _ -> true
           _ -> false
-      )
+       )
   in
     if headShouldBeMultiline
       then text "case"
@@ -367,14 +369,14 @@ printExpr (ExprLet { bindings, body }) =
 printExpr (ExprDo doStatements) = nullBox -- TODO
 printExpr (ExprAdo { statements, result }) = nullBox -- TODO
 
-printLetBinding :: LetBinding -> Box
+printLetBinding :: LetBinding QualifiedName -> Box
 printLetBinding (LetBindingSignature { ident, type_ }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <<+>> text "::" <<+>> printType PrintType_Multiline type_
 printLetBinding (LetBindingName valueBindingFields) = printValueBindingFields valueBindingFields
 printLetBinding (LetBindingPattern { binder, where_: { expr, whereBindings } }) = printBinder binder /+/ printExpr expr // text "where" // (vsep 1 left $ map printLetBinding whereBindings)
 
-printRecordUpdates :: NonEmptyArray RecordUpdate -> Box
+printRecordUpdates :: NonEmptyArray (RecordUpdate QualifiedName) -> Box
 printRecordUpdates recordUpdates = text "{" <<+>> (punctuateH left (text ",") $ map printRecordUpdate recordUpdates) <<+>> text "}"
 
-printRecordUpdate :: RecordUpdate -> Box
+printRecordUpdate :: RecordUpdate QualifiedName -> Box
 printRecordUpdate (RecordUpdateLeaf label expr) = (text <<< appendUnderscoreIfReserved <<< unwrap) label <<+>> text "=" <<+>> printExpr expr
 printRecordUpdate (RecordUpdateBranch label recordUpdates) = (text <<< appendUnderscoreIfReserved <<< unwrap) label <<+>> text "=" <<+>> printRecordUpdates recordUpdates

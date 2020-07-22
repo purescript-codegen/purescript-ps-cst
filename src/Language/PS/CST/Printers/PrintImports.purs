@@ -2,9 +2,11 @@ module Language.PS.CST.Printers.PrintImports where
 
 import Prelude
 
-import Language.PS.CST.Printers.Utils (emptyColumn, emptyRow, printConstructors, printModuleName, twoSpaceIdentation, wrapInParentheses)
-import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
-import Language.PS.CST.Types (DataMembers(..), Import(..), ImportDecl(..))
+import Language.PS.CST.Printers.Utils
+import Language.PS.CST.ReservedNames
+
+import Language.PS.CST.Types.Module
+import Language.PS.CST.Types.Shared
 
 import Text.PrettyPrint.Boxes (Box, left, nullBox, text, vcat, vsep, (//), (<<+>>), (<<>>))
 import Data.Foldable (length, null)

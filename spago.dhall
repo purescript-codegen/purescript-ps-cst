@@ -18,5 +18,5 @@ You can edit this file as you like.
     , "debug"
     ]
 , packages = ./packages.dhall
-, sources = [ "src/**/*.purs", "test/**/*.purs" ]
+, sources = [ "src/**/*.purs" ]
 }

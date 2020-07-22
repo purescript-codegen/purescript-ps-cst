@@ -1,7 +1,7 @@
 module Test.Golden.ExprRecord.Actual where
 
 import Language.PS.CST.Sugar
-import Language.PS.CST.Types
+import Language.PS.CST.Types.Shared
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
 import Data.Tuple.Nested ((/\))

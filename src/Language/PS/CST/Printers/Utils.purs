@@ -5,7 +5,7 @@ import Data.List (List(..), (:))
 import Data.List (fromFoldable) as List
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
-import Language.PS.CST.Types (ModuleName(..), ProperName, ProperNameType_ConstructorName)
+import Language.PS.CST.Types.Shared (ModuleName(..), ProperName, ProperNameType_ConstructorName)
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
 import Prelude (identity, map, (#), (<<<), (>>>))
 import Text.PrettyPrint.Boxes (Box, emptyBox, hsep, left, nullBox, punctuateH, text, vsep, (//), (<<>>))

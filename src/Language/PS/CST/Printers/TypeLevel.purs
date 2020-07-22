@@ -3,7 +3,8 @@ module Language.PS.CST.Printers.TypeLevel where
 import Prelude
 
 import Language.PS.CST.Printers.Utils (emptyColumn, ifelse, maybeWrapInParentheses, printModuleName, wrapInDoubleQuotes, wrapInParentheses)
-import Language.PS.CST.Types (ClassFundep(..), Constraint(..), DataCtor(..), DataHead(..), Fixity(..), Ident, Kind(..), Label, OpName, ProperName, QualifiedName(..), Row(..), Type(..), TypeVarBinding(..))
+import Language.PS.CST.Types.Shared (ClassFundep(..), Constraint(..), DataCtor(..), DataHead(..), Fixity(..), Ident, Kind(..), Label, OpName, ProperName, Row(..), Type(..), TypeVarBinding(..))
+import Language.PS.CST.Types.QualifiedName (QualifiedName(..))
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
 
 import Data.Array (snoc) as Array
@@ -22,10 +23,10 @@ printFixity Infix  = text "infix"
 printFixity Infixl = text "infixl"
 printFixity Infixr = text "infixr"
 
-printDataCtor :: DataCtor -> Box
+printDataCtor :: DataCtor QualifiedName -> Box
 printDataCtor (DataCtor dataCtor) =
   let
-    doWrap :: Type -> Boolean
+    doWrap :: Type QualifiedName -> Boolean
     doWrap (TypeApp _ _) = true
     doWrap (TypeForall _ _) = true
     doWrap (TypeArr _ _) = true
@@ -35,7 +36,7 @@ printDataCtor (DataCtor dataCtor) =
 
     context = PrintType_Multiline
 
-    printType' :: Type -> Box
+    printType' :: Type QualifiedName -> Box
     printType' type_ = maybeWrapInParentheses (doWrap type_) $ printType context $ type_
 
     name = (text <<< appendUnderscoreIfReserved <<< unwrap) dataCtor.dataCtorName
@@ -46,7 +47,7 @@ printDataCtor (DataCtor dataCtor) =
   in
     name <<+>> printedFields
 
-printDataHead :: Box -> DataHead -> Box
+printDataHead :: Box -> DataHead QualifiedName -> Box
 printDataHead reservedWord (DataHead dataHead) =
   let
     head = reservedWord <<+>> (text <<< appendUnderscoreIfReserved <<< unwrap) dataHead.dataHdName
@@ -55,15 +56,15 @@ printDataHead reservedWord (DataHead dataHead) =
   in
     if null vars then head else head <<+>> punctuateH left (emptyColumn) vars
 
-printTypeVarBinding :: TypeVarBinding -> Box
+printTypeVarBinding :: TypeVarBinding QualifiedName -> Box
 printTypeVarBinding (TypeVarName ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
 printTypeVarBinding (TypeVarKinded ident kind_) = wrapInParentheses $ (text <<< appendUnderscoreIfReserved <<< unwrap) ident <<+>> text "::" <<+>> printKind kind_
 
-printKind :: Kind -> Box
+printKind :: Kind QualifiedName -> Box
 printKind (KindName qualifiedKindName) = printQualifiedName_AnyProperNameType qualifiedKindName
 printKind (KindArr kindLeft_ kindRight_) =
   let
-    isComplex :: Kind -> Boolean
+    isComplex :: Kind QualifiedName -> Boolean
     isComplex (KindArr _ _) = true
     isComplex _ = false
 
@@ -94,7 +95,7 @@ data PrintType_Style
   = PrintType_Multiline
   | PrintType_OneLine
 
-printType :: PrintType_Style -> Type -> Box
+printType :: PrintType_Style -> Type QualifiedName -> Box
 printType printType_Style (TypeVar ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
 printType printType_Style (TypeConstructor qualifiedTypeName) = printQualifiedName_AnyProperNameType qualifiedTypeName
 printType printType_Style TypeWildcard = text "_"
@@ -158,7 +159,7 @@ printType printType_Style (TypeConstrained constraint type_) =
   in
     printConstraint constraint <<+>> text "=>" <<+>> printType newContext type_
 
-printConstraint :: Constraint -> Box
+printConstraint :: Constraint QualifiedName -> Box
 printConstraint (Constraint { className, args }) =
   let
     context = PrintType_OneLine
@@ -167,7 +168,7 @@ printConstraint (Constraint { className, args }) =
       then printQualifiedName_AnyProperNameType className
       else printQualifiedName_AnyProperNameType className <<+>> (punctuateH left (emptyColumn) $ map (printType context) args)
 
-printRowLikeType :: PrintType_Style -> Box -> Box -> Row -> Box
+printRowLikeType :: PrintType_Style -> Box -> Box -> Row QualifiedName -> Box
 printRowLikeType _ leftWrapper rightWrapper row@(Row { rowLabels: [], rowTail: Nothing }) = leftWrapper <<>> rightWrapper
 printRowLikeType _ leftWrapper rightWrapper row@(Row { rowLabels: [], rowTail: Just rowTail }) =
   let
@@ -204,5 +205,5 @@ printRowLikeType PrintType_Multiline leftWrapper rightWrapper row@(Row { rowLabe
   in
     printedRowLabels
 
-printRowLabel :: PrintType_Style -> { label :: Label, type_ :: Type } -> Box
+printRowLabel :: PrintType_Style -> { label :: Label, type_ :: Type QualifiedName } -> Box
 printRowLabel printType_Style { label, type_ } = (text <<< quoteIfReserved <<< unwrap) label <<+>> text "::" <<+>> printType printType_Style type_
