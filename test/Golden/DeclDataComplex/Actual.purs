@@ -49,14 +49,14 @@ actualModule = Module
             , TypeWildcard
             , TypeHole $ Ident "myhole"
             , TypeString "PsString"
-            , TypeRow $ Row { rowLabels: [], rowTail: Nothing }
-            , TypeRow $ Row { rowLabels: [], rowTail: Just myExtension }
-            , TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType ], rowTail: Nothing }
-            , TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType ], rowTail: Just myExtension }
-            , TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Nothing }
-            , TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just myExtension }
-            , TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just $ TypeOp myExtension (nonQualifiedName $ OpName "+") (nonQualifiedNameTypeConstructor "MyOtherExtension") }
-            , TypeRow $ Row
+            , TypeRow { rowLabels: [], rowTail: Nothing }
+            , TypeRow { rowLabels: [], rowTail: Just myExtension }
+            , TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType ], rowTail: Nothing }
+            , TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType ], rowTail: Just myExtension }
+            , TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Nothing }
+            , TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just myExtension }
+            , TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just $ TypeOp myExtension (nonQualifiedName $ OpName "+") (nonQualifiedNameTypeConstructor "MyOtherExtension") }
+            , TypeRow
               { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ]
               , rowTail: Just $ TypeOp myExtension
                                       (nonQualifiedName $ OpName "+")
@@ -65,7 +65,7 @@ actualModule = Module
                                         (typeRecord [ "someField" /\ numberType ])
                                       )
               }
-            , TypeRow $ Row
+            , TypeRow
               { rowLabels: mkRowLabels
                 [ "rowField" /\ (typeRecord
                   [ "foo" /\ numberType

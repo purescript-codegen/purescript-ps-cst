@@ -301,10 +301,10 @@ processFixityOp (SmartCST.Declaration.FixityType properName opName) = do
   pure $ CST.Declaration.FixityType properName' opName
 
 processRow :: SmartCST.Declaration.Row -> App (CST.Declaration.Row)
-processRow (SmartCST.Declaration.Row row) = do
+processRow row = do
   (rowLabels :: Array { label :: Label, type_ :: CST.Declaration.Type }) <- traverse (\rowItem -> { label: rowItem.label, type_: _ } <$> processType rowItem.type_) row.rowLabels
   rowTail <- traverse processType row.rowTail
-  pure $ CST.Declaration.Row { rowLabels, rowTail }
+  pure { rowLabels, rowTail }
 
 processConstraint :: SmartCST.Declaration.Constraint -> App (CST.Declaration.Constraint)
 processConstraint (SmartCST.Declaration.Constraint constraint) = do

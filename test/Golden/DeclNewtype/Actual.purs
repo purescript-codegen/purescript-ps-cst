@@ -50,14 +50,14 @@ actualModule = Module
     , declFooNewtype $ TypeWildcard
     , declFooNewtype $ TypeHole $ Ident "myhole"
     , declFooNewtype $ TypeString "PsString"
-    , declFooNewtype $ TypeRow $ Row { rowLabels: [], rowTail: Nothing }
-    , declFooNewtype $ TypeRow $ Row { rowLabels: [], rowTail: Just myExtension }
-    , declFooNewtype $ TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType ], rowTail: Nothing }
-    , declFooNewtype $ TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType ], rowTail: Just myExtension }
-    , declFooNewtype $ TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Nothing }
-    , declFooNewtype $ TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just myExtension }
-    , declFooNewtype $ TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just $ TypeOp myExtension (nonQualifiedName $ OpName "+") (nonQualifiedNameTypeConstructor "MyOtherExtension") }
-    , declFooNewtype $ TypeRow $ Row
+    , declFooNewtype $ TypeRow { rowLabels: [], rowTail: Nothing }
+    , declFooNewtype $ TypeRow { rowLabels: [], rowTail: Just myExtension }
+    , declFooNewtype $ TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType ], rowTail: Nothing }
+    , declFooNewtype $ TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType ], rowTail: Just myExtension }
+    , declFooNewtype $ TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Nothing }
+    , declFooNewtype $ TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just myExtension }
+    , declFooNewtype $ TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just $ TypeOp myExtension (nonQualifiedName $ OpName "+") (nonQualifiedNameTypeConstructor "MyOtherExtension") }
+    , declFooNewtype $ TypeRow
       { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ]
       , rowTail: Just $ TypeOp myExtension
                                 (nonQualifiedName $ OpName "+")
@@ -66,7 +66,7 @@ actualModule = Module
                                 (typeRecord [ "someField" /\ numberType ])
                                 )
       }
-    , declFooNewtype $ TypeRow $ Row
+    , declFooNewtype $ TypeRow
       { rowLabels: mkRowLabels
         [ "rowField" /\ (typeRecord
           [ "foo" /\ numberType

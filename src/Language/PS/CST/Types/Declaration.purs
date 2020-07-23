@@ -163,15 +163,10 @@ newtype DataCtor = DataCtor
 -- | derive instance ordDataCtor :: Ord DataCtor
 -- instance showDataCtor :: Show DataCtor where show = genericShow
 
-newtype Row = Row
+type Row =
   { rowLabels :: Array { label :: Label, type_ :: Type }
   , rowTail :: Maybe Type
   }
--- | derive instance newtypeRow :: Newtype Row _
--- | derive instance genericRow :: Generic Row _
--- | derive instance eqRow :: Eq Row
--- | derive instance ordRow :: Ord Row
--- instance showRow :: Show Row where show = genericShow
 
 newtype Constraint
   = Constraint

@@ -21,7 +21,7 @@ qualifiedName moduleName a = QualifiedName { qualModule: Just moduleName, qualNa
 -- TOOD: remove
 typeRecord :: Array (String /\ Type) -> Type
 typeRecord labels =
-  TypeRecord $ Row
+  TypeRecord
     { rowLabels: mkRowLabels labels
     , rowTail: Nothing
     }
@@ -29,7 +29,7 @@ typeRecord labels =
 -- TOOD: remove
 typeRow :: Array (String /\ Type) -> Type
 typeRow labels =
-  TypeRow $ Row
+  TypeRow
     { rowLabels: mkRowLabels labels
     , rowTail: Nothing
     }
@@ -76,6 +76,6 @@ kindNamed s = KindName (nonQualifiedName $ ProperName s)
 nonQualifiedExprIdent :: String -> Expr
 nonQualifiedExprIdent s = ExprIdent $ nonQualifiedName (Ident s)
 
--- emptyRow :: Row
--- emptyRow = Row { labels: mempty, tail: Nothing }
+emptyRow :: Row
+emptyRow = { rowLabels: [], rowTail: Nothing }
 

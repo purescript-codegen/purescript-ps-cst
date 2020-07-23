@@ -42,7 +42,7 @@ actualModule = Module
         , instClass: nonQualifiedName $ ProperName "Foo"
         , instTypes: NonEmpty.cons'
           ( TypeConstructor $ nonQualifiedName $ ProperName "Bar")
-          [ TypeRecord $ Row
+          [ TypeRecord
             { rowLabels: mkRowLabels [ "foo" /\ numberType ]
             , rowTail: Nothing
             }
