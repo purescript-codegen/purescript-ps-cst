@@ -13,6 +13,6 @@
    - conditionally print `Type`'s in one line or in multiple lines based on expected line width (and not based on context as it is now)
 
 - [ ] support comments
-- [ ] calculate imports automatically based on `Declaration`s
+- [x] calculate imports automatically based on `Declaration`s
 - [ ] finish pending tests in `spec` directory
 - [ ] provide configuration for printing function (e.g. allow to use `∀` instead of `forall`)

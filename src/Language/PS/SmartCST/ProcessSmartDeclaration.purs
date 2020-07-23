@@ -1,15 +1,16 @@
 module Language.PS.SmartCST.ProcessSmartDeclaration where
 
 import Data.Tuple.Nested
+import Language.PS.CST.Sugar.QualifiedName
 import Language.PS.CST.Types.Leafs
 import Language.PS.CST.Types.Module
 import Language.PS.CST.Types.QualifiedName
-import Language.PS.CST.Sugar.QualifiedName
 import Language.PS.SmartCST.ProcessSmartDeclaration.Utils
 import Language.PS.SmartCST.Types.ConstructorProperName
 import Language.PS.SmartCST.Types.SmartQualifiedName
 import Prelude
 
+import Control.Monad.Reader (ReaderT(..), ask, runReaderT)
 import Control.Monad.State (State, modify_, runState)
 import Data.Array as Array
 import Data.Array.NonEmpty (NonEmptyArray)
@@ -20,7 +21,7 @@ import Data.Traversable (traverse)
 import Language.PS.CST.Types.Declaration as CST.Declaration
 import Language.PS.SmartCST.Types.Declaration as SmartCST.Declaration
 
-type App = State (Array ImportDecl)
+type App = ReaderT ModuleName (State (Array ImportDecl))
 
 ---------------------------------
 
@@ -61,7 +62,14 @@ processSmartQualifiedName
               , qualification: Just originalModule
               }
             )
-          pure $ QualifiedName { qualModule: Just originalModule, qualName: name }
+          currentModuleName <- ask
+          pure $ QualifiedName
+            { qualModule:
+              if currentModuleName == originalModule
+                then Nothing
+                else Just originalModule
+            , qualName: name
+            }
        SmartQualifiedName__Simple originalModule name -> do
           modify_ $ findAndModifyOrNew
             (\(ImportDecl import_) ->
@@ -109,7 +117,14 @@ processSmartQualifiedName
               , qualification: Just customModule
               }
             )
-          pure $ QualifiedName { qualModule: Just customModule, qualName: name }
+          currentModuleName <- ask
+          pure $ QualifiedName
+            { qualModule:
+              if currentModuleName == originalModule
+                then Nothing
+                else Just originalModule
+            , qualName: name
+            }
 
 -- For each 6 of Import constructors (plus processSmartQualifiedNameTypeConstructor)
 processSmartQualifiedNameValue :: SmartQualifiedName Ident -> App (QualifiedName Ident)
@@ -187,8 +202,11 @@ processSmartQualifiedNameKind = processSmartQualifiedName
 
 ---------------------------------
 
-processDeclarations :: Array SmartCST.Declaration.Declaration -> Array CST.Declaration.Declaration /\ Array ImportDecl
-processDeclarations x = runState (traverse processDeclaration x) []
+processDeclarations :: ModuleName -> Array SmartCST.Declaration.Declaration -> Array CST.Declaration.Declaration /\ Array ImportDecl
+processDeclarations currentModuleName x =
+  traverse processDeclaration x
+  # flip runReaderT currentModuleName
+  # flip runState []
 
 processDeclaration :: SmartCST.Declaration.Declaration -> App CST.Declaration.Declaration
 processDeclaration (SmartCST.Declaration.DeclData { comments, head, constructors }) = do

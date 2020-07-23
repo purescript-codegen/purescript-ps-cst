@@ -31,7 +31,7 @@ newtype Module = Module
 moduleToCstModule :: Module -> Language.PS.CST.Types.Module.Module
 moduleToCstModule (Module module_) =
   let
-    (declarations /\ imports) = Language.PS.SmartCST.ProcessSmartDeclaration.processDeclarations module_.declarations
+    (declarations /\ imports) = Language.PS.SmartCST.ProcessSmartDeclaration.processDeclarations module_.moduleName module_.declarations
 
     importsWithoutCurrentModule = Array.filter (\(ImportDecl importDecl) -> importDecl.moduleName /= module_.moduleName) imports
   in
