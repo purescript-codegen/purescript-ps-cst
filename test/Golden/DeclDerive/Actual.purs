@@ -1,7 +1,6 @@
 module Test.Golden.DeclDerive.Actual where
 
-import Language.PS.CST.Sugar (mkModuleName, mkRowLabels, nonQualifiedName, numberType, typeVar)
-import Language.PS.CST.Types.Shared (Constraint(..), DeclDeriveType(..), Declaration(..), Ident(..), Module(..), ProperName(..), Row(..), Type(..))
+import Language.PS.CST
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty

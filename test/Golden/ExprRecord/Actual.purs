@@ -1,11 +1,11 @@
 module Test.Golden.ExprRecord.Actual where
 
-import Language.PS.CST.Sugar
-import Language.PS.CST.Types.Shared
+import Language.PS.CST
+
+import Prelude
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
 import Data.Tuple.Nested ((/\))
-import Prelude
 
 names :: Array String
 names = ["Human", "Droid"]

@@ -1,10 +1,9 @@
 module Test.Golden.Boolean.Actual where
 
-import Language.PS.CST.Types.Shared
+import Language.PS.CST
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
-import Language.PS.CST.Sugar (booleanType, mkModuleName)
 import Prelude (($))
 
 actualModule :: Module

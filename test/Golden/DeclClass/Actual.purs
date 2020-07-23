@@ -1,7 +1,6 @@
 module Test.Golden.DeclClass.Actual where
 
-import Language.PS.CST.Sugar (mkModuleName, nonQualifiedName, typeVar, typeVarName)
-import Language.PS.CST.Types.Shared (ClassFundep(..), Comments(..), Constraint(..), Declaration(..), Ident(..), Module(..), ProperName(..), TypeVarBinding(..), (====>>))
+import Language.PS.CST
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty

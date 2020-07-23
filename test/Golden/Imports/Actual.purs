@@ -1,9 +1,8 @@
 module Test.Golden.Imports.Actual where
 
-import Data.Maybe (Maybe(..))
-import Language.PS.CST.Types.Shared
-import Language.PS.CST.Sugar (mkModuleName)
 import Prelude (map, ($))
+import Data.Maybe (Maybe(..))
+import Language.PS.CST
 
 import Data.Array.NonEmpty as NonEmpty
 

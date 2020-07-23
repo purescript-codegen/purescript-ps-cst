@@ -1,7 +1,6 @@
 module Test.Golden.DeclForeign.Actual where
 
-import Language.PS.CST.Sugar (mkModuleName, mkRowLabels, nonQualifiedName, nonQualifiedNameTypeConstructor, typeVar, typeVarName)
-import Language.PS.CST.Types.Shared (Declaration(..), Foreign(..), Ident(..), Kind(..), Module(..), ProperName(..), Row(..), Type(..), (====>>>))
+import Language.PS.CST
 import Prelude (($))
 
 import Data.Maybe (Maybe(..))
