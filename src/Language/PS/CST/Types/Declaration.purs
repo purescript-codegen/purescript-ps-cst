@@ -1,4 +1,4 @@
-module Language.PS.CST.Types.Shared where
+module Language.PS.CST.Types.Declaration where
 
 import Prelude
 
