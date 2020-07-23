@@ -23,7 +23,7 @@ type App = ReaderT ModuleName (State (Array ImportDecl))
 
 ---------------------------------
 
--- Generalized
+-- Generalized, this function contains all logic
 processSmartQualifiedName
   :: forall a
    . (a -> Import -> Boolean)
@@ -124,7 +124,7 @@ processSmartQualifiedName
             , qualName: name
             }
 
--- For each 6 of Import constructors (plus processSmartQualifiedNameTypeConstructor)
+-- For each 6 of Import constructors (plus processSmartQualifiedNameTypeConstructor for constructors)
 processSmartQualifiedNameValue :: SmartQualifiedName Ident -> App (QualifiedName Ident)
 processSmartQualifiedNameValue = processSmartQualifiedName
   (\expectedName ->
@@ -156,18 +156,6 @@ processSmartQualifiedNameType = processSmartQualifiedName
   (\name currentImport -> currentImport) -- if there is `import Module.Name (Foo(..))` - leave it as it is
   (\name -> ImportType name Nothing) -- but if it is new - create without constructors `import Module.Name (Foo)`
 
--- is like processSmartQualifiedNameType, but adds -- adds `import Module.Name (Foo(..))`
-processSmartQualifiedNameTypeConstructor :: SmartQualifiedName ConstructorProperName -> App (QualifiedName (ProperName ProperNameType_ConstructorName))
-processSmartQualifiedNameTypeConstructor = processSmartQualifiedName
-  (\(ConstructorProperName constructorProperName) ->
-    case _ of
-      ImportType name' _ -> name' == constructorProperName.type_
-      _ -> false
-  )
-  (\(ConstructorProperName constructorProperName) _currentImport -> ImportType constructorProperName.type_ (Just DataAll))
-  (\(ConstructorProperName constructorProperName) -> ImportType constructorProperName.type_ (Just DataAll))
-  <#> map (map (\(ConstructorProperName constructorProperName) -> constructorProperName.constructor))
-
 processSmartQualifiedNameTypeOp :: SmartQualifiedName (OpName OpNameType_TypeOpName) -> App (QualifiedName (OpName OpNameType_TypeOpName))
 processSmartQualifiedNameTypeOp = processSmartQualifiedName
   (\expectedName ->
@@ -197,6 +185,20 @@ processSmartQualifiedNameKind = processSmartQualifiedName
   )
   (\name currentImport -> currentImport)
   ImportKind
+
+-------
+
+-- is like processSmartQualifiedNameType, but adds -- adds `import Module.Name (Foo(..))`
+processSmartQualifiedNameTypeConstructor :: SmartQualifiedName ConstructorProperName -> App (QualifiedName (ProperName ProperNameType_ConstructorName))
+processSmartQualifiedNameTypeConstructor = processSmartQualifiedName
+  (\(ConstructorProperName constructorProperName) ->
+    case _ of
+      ImportType name' _ -> name' == constructorProperName.type_
+      _ -> false
+  )
+  (\(ConstructorProperName constructorProperName) _currentImport -> ImportType constructorProperName.type_ (Just DataAll))
+  (\(ConstructorProperName constructorProperName) -> ImportType constructorProperName.type_ (Just DataAll))
+  <#> map (map (\(ConstructorProperName constructorProperName) -> constructorProperName.constructor))
 
 ---------------------------------
 
