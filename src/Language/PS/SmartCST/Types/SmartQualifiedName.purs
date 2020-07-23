@@ -11,22 +11,28 @@ import Data.Newtype (class Newtype)
 import Data.Array.NonEmpty (NonEmptyArray)
 import Language.PS.CST.Types.Leafs
 
-data SmartQualifiedNameImportType
+data SmartQualifiedName a
+  -- not imported at all (used for variables from Prim module or current module)
+  -- used in code as `foo`
+  = SmartQualifiedName__Ignore
+    a
   -- imported as `import Module.Name (foo) as Module.Name`
   -- used in code as `Module.Name.foo`
-  = SmartQualifiedNameImportType__Full
+  | SmartQualifiedName__Full
+    ModuleName -- original
+    a
   -- imported as `import Module.Name (foo)`
   -- used in code as `foo`
-  | SmartQualifiedNameImportType__None
+  | SmartQualifiedName__Simple
+    ModuleName -- original
+    a
   -- imported as `import Module.Name (foo) as Custom.Custom`
   -- used in code as `Custom.Custom.foo`
-  | SmartQualifiedNameImportType__Custom ModuleName
+  | SmartQualifiedName__Custom
+    ModuleName -- original
+    ModuleName -- custom
+    a -- name
 
-newtype SmartQualifiedName a = SmartQualifiedName
-  { module_ :: ModuleName
-  , importType :: SmartQualifiedNameImportType
-  , name :: a
-  }
 derive instance functorSmartQualifiedName :: Functor SmartQualifiedName
 -- | derive instance newtypeQualifiedName :: Newtype (SmartQualifiedName a) _
 -- | derive instance eqQualifiedName :: Eq a => Eq (SmartQualifiedName a)

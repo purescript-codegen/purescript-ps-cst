@@ -2,7 +2,6 @@ module Language.PS.SmartCST.Sugar.Declaration where
 
 import Language.PS.SmartCST.Types.Declaration
 import Language.PS.SmartCST.Types.SmartQualifiedName
-import Language.PS.SmartCST.Sugar.SmartQualifiedName
 import Language.PS.CST.Types.Leafs
 import Language.PS.CST.Sugar.Leafs
 import Prelude (map, ($), (<<<))
@@ -19,16 +18,16 @@ typeRow :: Array (String /\ Type) -> Type
 typeRow labels = TypeRow { rowLabels: mkRowLabels labels, rowTail: Nothing }
 
 booleanType :: Type
-booleanType = TypeConstructor $ smartQualifiedNameNone (mkModuleName (NonEmpty.singleton "Prim")) $ ProperName "Boolean"
+booleanType = TypeConstructor $ SmartQualifiedName__Simple (mkModuleName (NonEmpty.singleton "Prim")) $ ProperName "Boolean"
 
 numberType :: Type
-numberType = TypeConstructor $ smartQualifiedNameNone (mkModuleName (NonEmpty.singleton "Prim")) $ ProperName "Number"
+numberType = TypeConstructor $ SmartQualifiedName__Simple (mkModuleName (NonEmpty.singleton "Prim")) $ ProperName "Number"
 
 stringType :: Type
-stringType = TypeConstructor $ smartQualifiedNameNone (mkModuleName (NonEmpty.singleton "Prim")) $ ProperName "String"
+stringType = TypeConstructor $ SmartQualifiedName__Simple (mkModuleName (NonEmpty.singleton "Prim")) $ ProperName "String"
 
 arrayType :: Type -> Type
-arrayType = TypeApp (TypeConstructor $ smartQualifiedNameNone (mkModuleName (NonEmpty.singleton "Prim")) $ ProperName "Array")
+arrayType = TypeApp (TypeConstructor $ SmartQualifiedName__Simple (mkModuleName (NonEmpty.singleton "Prim")) $ ProperName "Array")
 
 maybeType :: Type -> Type
-maybeType = TypeApp (TypeConstructor $ smartQualifiedNameNone (mkModuleName (NonEmpty.cons' "Data" ["Maybe"])) $ ProperName "Maybe")
+maybeType = TypeApp (TypeConstructor $ SmartQualifiedName__Simple (mkModuleName (NonEmpty.cons' "Data" ["Maybe"])) $ ProperName "Maybe")

@@ -35,58 +35,58 @@ processSmartQualifiedName
 processSmartQualifiedName
   smartFindEqToName
   smartModify
-  smartCreateNew
-  (SmartQualifiedName smartQualifiedName) =
-  case smartQualifiedName.importType of
-       SmartQualifiedNameImportType__Full -> do
+  smartCreateNew =
+  case _ of
+       SmartQualifiedName__Ignore name -> pure $ QualifiedName { qualModule: Nothing, qualName: name }
+       SmartQualifiedName__Full originalModule name -> do
           modify_ $ findAndModifyOrNew
             (\(ImportDecl import_) ->
               case import_.qualification of
                    Nothing -> false
-                   Just moduleName -> smartQualifiedName.module_ == moduleName
+                   Just moduleName -> originalModule == moduleName
             )
             (\(ImportDecl import_) ->
               ImportDecl $ import_
                 { names =
                   findAndModifyOrNew
-                  (smartFindEqToName smartQualifiedName.name)
-                  (smartModify smartQualifiedName.name)
-                  (\_ -> smartCreateNew smartQualifiedName.name)
+                  (smartFindEqToName name)
+                  (smartModify name)
+                  (\_ -> smartCreateNew name)
                   import_.names
                 }
             )
             (\_ -> ImportDecl
-              { moduleName: smartQualifiedName.module_
-              , names: [smartCreateNew smartQualifiedName.name]
-              , qualification: Just smartQualifiedName.module_
+              { moduleName: originalModule
+              , names: [smartCreateNew name]
+              , qualification: Just originalModule
               }
             )
-          pure $ QualifiedName { qualModule: Just smartQualifiedName.module_, qualName: smartQualifiedName.name }
-       SmartQualifiedNameImportType__None -> do
+          pure $ QualifiedName { qualModule: Just originalModule, qualName: name }
+       SmartQualifiedName__Simple originalModule name -> do
           modify_ $ findAndModifyOrNew
             (\(ImportDecl import_) ->
               case import_.qualification of
-                   Nothing -> import_.moduleName == smartQualifiedName.module_
+                   Nothing -> import_.moduleName == originalModule
                    Just _ -> false
             )
             (\(ImportDecl import_) ->
               ImportDecl $ import_
                 { names =
                   findAndModifyOrNew
-                  (smartFindEqToName smartQualifiedName.name)
-                  (smartModify smartQualifiedName.name)
-                  (\_ -> smartCreateNew smartQualifiedName.name)
+                  (smartFindEqToName name)
+                  (smartModify name)
+                  (\_ -> smartCreateNew name)
                   import_.names
                 }
             )
             (\_ -> ImportDecl
-              { moduleName: smartQualifiedName.module_
-              , names: [smartCreateNew smartQualifiedName.name]
+              { moduleName: originalModule
+              , names: [smartCreateNew name]
               , qualification: Nothing
               }
             )
-          pure $ QualifiedName { qualModule: Nothing, qualName: smartQualifiedName.name }
-       (SmartQualifiedNameImportType__Custom customModule) -> do
+          pure $ QualifiedName { qualModule: Nothing, qualName: name }
+       SmartQualifiedName__Custom originalModule customModule name -> do
           modify_ $ findAndModifyOrNew
             (\(ImportDecl import_) ->
               case import_.qualification of
@@ -97,19 +97,19 @@ processSmartQualifiedName
               ImportDecl $ import_
                 { names =
                   findAndModifyOrNew
-                  (smartFindEqToName smartQualifiedName.name)
-                  (smartModify smartQualifiedName.name)
-                  (\_ -> smartCreateNew smartQualifiedName.name)
+                  (smartFindEqToName name)
+                  (smartModify name)
+                  (\_ -> smartCreateNew name)
                   import_.names
                 }
             )
             (\_ -> ImportDecl
-              { moduleName: smartQualifiedName.module_
-              , names: [smartCreateNew smartQualifiedName.name]
+              { moduleName: originalModule
+              , names: [smartCreateNew name]
               , qualification: Just customModule
               }
             )
-          pure $ QualifiedName { qualModule: Just customModule, qualName: smartQualifiedName.name }
+          pure $ QualifiedName { qualModule: Just customModule, qualName: name }
 
 -- For each 6 of Import constructors (plus processSmartQualifiedNameTypeConstructor)
 processSmartQualifiedNameValue :: SmartQualifiedName Ident -> App (QualifiedName Ident)
