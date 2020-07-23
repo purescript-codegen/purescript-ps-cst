@@ -182,10 +182,10 @@ actualModule = Module
                 (TypeVar $ Ident "f"))
             , TypeKinded
               (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
-              ((kindNamed "CustomKind" ====>>> KindRow (kindNamed "Type")) ====>>> (kindNamed "Type"))
+              (((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "Type")) ====>>> (KindName $ nonQualifiedName $ ProperName "Type"))
             , TypeKinded
               (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
-              (kindNamed "CustomKind" ====>>> KindRow (kindNamed "Type") ====>>> (kindNamed "Type"))
+              ((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "Type") ====>>> (KindName $ nonQualifiedName $ ProperName "Type"))
             ]
           }
         , DataCtor
