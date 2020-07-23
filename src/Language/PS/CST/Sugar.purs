@@ -55,9 +55,6 @@ arrayType = TypeApp (TypeConstructor $ nonQualifiedName $ ProperName "Array")
 maybeType :: Type -> Type
 maybeType = TypeApp (TypeConstructor $ nonQualifiedName $ ProperName "Maybe")
 
-nonQualifiedExprIdent :: String -> Expr
-nonQualifiedExprIdent s = ExprIdent $ nonQualifiedName $ Ident s
-
 emptyRow :: Row
 emptyRow = { rowLabels: [], rowTail: Nothing }
 

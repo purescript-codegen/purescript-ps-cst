@@ -77,7 +77,7 @@ actualModule = Module
                     }
                   }
                 ]
-              , body: nonQualifiedExprIdent "psModuleFile" `ExprApp` ExprNumber (Left 1)
+              , body: (ExprIdent $ nonQualifiedName $ Ident "psModuleFile") `ExprApp` ExprNumber (Left 1)
               }
             , whereBindings:
               [ LetBindingSignature

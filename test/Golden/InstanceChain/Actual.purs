@@ -37,7 +37,7 @@ actualModule = Module
                 { name: Ident "foo"
                 , binders: []
                 , guarded: Unconditional
-                  { expr: nonQualifiedExprIdent "append" `ExprApp` nonQualifiedExprIdent "foo" `ExprApp` nonQualifiedExprIdent "bar"
+                  { expr: (ExprIdent $ nonQualifiedName $ Ident "append") `ExprApp` (ExprIdent $ nonQualifiedName $ Ident "foo") `ExprApp` (ExprIdent $ nonQualifiedName $ Ident "bar")
                   , whereBindings: []
                   }
                 }
@@ -46,7 +46,7 @@ actualModule = Module
                 { name: Ident "bar"
                 , binders: []
                 , guarded: Unconditional
-                  { expr: nonQualifiedExprIdent "append" `ExprApp` (nonQualifiedExprIdent "foo" `ExprApp` nonQualifiedExprIdent "bar")
+                  { expr: (ExprIdent $ nonQualifiedName $ Ident "append") `ExprApp` ((ExprIdent $ nonQualifiedName $ Ident "foo") `ExprApp` (ExprIdent $ nonQualifiedName $ Ident "bar"))
                   , whereBindings: []
                   }
                 }
@@ -73,7 +73,7 @@ actualModule = Module
                 { name: Ident "foo"
                 , binders: []
                 , guarded: Unconditional
-                  { expr: nonQualifiedExprIdent "append"
+                  { expr: ExprIdent $ nonQualifiedName $ Ident "append"
                   , whereBindings: []
                   }
                 }

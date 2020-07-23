@@ -24,7 +24,7 @@ actualModule = Module
         { name: Ident "myfunc"
         , binders: [BinderNumber (Left 1)]
         , guarded: Unconditional
-            { expr: nonQualifiedExprIdent "psModuleFile" `ExprApp` ExprNumber (Left 1)
+            { expr: (ExprIdent $ nonQualifiedName $ Ident "psModuleFile") `ExprApp` ExprNumber (Left 1)
             , whereBindings:
               [ LetBindingSignature
                 { ident: Ident "psModuleFile"

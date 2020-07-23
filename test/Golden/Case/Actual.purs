@@ -21,7 +21,7 @@ actualModule = Module
         , guarded: Unconditional
             { expr:
               ExprCase
-              { head: NonEmpty.cons' (nonQualifiedExprIdent "foo") []
+              { head: NonEmpty.cons' (ExprIdent $ nonQualifiedName $ Ident "foo") []
               , branches:
                 NonEmpty.cons'
                 { binders: NonEmpty.cons' (BinderConstructor { name: nonQualifiedName (ProperName "Just"), args: [BinderVar (Ident "a")] }) []
