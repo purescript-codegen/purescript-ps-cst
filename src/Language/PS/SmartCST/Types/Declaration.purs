@@ -248,7 +248,7 @@ data Expr
   = ExprHole Ident
   | ExprSection
   | ExprIdent (SmartQualifiedName Ident)
-  | ExprLocalVariable Ident -- like ExprIdent, but without import
+  | ExprVar Ident -- like ExprIdent, but without import
   | ExprConstructor (SmartQualifiedName (ConstructorProperName))
   | ExprBoolean Boolean
   | ExprChar Char

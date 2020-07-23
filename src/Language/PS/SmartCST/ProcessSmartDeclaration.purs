@@ -409,7 +409,7 @@ processExpr :: SmartCST.Declaration.Expr -> App CST.Declaration.Expr
 processExpr (SmartCST.Declaration.ExprHole ident)                = pure $ CST.Declaration.ExprHole ident
 processExpr SmartCST.Declaration.ExprSection                     = pure $ CST.Declaration.ExprSection
 processExpr (SmartCST.Declaration.ExprIdent ident)               = CST.Declaration.ExprIdent <$> processSmartQualifiedNameValue ident
-processExpr (SmartCST.Declaration.ExprLocalVariable ident)       = pure $ CST.Declaration.ExprIdent (nonQualifiedName ident)
+processExpr (SmartCST.Declaration.ExprVar ident)                 = pure $ CST.Declaration.ExprIdent (nonQualifiedName ident)
 processExpr (SmartCST.Declaration.ExprConstructor name)          = CST.Declaration.ExprConstructor <$> processSmartQualifiedNameTypeConstructor name
 processExpr (SmartCST.Declaration.ExprBoolean x)                 = pure $ CST.Declaration.ExprBoolean x
 processExpr (SmartCST.Declaration.ExprChar x)                    = pure $ CST.Declaration.ExprChar x
