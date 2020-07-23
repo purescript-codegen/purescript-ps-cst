@@ -1,4 +1,4 @@
-module Language.PS.CST.Types.Declaration where
+module Language.PS.SmartCST.Types.Declaration where
 
 import Prelude
 
@@ -16,7 +16,8 @@ import Data.Traversable (class Traversable, traverse)
 import Data.Tuple.Nested
 import Data.Either.Nested
 import Language.PS.CST.Types.Leafs
-import Language.PS.CST.Types.QualifiedName
+import Language.PS.SmartCST.Types.SmartQualifiedName
+import Language.PS.SmartCST.Types.ConstructorProperName
 
 data Declaration
   = DeclData
@@ -74,7 +75,7 @@ data Declaration
 type InstanceHead =
   { instName :: Ident
   , instConstraints :: Array Constraint
-  , instClass :: QualifiedName (ProperName ProperNameType_ClassName)
+  , instClass :: SmartQualifiedName (ProperName ProperNameType_ClassName)
   , instTypes :: NonEmptyArray Type
   }
 
@@ -93,15 +94,15 @@ type FixityFields =
   }
 
 data FixityOp
-  = FixityValue (QualifiedName Ident \/ QualifiedName (ProperName ProperNameType_ConstructorName)) (OpName OpNameType_ValueOpName)
-  | FixityType (QualifiedName (ProperName ProperNameType_TypeName)) (OpName OpNameType_TypeOpName)
+  = FixityValue (SmartQualifiedName Ident \/ SmartQualifiedName (ConstructorProperName)) (OpName OpNameType_ValueOpName)
+  | FixityType (SmartQualifiedName (ProperName ProperNameType_TypeName)) (OpName OpNameType_TypeOpName)
 -- | derive instance genericFixityOp :: Generic FixityOp _
 -- | derive instance eqFixityOp :: Eq FixityOp
 -- | derive instance ordFixityOp :: Ord FixityOp
 
 data Type
   = TypeVar Ident
-  | TypeConstructor (QualifiedName (ProperName ProperNameType_TypeName))
+  | TypeConstructor (SmartQualifiedName (ProperName ProperNameType_TypeName))
   | TypeWildcard
   | TypeHole Ident
   | TypeString String
@@ -111,12 +112,12 @@ data Type
   | TypeForall (NonEmptyArray TypeVarBinding) Type
   | TypeArr Type Type
   | TypeKinded Type Kind
-  | TypeOp Type (QualifiedName (OpName OpNameType_TypeOpName)) Type -- like TypeArr, but with custom type alias
+  | TypeOp Type (SmartQualifiedName (OpName OpNameType_TypeOpName)) Type -- like TypeArr, but with custom type alias
   | TypeConstrained Constraint Type
   --
   -- no need to implement
   --
-  -- | TypeOpName (QualifiedName (OpName OpNameType_TypeOpName))
+  -- | TypeOpName (SmartQualifiedName (OpName OpNameType_TypeOpName))
   -- | TypeArrName
   -- | TypeParens Type
 -- | derive instance genericType :: Generic Type _
@@ -125,7 +126,7 @@ data Type
 -- instance showType :: Show Type where show = genericShow
 
 data Kind
-  = KindName (QualifiedName (ProperName ProperNameType_KindName))
+  = KindName (SmartQualifiedName (ProperName ProperNameType_KindName))
   | KindArr Kind Kind
   | KindRow Kind
   -- | KindParens Kind -- no need
@@ -175,7 +176,7 @@ newtype Row = Row
 
 newtype Constraint
   = Constraint
-    { className :: QualifiedName (ProperName ProperNameType_ClassName)
+    { className :: SmartQualifiedName (ProperName ProperNameType_ClassName)
     , args :: Array Type
     }
   -- | ConstraintParens Constraint
@@ -202,7 +203,7 @@ data Binder
   = BinderWildcard
   | BinderVar Ident
   | BinderNamed { ident :: Ident, binder :: Binder }
-  | BinderConstructor { name :: QualifiedName (ProperName ProperNameType_ConstructorName), args :: Array Binder }
+  | BinderConstructor { name :: SmartQualifiedName (ConstructorProperName), args :: Array Binder }
   | BinderBoolean Boolean
   | BinderChar Char
   | BinderString String
@@ -210,7 +211,7 @@ data Binder
   | BinderArray (Array Binder)
   | BinderRecord (Array (RecordLabeled Binder))
   | BinderTyped Binder Type
-  | BinderOp Binder (QualifiedName (OpName OpNameType_ValueOpName)) Binder
+  | BinderOp Binder (SmartQualifiedName (OpName OpNameType_ValueOpName)) Binder
   -- | BinderParens Binder -- no need
 
 -- | derive instance genericBinder :: Generic Binder _
@@ -251,8 +252,8 @@ type PatternGuard =
 data Expr
   = ExprHole Ident
   | ExprSection
-  | ExprIdent (QualifiedName Ident)
-  | ExprConstructor (QualifiedName (ProperName ProperNameType_ConstructorName))
+  | ExprIdent (SmartQualifiedName Ident)
+  | ExprConstructor (SmartQualifiedName (ConstructorProperName))
   | ExprBoolean Boolean
   | ExprChar Char
   | ExprString String
@@ -261,8 +262,8 @@ data Expr
   | ExprRecord (Array (RecordLabeled Expr))
   | ExprTyped Expr Type
   | ExprInfix Expr Expr Expr -- e.g. `1 : 2 : Nil`
-  | ExprOp Expr (QualifiedName (OpName OpNameType_ValueOpName)) Expr
-  | ExprOpName (QualifiedName (OpName OpNameType_ValueOpName))
+  | ExprOp Expr (SmartQualifiedName (OpName OpNameType_ValueOpName)) Expr
+  | ExprOpName (SmartQualifiedName (OpName OpNameType_ValueOpName))
   | ExprNegate Expr -- ????
   | ExprRecordAccessor RecordAccessor
   | ExprRecordUpdate Expr (NonEmptyArray RecordUpdate)

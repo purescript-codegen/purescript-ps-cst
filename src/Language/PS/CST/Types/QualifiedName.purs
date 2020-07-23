@@ -15,6 +15,7 @@ newtype QualifiedName a = QualifiedName
   { qualModule :: Maybe ModuleName
   , qualName :: a
   }
+derive instance functorQualifiedName :: Functor QualifiedName
 derive instance newtypeQualifiedName :: Newtype (QualifiedName a) _
 derive instance eqQualifiedName :: Eq a => Eq (QualifiedName a)
 derive instance ordQualifiedName :: Ord a => Ord (QualifiedName a)
