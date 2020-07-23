@@ -21,7 +21,7 @@ actualModule = Module
             { instName: Ident "fooBaz"
             , instConstraints: []
             , instClass: nonQualifiedName (ProperName "Foo")
-            , instTypes: NonEmpty.cons' (nonQualifiedNameTypeConstructor "Baz") []
+            , instTypes: NonEmpty.cons' (TypeConstructor $ nonQualifiedName $ ProperName "Baz") []
             }
           , body: []
           }
@@ -29,7 +29,7 @@ actualModule = Module
               { instName: Ident "fooBaz"
               , instConstraints: []
               , instClass: nonQualifiedName (ProperName "Foo")
-              , instTypes: NonEmpty.cons' (nonQualifiedNameTypeConstructor "Baz") []
+              , instTypes: NonEmpty.cons' (TypeConstructor $ nonQualifiedName $ ProperName "Baz") []
               }
             , body:
               [ InstanceBindingSignature { ident: Ident "foo", type_: numberType }
@@ -57,15 +57,15 @@ actualModule = Module
               , instConstraints: []
               , instClass: nonQualifiedName (ProperName "Foo")
               , instTypes: NonEmpty.cons'
-                ( nonQualifiedNameTypeConstructor "Cor"
+                ( (TypeConstructor $ nonQualifiedName $ ProperName "Cor")
                   `TypeApp`
-                  nonQualifiedNameTypeConstructor "Int"
+                  (TypeConstructor $ nonQualifiedName $ ProperName "Int")
                 )
-                [ nonQualifiedNameTypeConstructor "Gar"
+                [ (TypeConstructor $ nonQualifiedName $ ProperName "Gar")
                   `TypeApp`
-                  nonQualifiedNameTypeConstructor "Int"
+                  (TypeConstructor $ nonQualifiedName $ ProperName "Int")
                   `TypeApp`
-                  nonQualifiedNameTypeConstructor "Boolean"
+                  (TypeConstructor $ nonQualifiedName $ ProperName "Boolean")
                 ]
               }
             , body:

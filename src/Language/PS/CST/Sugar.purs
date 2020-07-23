@@ -41,27 +41,23 @@ mkRowLabel :: (String /\ Type) -> { label :: Label, type_ :: Type }
 mkRowLabel = (\(label /\ type_) -> { label: Label label, type_ })
 
 -- TOOD: remove
-nonQualifiedNameTypeConstructor :: String -> Type
-nonQualifiedNameTypeConstructor s = TypeConstructor $ nonQualifiedName $ ProperName s
-
--- TOOD: remove
 nonQualifiedNameExprConstructor :: String -> Expr
 nonQualifiedNameExprConstructor s = ExprConstructor $ nonQualifiedName $ ProperName s
 
 booleanType :: Type
-booleanType = nonQualifiedNameTypeConstructor "Boolean"
+booleanType = TypeConstructor $ nonQualifiedName $ ProperName "Boolean"
 
 numberType :: Type
-numberType = nonQualifiedNameTypeConstructor "Number"
+numberType = TypeConstructor $ nonQualifiedName $ ProperName "Number"
 
 stringType :: Type
-stringType = nonQualifiedNameTypeConstructor "String"
+stringType = TypeConstructor $ nonQualifiedName $ ProperName "String"
 
 arrayType :: Type -> Type
-arrayType = TypeApp (nonQualifiedNameTypeConstructor "Array")
+arrayType = TypeApp (TypeConstructor $ nonQualifiedName $ ProperName "Array")
 
 maybeType :: Type -> Type
-maybeType = TypeApp (nonQualifiedNameTypeConstructor "Maybe")
+maybeType = TypeApp (TypeConstructor $ nonQualifiedName $ ProperName "Maybe")
 
 -- TODO: remove
 typeVarName :: String -> TypeVarBinding

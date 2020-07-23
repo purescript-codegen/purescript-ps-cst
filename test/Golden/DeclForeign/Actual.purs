@@ -28,9 +28,16 @@ actualModule = Module
         , type_: TypeForall (NonEmpty.cons' (typeVarName "e") []) (
             (TypeConstructor $ nonQualifiedName $ ProperName "Eff")
             `TypeApp`
-            (TypeRow { rowLabels: mkRowLabels [ "console" /\ nonQualifiedNameTypeConstructor "CONSOLE", "foo" /\ nonQualifiedNameTypeConstructor "FOO" ], rowTail: Just $ typeVar "e" })
+            ( TypeRow
+              { rowLabels: mkRowLabels
+                [ "console" /\ (TypeConstructor $ nonQualifiedName $ ProperName "CONSOLE")
+                , "foo" /\ (TypeConstructor $ nonQualifiedName $ ProperName "FOO")
+                ]
+              , rowTail: Just $ typeVar "e"
+              }
+            )
             `TypeApp`
-            nonQualifiedNameTypeConstructor "Unit"
+            (TypeConstructor $ nonQualifiedName $ ProperName "Unit")
           )
         }
       }

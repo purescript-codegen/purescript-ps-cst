@@ -16,7 +16,7 @@ dataMapMap x y =
   y
 
 myExtension :: Type
-myExtension = nonQualifiedNameTypeConstructor "MyExtension"
+myExtension = TypeConstructor $ nonQualifiedName $ ProperName "MyExtension"
 
 actualModule :: Module
 actualModule = Module
@@ -55,12 +55,12 @@ actualModule = Module
             , TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType ], rowTail: Just myExtension }
             , TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Nothing }
             , TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just myExtension }
-            , TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just $ TypeOp myExtension (nonQualifiedName $ OpName "+") (nonQualifiedNameTypeConstructor "MyOtherExtension") }
+            , TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just $ TypeOp myExtension (nonQualifiedName $ OpName "+") (TypeConstructor $ nonQualifiedName $ ProperName "MyOtherExtension") }
             , TypeRow
               { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ]
               , rowTail: Just $ TypeOp myExtension
                                       (nonQualifiedName $ OpName "+")
-                                      ((nonQualifiedNameTypeConstructor "MyOtherExtension")
+                                      ((TypeConstructor $ nonQualifiedName $ ProperName "MyOtherExtension")
                                         `TypeApp`
                                         (typeRecord [ "someField" /\ numberType ])
                                       )
@@ -168,12 +168,12 @@ actualModule = Module
               (NonEmpty.cons' (typeVarName "a") [(TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )])
               (arrayType $ typeVar "a")
             , (arrayType $ typeVar "a") ====>> (maybeType $ typeVar "a")
-            , TypeOp (nonQualifiedNameTypeConstructor "Array") (nonQualifiedName $ OpName "~>") (nonQualifiedNameTypeConstructor "Maybe")
+            , TypeOp (TypeConstructor $ nonQualifiedName $ ProperName "Array") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe")
             , TypeForall
               (NonEmpty.singleton (typeVarName "f"))
               (TypeConstrained
                 (Constraint { className: nonQualifiedName $ ProperName "Functor", args: [typeVar "f"] })
-                (TypeOp (typeVar "f") (nonQualifiedName $ OpName "~>") (nonQualifiedNameTypeConstructor "Maybe"))
+                (TypeOp (typeVar "f") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe"))
               )
             , TypeConstrained
               (Constraint { className: nonQualifiedName $ ProperName "MyClass", args: [typeVar "f", typeVar "g", typeVar "k"] })

@@ -16,7 +16,7 @@ actualModule = Module
     [ DeclSignature
       { comments: Nothing
       , ident: Ident "myfunc"
-      , type_: nonQualifiedNameTypeConstructor "Int" ====>> nonQualifiedNameTypeConstructor "Int"
+      , type_: (TypeConstructor $ nonQualifiedName $ ProperName "Int") ====>> (TypeConstructor $ nonQualifiedName $ ProperName "Int")
       }
     , DeclValue
       { comments: Nothing
@@ -29,7 +29,7 @@ actualModule = Module
                 NonEmpty.cons'
                 ( LetBindingSignature
                   { ident: Ident "psModuleFile"
-                  , type_: nonQualifiedNameTypeConstructor "ModulePath" ====>> nonQualifiedNameTypeConstructor "Int"
+                  , type_: (TypeConstructor $ nonQualifiedName $ ProperName "ModulePath") ====>> (TypeConstructor $ nonQualifiedName $ ProperName "Int")
                   }
                 )
                 [ LetBindingName
@@ -54,7 +54,7 @@ actualModule = Module
                   }
                 , LetBindingSignature
                   { ident: Ident "psModuleFile2"
-                  , type_: nonQualifiedNameTypeConstructor "ModulePath" ====>> nonQualifiedNameTypeConstructor "Int"
+                  , type_: (TypeConstructor $ nonQualifiedName $ ProperName "ModulePath") ====>> (TypeConstructor $ nonQualifiedName $ ProperName "Int")
                   }
                 , LetBindingName
                   { name: Ident "psModuleFile2"

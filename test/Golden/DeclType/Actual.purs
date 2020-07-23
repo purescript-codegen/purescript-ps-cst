@@ -23,7 +23,7 @@ dataMapMap x y =
   y
 
 myExtension :: Type
-myExtension = nonQualifiedNameTypeConstructor "MyExtension"
+myExtension = TypeConstructor $ nonQualifiedName $ ProperName "MyExtension"
 
 declFooType :: Type -> Declaration
 declFooType type_ = DeclType { comments: Nothing, head, type_ }
@@ -56,12 +56,12 @@ actualModule = Module
     , declFooType $ TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType ], rowTail: Just myExtension }
     , declFooType $ TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Nothing }
     , declFooType $ TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just myExtension }
-    , declFooType $ TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just $ TypeOp myExtension (nonQualifiedName $ OpName "+") (nonQualifiedNameTypeConstructor "MyOtherExtension") }
+    , declFooType $ TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just $ TypeOp myExtension (nonQualifiedName $ OpName "+") (TypeConstructor $ nonQualifiedName $ ProperName "MyOtherExtension") }
     , declFooType $ TypeRow
       { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ]
       , rowTail: Just $ TypeOp myExtension
                                 (nonQualifiedName $ OpName "+")
-                                ((nonQualifiedNameTypeConstructor "MyOtherExtension")
+                                ((TypeConstructor $ nonQualifiedName $ ProperName "MyOtherExtension")
                                 `TypeApp`
                                 (typeRecord [ "someField" /\ numberType ])
                                 )
@@ -121,12 +121,12 @@ actualModule = Module
       )
       (arrayType $ typeVar "a")
     , declFooType $ (arrayType $ typeVar "a") ====>> (maybeType $ typeVar "a")
-    , declFooType $ TypeOp (nonQualifiedNameTypeConstructor "Array") (nonQualifiedName $ OpName "~>") (nonQualifiedNameTypeConstructor "Maybe")
+    , declFooType $ TypeOp (TypeConstructor $ nonQualifiedName $ ProperName "Array") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe")
     , declFooType $ TypeForall
       (NonEmpty.cons' (typeVarName "f") [])
       ( TypeConstrained
         (Constraint { className: nonQualifiedName $ ProperName "Functor", args: [typeVar "f"] })
-        (TypeOp (typeVar "f") (nonQualifiedName $ OpName "~>") (nonQualifiedNameTypeConstructor "Maybe"))
+        (TypeOp (typeVar "f") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe"))
       )
     , declFooType $ TypeConstrained
       (Constraint { className: nonQualifiedName $ ProperName "MyClass", args: [typeVar "f", typeVar "g", typeVar "k"] })
