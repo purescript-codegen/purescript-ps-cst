@@ -55,10 +55,6 @@ arrayType = TypeApp (TypeConstructor $ nonQualifiedName $ ProperName "Array")
 maybeType :: Type -> Type
 maybeType = TypeApp (TypeConstructor $ nonQualifiedName $ ProperName "Maybe")
 
--- TODO: remove
-typeVarName :: String -> TypeVarBinding
-typeVarName = TypeVarName <<< Ident -- for left side of forall
-
 typeVar :: String -> Type
 typeVar = TypeVar <<< Ident -- for right side of forall and constructor arguments
 

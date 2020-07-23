@@ -165,12 +165,12 @@ actualModule = Module
               , rowTail: Nothing
               }
             , TypeForall
-              (NonEmpty.cons' (typeVarName "a") [(TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )])
+              (NonEmpty.cons' (TypeVarName $ Ident "a") [(TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )])
               (arrayType $ typeVar "a")
             , (arrayType $ typeVar "a") ====>> (maybeType $ typeVar "a")
             , TypeOp (TypeConstructor $ nonQualifiedName $ ProperName "Array") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe")
             , TypeForall
-              (NonEmpty.singleton (typeVarName "f"))
+              (NonEmpty.singleton (TypeVarName $ Ident "f"))
               (TypeConstrained
                 (Constraint { className: nonQualifiedName $ ProperName "Functor", args: [typeVar "f"] })
                 (TypeOp (typeVar "f") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe"))

@@ -115,7 +115,7 @@ actualModule = Module
       }
     , declFooType $ TypeForall
       ( NonEmpty.cons'
-        (typeVarName "a")
+        (TypeVarName $ Ident "a")
         [ (TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )
         ]
       )
@@ -123,7 +123,7 @@ actualModule = Module
     , declFooType $ (arrayType $ typeVar "a") ====>> (maybeType $ typeVar "a")
     , declFooType $ TypeOp (TypeConstructor $ nonQualifiedName $ ProperName "Array") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe")
     , declFooType $ TypeForall
-      (NonEmpty.cons' (typeVarName "f") [])
+      (NonEmpty.cons' (TypeVarName $ Ident "f") [])
       ( TypeConstrained
         (Constraint { className: nonQualifiedName $ ProperName "Functor", args: [typeVar "f"] })
         (TypeOp (typeVar "f") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe"))

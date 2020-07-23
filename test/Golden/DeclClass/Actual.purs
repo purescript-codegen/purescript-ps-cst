@@ -40,7 +40,7 @@ actualModule = Module
       { comments: Nothing
       , head:
         { name: ProperName "FunDep"
-        , vars: [typeVarName "a", typeVarName "b"]
+        , vars: [TypeVarName $ Ident "a", TypeVarName $ Ident "b"]
         , super: []
         , fundeps: [(NonEmpty.singleton (Ident "a")) `FundepDetermines` (NonEmpty.singleton (Ident "b"))]
         }
@@ -50,7 +50,7 @@ actualModule = Module
       { comments: Nothing
       , head:
         { name: ProperName "MultiFunDep"
-        , vars: [typeVarName "a", typeVarName "b", typeVarName "c", typeVarName "d", typeVarName "e"]
+        , vars: [TypeVarName $ Ident "a", TypeVarName $ Ident "b", TypeVarName $ Ident "c", TypeVarName $ Ident "d", TypeVarName $ Ident "e"]
         , super: []
         , fundeps:
           [ ((NonEmpty.cons' (Ident "b") [(Ident "c")])) `FundepDetermines` (NonEmpty.singleton (Ident "d"))
@@ -63,7 +63,7 @@ actualModule = Module
       { comments: Nothing
       , head:
         { name: ProperName "Foo"
-        , vars: [typeVarName "m"]
+        , vars: [TypeVarName $ Ident "m"]
         , super:
           [ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [typeVar "m"] }
           ]
@@ -75,7 +75,7 @@ actualModule = Module
       { comments: Just $ OneLineComments ["line1", "line2"]
       , head:
         { name: ProperName "Foo"
-        , vars: [typeVarName "m"]
+        , vars: [TypeVarName $ Ident "m"]
         , super:
           [ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [typeVar "m"] }
           , Constraint { className: nonQualifiedName (ProperName "Baz"), args: [typeVar "m"] }
@@ -88,7 +88,7 @@ actualModule = Module
       { comments: Just $ BlockComments ["line1", "line2"]
       , head:
         { name: ProperName "Foo"
-        , vars: [typeVarName "m", typeVarName "c"]
+        , vars: [TypeVarName $ Ident "m", TypeVarName $ Ident "c"]
         , super:
           [ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [typeVar "m", typeVar "c"] }
           ]

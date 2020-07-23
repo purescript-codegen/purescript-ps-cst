@@ -25,7 +25,7 @@ actualModule = Module
       { comments: Nothing
       , foreign_: ForeignValue
         { ident: Ident "main_"
-        , type_: TypeForall (NonEmpty.cons' (typeVarName "e") []) (
+        , type_: TypeForall (NonEmpty.cons' (TypeVarName $ Ident "e") []) (
             (TypeConstructor $ nonQualifiedName $ ProperName "Eff")
             `TypeApp`
             ( TypeRow
