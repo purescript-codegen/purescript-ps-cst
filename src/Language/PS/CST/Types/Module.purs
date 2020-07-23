@@ -1,18 +1,14 @@
 module Language.PS.CST.Types.Module where
 
-import Prelude
+import Prelude (class Eq, class Ord, class Show)
 
-import Data.Either (Either)
-import Data.Either.Nested (type (\/))
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
-import Data.Array.NonEmpty (NonEmptyArray)
 
-import Language.PS.CST.Types.Leafs
-import Language.PS.CST.Types.Declaration
-import Language.PS.CST.Types.QualifiedName
+import Language.PS.CST.Types.Leafs (Ident, ModuleName, OpName, OpNameType_TypeOpName, OpNameType_ValueOpName, ProperName, ProperNameType_ClassName, ProperNameType_ConstructorName, ProperNameType_KindName, ProperNameType_TypeName)
+import Language.PS.CST.Types.Declaration (Declaration)
 
 newtype Module = Module
   { moduleName :: ModuleName

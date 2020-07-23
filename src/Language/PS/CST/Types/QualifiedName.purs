@@ -1,15 +1,10 @@
 module Language.PS.CST.Types.QualifiedName where
 
-import Prelude
+import Prelude (class Eq, class Functor, class Ord, class Show, show, (<>))
 
-import Data.Either (Either)
-import Data.Either.Nested (type (\/))
-import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
-import Data.Array.NonEmpty (NonEmptyArray)
-import Language.PS.CST.Types.Leafs
+import Language.PS.CST.Types.Leafs (ModuleName)
 
 newtype QualifiedName a = QualifiedName
   { qualModule :: Maybe ModuleName

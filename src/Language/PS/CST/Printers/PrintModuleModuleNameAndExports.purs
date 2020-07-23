@@ -1,10 +1,9 @@
 module Language.PS.CST.Printers.PrintModuleModuleNameAndExports where
 
-import Prelude
+import Prelude (map, ($), (-), (<<<), (<>))
 
-import Language.PS.CST.Types.Declaration
-import Language.PS.CST.Types.Module
-import Language.PS.CST.Types.Leafs
+import Language.PS.CST.Types.Module (DataMembers(..), Export(..))
+import Language.PS.CST.Types.Leafs (ModuleName)
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
 import Language.PS.CST.Printers.Utils (printConstructors, printModuleName, twoSpaceIdentation, wrapInParentheses)
 

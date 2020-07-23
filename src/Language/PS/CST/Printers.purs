@@ -1,16 +1,15 @@
 module Language.PS.CST.Printers where
 
-import Prelude
+import Prelude (flip, map, show, (#), ($), (<#>), (<<<), (==))
 
-import Language.PS.CST.Printers.PrintImports
-import Language.PS.CST.Printers.PrintModuleModuleNameAndExports
-import Language.PS.CST.Printers.TypeLevel
-import Language.PS.CST.Printers.Utils
-import Language.PS.CST.Types.Leafs
-import Language.PS.CST.Types.Declaration
-import Language.PS.CST.Types.Module
-import Language.PS.CST.Types.QualifiedName
-import Language.PS.CST.ReservedNames
+import Language.PS.CST.Printers.PrintImports (printImports)
+import Language.PS.CST.Printers.PrintModuleModuleNameAndExports (printModuleModuleNameAndExports)
+import Language.PS.CST.Printers.TypeLevel (PrintType_Style(..), printConstraint, printDataCtor, printDataHead, printFixity, printFundep, printKind, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printTypeVarBinding)
+import Language.PS.CST.Printers.Utils (emptyColumn, emptyRow, ifelse, lines, maybeWrapInParentheses, printAndConditionallyAddNewlinesBetween, twoSpaceIdentation, wrapInParentheses)
+import Language.PS.CST.Types.Leafs (Comments(..), DeclDeriveType(..), RecordLabeled(..))
+import Language.PS.CST.Types.Declaration (Binder(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), RecordUpdate(..), Type(..), ValueBindingFields)
+import Language.PS.CST.Types.Module (Module(..))
+import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
 
 import Data.Newtype (unwrap)
 import Data.Either (Either(..))

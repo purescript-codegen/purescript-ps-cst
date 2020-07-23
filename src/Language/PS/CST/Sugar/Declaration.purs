@@ -1,14 +1,12 @@
 module Language.PS.CST.Sugar.Declaration where
 
-import Language.PS.CST.Types.Declaration
-import Language.PS.CST.Types.QualifiedName
-import Language.PS.CST.Types.Leafs
-import Language.PS.CST.Sugar.QualifiedName
-import Language.PS.CST.Sugar.Leafs
-import Prelude (map, ($), (<<<))
+import Language.PS.CST.Types.Declaration (Type(..))
+import Language.PS.CST.Types.Leafs (ProperName(..))
+import Language.PS.CST.Sugar.QualifiedName (nonQualifiedName)
+import Language.PS.CST.Sugar.Leafs (mkRowLabels)
+import Prelude (($))
 
 import Data.Maybe (Maybe(..))
-import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Tuple.Nested (type (/\))
 
 typeRecord :: Array (String /\ Type) -> Type

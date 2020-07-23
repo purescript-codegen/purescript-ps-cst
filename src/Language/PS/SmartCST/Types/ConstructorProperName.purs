@@ -1,15 +1,7 @@
 module Language.PS.SmartCST.Types.ConstructorProperName where
 
-import Prelude
 
-import Data.Either (Either)
-import Data.Either.Nested (type (\/))
-import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
-import Data.Maybe (Maybe)
-import Data.Newtype (class Newtype)
-import Data.Array.NonEmpty (NonEmptyArray)
-import Language.PS.CST.Types.Leafs
+import Language.PS.CST.Types.Leafs (ProperName, ProperNameType_ConstructorName, ProperNameType_TypeName)
 
 -- | it's like `ProperName ProperNameType_ConstructorName`
 -- | but also contains information of parent type `ProperName ProperNameType_TypeName`

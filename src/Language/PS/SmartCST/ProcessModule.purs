@@ -1,21 +1,11 @@
 module Language.PS.SmartCST.ProcessModule where
 
-import Data.Tuple.Nested
-import Language.PS.CST.Types.Leafs
-import Language.PS.CST.Types.Module
-import Language.PS.CST.Types.QualifiedName
-import Language.PS.SmartCST.ProcessSmartDeclaration
-import Language.PS.SmartCST.Types.ConstructorProperName
-import Language.PS.SmartCST.Types.SmartQualifiedName
-import Prelude
+import Data.Tuple.Nested ((/\))
+import Language.PS.CST.Types.Leafs (ModuleName)
+import Language.PS.CST.Types.Module (Export, ImportDecl(..))
+import Prelude ((/=), (<<<))
 
-import Control.Monad.State (State, modify_, runState)
 import Data.Array as Array
-import Data.Array.NonEmpty (NonEmptyArray)
-import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
-import Data.Maybe as Maybe
-import Data.Traversable (traverse)
 import Language.PS.SmartCST.Types.Declaration as SmartCST.Declaration
 import Language.PS.SmartCST.ProcessSmartDeclaration as Language.PS.SmartCST.ProcessSmartDeclaration
 import Text.PrettyPrint.Boxes (render) as Text.PrettyPrint.Boxes

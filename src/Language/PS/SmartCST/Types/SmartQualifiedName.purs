@@ -1,15 +1,8 @@
 module Language.PS.SmartCST.Types.SmartQualifiedName where
 
-import Prelude
+import Prelude (class Functor)
 
-import Data.Either (Either)
-import Data.Either.Nested (type (\/))
-import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
-import Data.Maybe (Maybe)
-import Data.Newtype (class Newtype)
-import Data.Array.NonEmpty (NonEmptyArray)
-import Language.PS.CST.Types.Leafs
+import Language.PS.CST.Types.Leafs (ModuleName)
 
 data SmartQualifiedName a
   -- not imported at all (used for variables from Prim module or current module)

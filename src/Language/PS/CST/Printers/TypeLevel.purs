@@ -1,12 +1,12 @@
 module Language.PS.CST.Printers.TypeLevel where
 
-import Prelude
+import Prelude (flip, identity, map, (#), ($), (<#>), (<<<), (==))
 
-import Language.PS.CST.Printers.Utils
-import Language.PS.CST.Types.Declaration
-import Language.PS.CST.Types.QualifiedName
-import Language.PS.CST.Types.Leafs
-import Language.PS.CST.ReservedNames
+import Language.PS.CST.Printers.Utils (emptyColumn, ifelse, maybeWrapInParentheses, printModuleName, wrapInDoubleQuotes, wrapInParentheses)
+import Language.PS.CST.Types.Declaration (Constraint(..), DataCtor(..), DataHead(..), Kind(..), Row, Type(..), TypeVarBinding(..))
+import Language.PS.CST.Types.QualifiedName (QualifiedName(..))
+import Language.PS.CST.Types.Leafs (ClassFundep(..), Fixity(..), Ident, Label, OpName, ProperName)
+import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
 
 import Data.Array (snoc) as Array
 import Data.Foldable (null)

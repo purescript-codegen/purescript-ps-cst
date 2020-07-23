@@ -1,20 +1,13 @@
 module Language.PS.CST.Types.Leafs where
 
-import Prelude
+import Prelude (class Eq, class Functor, class Ord, class Show, mempty, pure, show, (<$>), (<>))
 
-import Control.Monad.State (State, modify_)
-import Data.Array as Array
 import Data.Array.NonEmpty (NonEmptyArray)
-import Data.Either (Either(..))
 import Data.Foldable (class Foldable, foldlDefault, foldrDefault)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
-import Data.Maybe (Maybe(..))
-import Data.Maybe (fromMaybe) as Maybe
 import Data.Newtype (class Newtype)
-import Data.Traversable (class Traversable, traverse)
-import Data.Tuple.Nested
-import Data.Either.Nested
+import Data.Traversable (class Traversable)
 
 data Comments
   -- | Rendered as

@@ -1,22 +1,20 @@
 module Language.PS.SmartCST.ProcessSmartDeclaration where
 
-import Data.Tuple.Nested
-import Language.PS.CST.Sugar.QualifiedName
-import Language.PS.CST.Types.Leafs
-import Language.PS.CST.Types.Module
-import Language.PS.CST.Types.QualifiedName
-import Language.PS.SmartCST.ProcessSmartDeclaration.Utils
-import Language.PS.SmartCST.Types.ConstructorProperName
-import Language.PS.SmartCST.Types.SmartQualifiedName
-import Prelude
+import Data.Tuple.Nested (type (/\))
+import Language.PS.CST.Sugar.QualifiedName (nonQualifiedName)
+import Language.PS.CST.Types.Leafs (Ident, Label, ModuleName, OpName, OpNameType_TypeOpName, OpNameType_ValueOpName, ProperName, ProperNameType_ClassName, ProperNameType_ConstructorName, ProperNameType_KindName, ProperNameType_TypeName, RecordLabeled)
+import Language.PS.CST.Types.Module (DataMembers(..), Import(..), ImportDecl(..))
+import Language.PS.CST.Types.QualifiedName (QualifiedName(..))
+import Language.PS.SmartCST.ProcessSmartDeclaration.Utils (findAndModifyOrNew)
+import Language.PS.SmartCST.Types.ConstructorProperName (ConstructorProperName(..))
+import Language.PS.SmartCST.Types.SmartQualifiedName (SmartQualifiedName(..))
+import Prelude (bind, discard, flip, map, pure, (#), ($), (<#>), (<$>), (<*>), (==))
 
-import Control.Monad.Reader (ReaderT(..), ask, runReaderT)
+import Control.Monad.Reader (ReaderT, ask, runReaderT)
 import Control.Monad.State (State, modify_, runState)
-import Data.Array as Array
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Maybe as Maybe
 import Data.Traversable (traverse)
 import Language.PS.CST.Types.Declaration as CST.Declaration
 import Language.PS.SmartCST.Types.Declaration as SmartCST.Declaration

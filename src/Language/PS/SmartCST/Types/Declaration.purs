@@ -1,23 +1,13 @@
 module Language.PS.SmartCST.Types.Declaration where
 
-import Prelude
 
-import Control.Monad.State (State, modify_)
-import Data.Array as Array
 import Data.Array.NonEmpty (NonEmptyArray)
-import Data.Either (Either(..))
-import Data.Foldable (class Foldable, foldlDefault, foldrDefault)
-import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
-import Data.Maybe (Maybe(..))
-import Data.Maybe (fromMaybe) as Maybe
-import Data.Newtype (class Newtype)
-import Data.Traversable (class Traversable, traverse)
-import Data.Tuple.Nested
-import Data.Either.Nested
-import Language.PS.CST.Types.Leafs
-import Language.PS.SmartCST.Types.SmartQualifiedName
-import Language.PS.SmartCST.Types.ConstructorProperName
+import Data.Either (Either)
+import Data.Maybe (Maybe)
+import Data.Either.Nested (type (\/))
+import Language.PS.CST.Types.Leafs (ClassFundep, Comments, DeclDeriveType, Fixity, Ident, Label, OpName, OpNameType_TypeOpName, OpNameType_ValueOpName, ProperName, ProperNameType_ClassName, ProperNameType_ConstructorName, ProperNameType_KindName, ProperNameType_TypeName, RecordLabeled)
+import Language.PS.SmartCST.Types.SmartQualifiedName (SmartQualifiedName)
+import Language.PS.SmartCST.Types.ConstructorProperName (ConstructorProperName)
 
 data Declaration
   = DeclData
