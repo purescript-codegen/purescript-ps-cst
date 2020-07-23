@@ -32,7 +32,7 @@ actualModule = Module
         }
       , methods:
         [ { ident: Ident "bar"
-          , type_: typeVar "a" ====>> typeVar "a" ====>> typeVar "a"
+          , type_: (TypeVar $ Ident "a") ====>> (TypeVar $ Ident "a") ====>> (TypeVar $ Ident "a")
           }
         ]
       }
@@ -65,7 +65,7 @@ actualModule = Module
         { name: ProperName "Foo"
         , vars: [TypeVarName $ Ident "m"]
         , super:
-          [ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [typeVar "m"] }
+          [ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [TypeVar $ Ident "m"] }
           ]
         , fundeps: []
         }
@@ -77,8 +77,8 @@ actualModule = Module
         { name: ProperName "Foo"
         , vars: [TypeVarName $ Ident "m"]
         , super:
-          [ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [typeVar "m"] }
-          , Constraint { className: nonQualifiedName (ProperName "Baz"), args: [typeVar "m"] }
+          [ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [TypeVar $ Ident "m"] }
+          , Constraint { className: nonQualifiedName (ProperName "Baz"), args: [TypeVar $ Ident "m"] }
           ]
         , fundeps: []
         }
@@ -90,7 +90,7 @@ actualModule = Module
         { name: ProperName "Foo"
         , vars: [TypeVarName $ Ident "m", TypeVarName $ Ident "c"]
         , super:
-          [ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [typeVar "m", typeVar "c"] }
+          [ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [TypeVar $ Ident "m", TypeVar $ Ident "c"] }
           ]
         , fundeps: [(NonEmpty.singleton (Ident "m")) `FundepDetermines` (NonEmpty.singleton (Ident "c"))]
         }

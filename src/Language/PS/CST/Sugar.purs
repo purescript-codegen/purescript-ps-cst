@@ -55,9 +55,6 @@ arrayType = TypeApp (TypeConstructor $ nonQualifiedName $ ProperName "Array")
 maybeType :: Type -> Type
 maybeType = TypeApp (TypeConstructor $ nonQualifiedName $ ProperName "Maybe")
 
-typeVar :: String -> Type
-typeVar = TypeVar <<< Ident -- for right side of forall and constructor arguments
-
 kindNamed :: String -> Kind
 kindNamed s = KindName (nonQualifiedName $ ProperName s)
 

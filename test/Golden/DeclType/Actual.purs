@@ -119,20 +119,20 @@ actualModule = Module
         [ (TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )
         ]
       )
-      (arrayType $ typeVar "a")
-    , declFooType $ (arrayType $ typeVar "a") ====>> (maybeType $ typeVar "a")
+      (arrayType $ TypeVar $ Ident "a")
+    , declFooType $ (arrayType $ TypeVar $ Ident "a") ====>> (maybeType $ TypeVar $ Ident "a")
     , declFooType $ TypeOp (TypeConstructor $ nonQualifiedName $ ProperName "Array") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe")
     , declFooType $ TypeForall
       (NonEmpty.cons' (TypeVarName $ Ident "f") [])
       ( TypeConstrained
-        (Constraint { className: nonQualifiedName $ ProperName "Functor", args: [typeVar "f"] })
-        (TypeOp (typeVar "f") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe"))
+        (Constraint { className: nonQualifiedName $ ProperName "Functor", args: [TypeVar $ Ident "f"] })
+        (TypeOp (TypeVar $ Ident "f") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe"))
       )
     , declFooType $ TypeConstrained
-      (Constraint { className: nonQualifiedName $ ProperName "MyClass", args: [typeVar "f", typeVar "g", typeVar "k"] })
+      (Constraint { className: nonQualifiedName $ ProperName "MyClass", args: [TypeVar $ Ident "f", TypeVar $ Ident "g", TypeVar $ Ident "k"] })
       (TypeConstrained
         (Constraint { className: nonQualifiedName $ ProperName "MyClass2", args: [typeRecord $ [ "foo" /\ numberType ]] })
-        (typeVar "f"))
+        (TypeVar $ Ident "f"))
     , declFooType $ TypeKinded
       (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
       ((kindNamed "CustomKind" ====>>> KindRow (kindNamed "Type")) ====>>> (kindNamed "Type"))

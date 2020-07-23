@@ -33,7 +33,7 @@ actualModule = Module
                 [ "console" /\ (TypeConstructor $ nonQualifiedName $ ProperName "CONSOLE")
                 , "foo" /\ (TypeConstructor $ nonQualifiedName $ ProperName "FOO")
                 ]
-              , rowTail: Just $ typeVar "e"
+              , rowTail: Just $ TypeVar $ Ident "e"
               }
             )
             `TypeApp`
