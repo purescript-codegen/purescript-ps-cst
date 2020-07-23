@@ -1,11 +1,12 @@
-module Language.PS.CST.ProcessSmartDeclaration where
+module Language.PS.SmartCST.ProcessSmartDeclaration where
 
 import Data.Tuple.Nested
-import Language.PS.CST.ProcessSmartDeclaration.Utils
+import Language.PS.SmartCST.ProcessSmartDeclaration.Utils
 import Language.PS.CST.Types.Module
 import Language.PS.CST.Types.QualifiedName
-import Language.PS.CST.Types.Shared
-import Language.PS.CST.Types.SmartQualifiedName
+import Language.PS.CST.Types.Declaration
+import Language.PS.CST.Types.Leafs
+import Language.PS.SmartCST.Types.SmartQualifiedName
 import Prelude
 
 import Control.Monad.State (State, modify_)

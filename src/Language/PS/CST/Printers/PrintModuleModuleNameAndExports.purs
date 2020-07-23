@@ -2,8 +2,9 @@ module Language.PS.CST.Printers.PrintModuleModuleNameAndExports where
 
 import Prelude
 
-import Language.PS.CST.Types.Shared
+import Language.PS.CST.Types.Declaration
 import Language.PS.CST.Types.Module
+import Language.PS.CST.Types.Leafs
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
 import Language.PS.CST.Printers.Utils (printConstructors, printModuleName, twoSpaceIdentation, wrapInParentheses)
 

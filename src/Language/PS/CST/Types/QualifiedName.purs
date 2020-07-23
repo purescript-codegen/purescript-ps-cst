@@ -9,7 +9,7 @@ import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
 import Data.Array.NonEmpty (NonEmptyArray)
-import Language.PS.CST.Types.Shared
+import Language.PS.CST.Types.Leafs
 
 newtype QualifiedName a = QualifiedName
   { qualModule :: Maybe ModuleName

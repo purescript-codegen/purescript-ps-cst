@@ -1,7 +1,8 @@
 module Language.PS.CST.Sugar where
 
-import Language.PS.CST.Types.Shared (Expr(..), Ident(..), Kind(..), Label(..), ModuleName(..), ProperName(..), Row(..), Type(..), TypeVarBinding(..))
+import Language.PS.CST.Types.Declaration
 import Language.PS.CST.Types.QualifiedName
+import Language.PS.CST.Types.Leafs
 import Prelude (map, ($), (<<<))
 
 import Data.Maybe (Maybe(..))
@@ -18,7 +19,7 @@ qualifiedName :: ∀ a . ModuleName -> a -> QualifiedName a
 qualifiedName moduleName a = QualifiedName { qualModule: Just moduleName, qualName: a }
 
 -- TOOD: remove
-typeRecord :: Array (String /\ Type QualifiedName) -> Type QualifiedName
+typeRecord :: Array (String /\ Type) -> Type
 typeRecord labels =
   TypeRecord $ Row
     { rowLabels: mkRowLabels labels
@@ -26,53 +27,53 @@ typeRecord labels =
     }
 
 -- TOOD: remove
-typeRow :: Array (String /\ Type QualifiedName) -> Type QualifiedName
+typeRow :: Array (String /\ Type) -> Type
 typeRow labels =
   TypeRow $ Row
     { rowLabels: mkRowLabels labels
     , rowTail: Nothing
     }
 
-mkRowLabels :: Array (String /\ Type QualifiedName) -> Array { label :: Label, type_ :: Type QualifiedName }
+mkRowLabels :: Array (String /\ Type) -> Array { label :: Label, type_ :: Type }
 mkRowLabels = map mkRowLabel
 
-mkRowLabel :: (String /\ Type QualifiedName) -> { label :: Label, type_ :: Type QualifiedName }
+mkRowLabel :: (String /\ Type) -> { label :: Label, type_ :: Type }
 mkRowLabel = (\(label /\ type_) -> { label: Label label, type_ })
 
 -- TOOD: remove
-nonQualifiedNameTypeConstructor :: String -> Type QualifiedName
+nonQualifiedNameTypeConstructor :: String -> Type
 nonQualifiedNameTypeConstructor s = TypeConstructor $ nonQualifiedName $ ProperName s
 
 -- TOOD: remove
-nonQualifiedNameExprConstructor :: String -> Expr QualifiedName
+nonQualifiedNameExprConstructor :: String -> Expr
 nonQualifiedNameExprConstructor s = ExprConstructor $ nonQualifiedName $ ProperName s
 
-booleanType :: Type QualifiedName
+booleanType :: Type
 booleanType = nonQualifiedNameTypeConstructor "Boolean"
 
-numberType :: Type QualifiedName
+numberType :: Type
 numberType = nonQualifiedNameTypeConstructor "Number"
 
-stringType :: Type QualifiedName
+stringType :: Type
 stringType = nonQualifiedNameTypeConstructor "String"
 
-arrayType :: Type QualifiedName -> Type QualifiedName
+arrayType :: Type -> Type
 arrayType = TypeApp (nonQualifiedNameTypeConstructor "Array")
 
-maybeType :: Type QualifiedName -> Type QualifiedName
+maybeType :: Type -> Type
 maybeType = TypeApp (nonQualifiedNameTypeConstructor "Maybe")
 
 -- TODO: remove
-typeVarName :: String -> TypeVarBinding QualifiedName
+typeVarName :: String -> TypeVarBinding
 typeVarName = TypeVarName <<< Ident -- for left side of forall
 
-typeVar :: String -> Type QualifiedName
+typeVar :: String -> Type
 typeVar = TypeVar <<< Ident -- for right side of forall and constructor arguments
 
-kindNamed :: String -> Kind QualifiedName
+kindNamed :: String -> Kind
 kindNamed s = KindName (nonQualifiedName $ ProperName s)
 
-nonQualifiedExprIdent :: String -> Expr QualifiedName
+nonQualifiedExprIdent :: String -> Expr
 nonQualifiedExprIdent s = ExprIdent $ nonQualifiedName (Ident s)
 
 -- emptyRow :: Row

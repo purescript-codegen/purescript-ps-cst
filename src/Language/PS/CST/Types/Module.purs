@@ -10,15 +10,15 @@ import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
 import Data.Array.NonEmpty (NonEmptyArray)
 
-import Language.PS.CST.Types.Shared
+import Language.PS.CST.Types.Leafs
+import Language.PS.CST.Types.Declaration
 import Language.PS.CST.Types.QualifiedName
-
 
 newtype Module = Module
   { moduleName :: ModuleName
   , imports :: Array ImportDecl
   , exports :: Array Export
-  , declarations :: Array (Declaration QualifiedName)
+  , declarations :: Array Declaration
   }
 
 newtype ImportDecl = ImportDecl

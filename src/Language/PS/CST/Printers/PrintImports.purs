@@ -6,7 +6,7 @@ import Language.PS.CST.Printers.Utils
 import Language.PS.CST.ReservedNames
 
 import Language.PS.CST.Types.Module
-import Language.PS.CST.Types.Shared
+import Language.PS.CST.Types.Declaration
 
 import Text.PrettyPrint.Boxes (Box, left, nullBox, text, vcat, vsep, (//), (<<+>>), (<<>>))
 import Data.Foldable (length, null)

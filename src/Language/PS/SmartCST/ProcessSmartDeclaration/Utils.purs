@@ -1,4 +1,4 @@
-module Language.PS.CST.ProcessSmartDeclaration.Utils where
+module Language.PS.SmartCST.ProcessSmartDeclaration.Utils where
 
 import Prelude
 
