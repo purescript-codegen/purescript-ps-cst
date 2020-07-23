@@ -40,10 +40,6 @@ mkRowLabels = map mkRowLabel
 mkRowLabel :: (String /\ Type) -> { label :: Label, type_ :: Type }
 mkRowLabel = (\(label /\ type_) -> { label: Label label, type_ })
 
--- TOOD: remove
-nonQualifiedNameExprConstructor :: String -> Expr
-nonQualifiedNameExprConstructor s = ExprConstructor $ nonQualifiedName $ ProperName s
-
 booleanType :: Type
 booleanType = TypeConstructor $ nonQualifiedName $ ProperName "Boolean"
 
