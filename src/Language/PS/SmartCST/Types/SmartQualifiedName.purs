@@ -27,6 +27,7 @@ newtype SmartQualifiedName a = SmartQualifiedName
   , importType :: SmartQualifiedNameImportType
   , name :: a
   }
+derive instance functorSmartQualifiedName :: Functor SmartQualifiedName
 -- | derive instance newtypeQualifiedName :: Newtype (SmartQualifiedName a) _
 -- | derive instance eqQualifiedName :: Eq a => Eq (SmartQualifiedName a)
 -- | derive instance ordQualifiedName :: Ord a => Ord (SmartQualifiedName a)
