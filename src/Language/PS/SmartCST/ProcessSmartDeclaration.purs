@@ -189,7 +189,7 @@ processSmartQualifiedNameKind = processSmartQualifiedName
 processDeclarations :: Array SmartCST.Declaration.Declaration -> Array CST.Declaration.Declaration /\ Array ImportDecl
 processDeclarations x = runState (traverse processDeclaration x) []
 
-processDeclaration :: SmartCST.Declaration.Declaration -> App (CST.Declaration.Declaration)
+processDeclaration :: SmartCST.Declaration.Declaration -> App CST.Declaration.Declaration
 processDeclaration (SmartCST.Declaration.DeclData { comments, head, constructors }) = do
   (head' :: CST.Declaration.DataHead) <- processDataHead head
   (constructors' :: Array (CST.Declaration.DataCtor)) <- traverse processDataCtor constructors
@@ -225,26 +225,26 @@ processDeclaration (SmartCST.Declaration.DeclForeign { comments, foreign_ }) = d
   (foreign_' :: CST.Declaration.Foreign) <- processForeign foreign_
   pure $ CST.Declaration.DeclForeign { comments, foreign_: foreign_' }
 
-processDataHead :: SmartCST.Declaration.DataHead -> App (CST.Declaration.DataHead)
+processDataHead :: SmartCST.Declaration.DataHead -> App CST.Declaration.DataHead
 processDataHead (SmartCST.Declaration.DataHead { dataHdName, dataHdVars }) = do
   (dataHdVars' :: Array (CST.Declaration.TypeVarBinding)) <- traverse processTypeVarBinding dataHdVars
   pure $ CST.Declaration.DataHead { dataHdName, dataHdVars: dataHdVars' }
 
-processKind :: SmartCST.Declaration.Kind -> App (CST.Declaration.Kind)
+processKind :: SmartCST.Declaration.Kind -> App CST.Declaration.Kind
 processKind (SmartCST.Declaration.KindName prop) = CST.Declaration.KindName <$> processSmartQualifiedNameKind prop
 processKind (SmartCST.Declaration.KindArr kindA kindB) = CST.Declaration.KindArr <$> (processKind kindA) <*> (processKind kindB)
 processKind (SmartCST.Declaration.KindRow kindA) = CST.Declaration.KindRow <$> (processKind kindA)
 
-processTypeVarBinding :: SmartCST.Declaration.TypeVarBinding -> App (CST.Declaration.TypeVarBinding)
+processTypeVarBinding :: SmartCST.Declaration.TypeVarBinding -> App CST.Declaration.TypeVarBinding
 processTypeVarBinding (SmartCST.Declaration.TypeVarKinded ident kind_) = CST.Declaration.TypeVarKinded ident <$> (processKind kind_)
 processTypeVarBinding (SmartCST.Declaration.TypeVarName ident) = pure $ CST.Declaration.TypeVarName ident
 
-processDataCtor :: SmartCST.Declaration.DataCtor -> App (CST.Declaration.DataCtor)
+processDataCtor :: SmartCST.Declaration.DataCtor -> App CST.Declaration.DataCtor
 processDataCtor (SmartCST.Declaration.DataCtor { dataCtorName, dataCtorFields }) = do
   dataCtorFields' <- traverse processType dataCtorFields
   pure $ CST.Declaration.DataCtor { dataCtorName, dataCtorFields: dataCtorFields' }
 
-processType :: SmartCST.Declaration.Type -> App (CST.Declaration.Type)
+processType :: SmartCST.Declaration.Type -> App CST.Declaration.Type
 processType (SmartCST.Declaration.TypeVar ident) = pure $ CST.Declaration.TypeVar ident
 processType (SmartCST.Declaration.TypeConstructor x) = CST.Declaration.TypeConstructor <$> processSmartQualifiedNameType x
 processType (SmartCST.Declaration.TypeWildcard) = pure CST.Declaration.TypeWildcard
@@ -259,7 +259,7 @@ processType (SmartCST.Declaration.TypeKinded type_ kind_) = CST.Declaration.Type
 processType (SmartCST.Declaration.TypeOp typeA opName typeB) = CST.Declaration.TypeOp <$> processType typeA <*> processSmartQualifiedNameTypeOp opName <*> processType typeB
 processType (SmartCST.Declaration.TypeConstrained constant type_) = CST.Declaration.TypeConstrained <$> processConstraint constant <*> processType type_
 
-processInstanceHead :: SmartCST.Declaration.InstanceHead -> App (CST.Declaration.InstanceHead)
+processInstanceHead :: SmartCST.Declaration.InstanceHead -> App CST.Declaration.InstanceHead
 processInstanceHead instanceHead = do
   instConstraints' <- traverse processConstraint instanceHead.instConstraints
   instClass' <- processSmartQualifiedNameClass instanceHead.instClass
@@ -271,7 +271,7 @@ processInstanceHead instanceHead = do
     , instTypes: instTypes'
     }
 
-processForeign :: SmartCST.Declaration.Foreign -> App (CST.Declaration.Foreign)
+processForeign :: SmartCST.Declaration.Foreign -> App CST.Declaration.Foreign
 processForeign (SmartCST.Declaration.ForeignValue { ident, type_ }) = do
   (type_' :: CST.Declaration.Type) <- processType type_
   pure $ CST.Declaration.ForeignValue { ident, type_: type_' }
@@ -280,7 +280,7 @@ processForeign (SmartCST.Declaration.ForeignData { name, kind_ }) = do
   pure $ CST.Declaration.ForeignData { name, kind_: kind_' }
 processForeign (SmartCST.Declaration.ForeignKind x) = pure $ CST.Declaration.ForeignKind x
 
-processFixityFields :: SmartCST.Declaration.FixityFields -> App (CST.Declaration.FixityFields)
+processFixityFields :: SmartCST.Declaration.FixityFields -> App CST.Declaration.FixityFields
 processFixityFields fixityFields = do
   operator <- processFixityOp fixityFields.operator
   pure $
@@ -289,7 +289,7 @@ processFixityFields fixityFields = do
     , operator
     }
 
-processFixityOp :: SmartCST.Declaration.FixityOp -> App (CST.Declaration.FixityOp)
+processFixityOp :: SmartCST.Declaration.FixityOp -> App CST.Declaration.FixityOp
 processFixityOp (SmartCST.Declaration.FixityValue (Left qualifiedIdent) opName) = do
   qualifiedIdent' <- processSmartQualifiedNameValue qualifiedIdent
   pure $ CST.Declaration.FixityValue (Left qualifiedIdent') opName
@@ -300,19 +300,19 @@ processFixityOp (SmartCST.Declaration.FixityType properName opName) = do
   properName' <- processSmartQualifiedNameType properName
   pure $ CST.Declaration.FixityType properName' opName
 
-processRow :: SmartCST.Declaration.Row -> App (CST.Declaration.Row)
+processRow :: SmartCST.Declaration.Row -> App CST.Declaration.Row
 processRow row = do
   (rowLabels :: Array { label :: Label, type_ :: CST.Declaration.Type }) <- traverse (\rowItem -> { label: rowItem.label, type_: _ } <$> processType rowItem.type_) row.rowLabels
   rowTail <- traverse processType row.rowTail
   pure { rowLabels, rowTail }
 
-processConstraint :: SmartCST.Declaration.Constraint -> App (CST.Declaration.Constraint)
+processConstraint :: SmartCST.Declaration.Constraint -> App CST.Declaration.Constraint
 processConstraint (SmartCST.Declaration.Constraint constraint) = do
   className <- processSmartQualifiedNameClass constraint.className
   args <- traverse processType constraint.args
   pure $ CST.Declaration.Constraint { className, args }
 
-processClassHead :: SmartCST.Declaration.ClassHead -> App (CST.Declaration.ClassHead)
+processClassHead :: SmartCST.Declaration.ClassHead -> App CST.Declaration.ClassHead
 processClassHead classHead = do
   vars <- traverse processTypeVarBinding classHead.vars
   super <- traverse processConstraint classHead.super
@@ -323,7 +323,7 @@ processClassHead classHead = do
     , fundeps: classHead.fundeps
     }
 
-processValueBindingFields :: SmartCST.Declaration.ValueBindingFields -> App (CST.Declaration.ValueBindingFields)
+processValueBindingFields :: SmartCST.Declaration.ValueBindingFields -> App CST.Declaration.ValueBindingFields
 processValueBindingFields valueBindingFields = do
   binders <- traverse processBinder valueBindingFields.binders
   guarded <- processGuarded valueBindingFields.guarded
@@ -333,7 +333,7 @@ processValueBindingFields valueBindingFields = do
     , guarded
     }
 
-processBinder :: SmartCST.Declaration.Binder -> App (CST.Declaration.Binder)
+processBinder :: SmartCST.Declaration.Binder -> App CST.Declaration.Binder
 processBinder (SmartCST.Declaration.BinderNamed binderNamed) = do
   binder <- processBinder binderNamed.binder
   pure $ CST.Declaration.BinderNamed { ident: binderNamed.ident, binder }
@@ -363,11 +363,11 @@ processBinder (SmartCST.Declaration.BinderChar x) = pure $ CST.Declaration.Binde
 processBinder (SmartCST.Declaration.BinderString x) = pure $ CST.Declaration.BinderString x
 processBinder (SmartCST.Declaration.BinderNumber x) = pure $ CST.Declaration.BinderNumber x
 
-processGuarded :: SmartCST.Declaration.Guarded -> App (CST.Declaration.Guarded)
+processGuarded :: SmartCST.Declaration.Guarded -> App CST.Declaration.Guarded
 processGuarded (SmartCST.Declaration.Unconditional where_) = CST.Declaration.Unconditional <$> processWhere where_
 processGuarded (SmartCST.Declaration.Guarded guardedExpr) = CST.Declaration.Guarded <$> traverse processGuardedExpr guardedExpr
 
-processWhere :: SmartCST.Declaration.Where -> App (CST.Declaration.Where)
+processWhere :: SmartCST.Declaration.Where -> App CST.Declaration.Where
 processWhere where_ = do
   expr <- processExpr where_.expr
   whereBindings <- traverse processLetBinding where_.whereBindings
@@ -376,7 +376,7 @@ processWhere where_ = do
     , whereBindings
     }
 
-processLetBinding :: SmartCST.Declaration.LetBinding -> App (CST.Declaration.LetBinding)
+processLetBinding :: SmartCST.Declaration.LetBinding -> App CST.Declaration.LetBinding
 processLetBinding (SmartCST.Declaration.LetBindingSignature letBindingSignature) = do
   type_ <- processType letBindingSignature.type_
   pure $ CST.Declaration.LetBindingSignature { ident: letBindingSignature.ident, type_ }
@@ -386,7 +386,7 @@ processLetBinding (SmartCST.Declaration.LetBindingPattern letBindingPattern) = d
   where_ <- processWhere letBindingPattern.where_
   pure $ CST.Declaration.LetBindingPattern { binder, where_ }
 
-processGuardedExpr :: SmartCST.Declaration.GuardedExpr -> App (CST.Declaration.GuardedExpr)
+processGuardedExpr :: SmartCST.Declaration.GuardedExpr -> App CST.Declaration.GuardedExpr
 processGuardedExpr guardedExpr = do
   patterns <- traverse processPatternGuard guardedExpr.patterns
   where_ <- processWhere guardedExpr.where_
@@ -395,7 +395,7 @@ processGuardedExpr guardedExpr = do
     , where_
     }
 
-processPatternGuard :: SmartCST.Declaration.PatternGuard -> App (CST.Declaration.PatternGuard)
+processPatternGuard :: SmartCST.Declaration.PatternGuard -> App CST.Declaration.PatternGuard
 processPatternGuard x = do
   binder <- traverse processBinder x.binder
   expr <- processExpr x.expr
@@ -404,7 +404,7 @@ processPatternGuard x = do
     , expr
     }
 
-processExpr :: SmartCST.Declaration.Expr -> App (CST.Declaration.Expr)
+processExpr :: SmartCST.Declaration.Expr -> App CST.Declaration.Expr
 processExpr (SmartCST.Declaration.ExprHole ident)                = pure $ CST.Declaration.ExprHole ident
 processExpr SmartCST.Declaration.ExprSection                     = pure $ CST.Declaration.ExprSection
 processExpr (SmartCST.Declaration.ExprIdent ident)               = CST.Declaration.ExprIdent <$> processSmartQualifiedNameValue ident
@@ -430,7 +430,7 @@ processExpr (SmartCST.Declaration.ExprLet x)                     = CST.Declarati
 processExpr (SmartCST.Declaration.ExprDo xs)                     = CST.Declaration.ExprDo <$> traverse processDoStatement xs
 processExpr (SmartCST.Declaration.ExprAdo x)                     = CST.Declaration.ExprAdo <$> processAdoBlock x
 
-processRecordAccessor :: SmartCST.Declaration.RecordAccessor -> App (CST.Declaration.RecordAccessor)
+processRecordAccessor :: SmartCST.Declaration.RecordAccessor -> App CST.Declaration.RecordAccessor
 processRecordAccessor x = do
   recExpr <- processExpr x.recExpr
   pure $
@@ -438,11 +438,11 @@ processRecordAccessor x = do
     , recPath: x.recPath
     }
 
-processRecordUpdate :: SmartCST.Declaration.RecordUpdate -> App (CST.Declaration.RecordUpdate)
+processRecordUpdate :: SmartCST.Declaration.RecordUpdate -> App CST.Declaration.RecordUpdate
 processRecordUpdate (SmartCST.Declaration.RecordUpdateLeaf label expr) = CST.Declaration.RecordUpdateLeaf label <$> processExpr expr
 processRecordUpdate (SmartCST.Declaration.RecordUpdateBranch label reqUp) = CST.Declaration.RecordUpdateBranch label <$> traverse processRecordUpdate reqUp
 
-processLambda :: SmartCST.Declaration.Lambda -> App (CST.Declaration.Lambda)
+processLambda :: SmartCST.Declaration.Lambda -> App CST.Declaration.Lambda
 processLambda x = do
   binders <- traverse processBinder x.binders
   body <- processExpr x.body
@@ -451,7 +451,7 @@ processLambda x = do
     , body
     }
 
-processIfThenElse :: SmartCST.Declaration.IfThenElse -> App (CST.Declaration.IfThenElse)
+processIfThenElse :: SmartCST.Declaration.IfThenElse -> App CST.Declaration.IfThenElse
 processIfThenElse x = do
   cond <- processExpr x.cond
   true_ <- processExpr x.true_
@@ -462,7 +462,7 @@ processIfThenElse x = do
     , false_
     }
 
-processCaseOf :: SmartCST.Declaration.CaseOf -> App (CST.Declaration.CaseOf)
+processCaseOf :: SmartCST.Declaration.CaseOf -> App CST.Declaration.CaseOf
 processCaseOf x = do
   head <- traverse processExpr x.head
   branches <- traverse (\branch -> { binders: _, body: _ } <$> traverse processBinder branch.binders <*> processGuarded branch.body) x.branches
@@ -471,7 +471,7 @@ processCaseOf x = do
     , branches
     }
 
-processLetIn :: SmartCST.Declaration.LetIn -> App (CST.Declaration.LetIn)
+processLetIn :: SmartCST.Declaration.LetIn -> App CST.Declaration.LetIn
 processLetIn x = do
   body <- processExpr x.body
   bindings <- traverse processLetBinding x.bindings
@@ -480,12 +480,12 @@ processLetIn x = do
     , bindings
     }
 
-processDoStatement :: SmartCST.Declaration.DoStatement -> App (CST.Declaration.DoStatement)
+processDoStatement :: SmartCST.Declaration.DoStatement -> App CST.Declaration.DoStatement
 processDoStatement (SmartCST.Declaration.DoLet bindings) = CST.Declaration.DoLet <$> traverse processLetBinding bindings
 processDoStatement (SmartCST.Declaration.DoDiscard expr) = CST.Declaration.DoDiscard <$> processExpr expr
 processDoStatement (SmartCST.Declaration.DoBind bind) = CST.Declaration.DoBind <$> ({ binder: _, expr: _ } <$> processBinder bind.binder <*> processExpr bind.expr)
 
-processAdoBlock :: SmartCST.Declaration.AdoBlock -> App (CST.Declaration.AdoBlock)
+processAdoBlock :: SmartCST.Declaration.AdoBlock -> App CST.Declaration.AdoBlock
 processAdoBlock x = do
   statements <- traverse processDoStatement x.statements
   result <- processExpr x.result
@@ -494,7 +494,7 @@ processAdoBlock x = do
     , result
     }
 
-processInstanceBinding :: SmartCST.Declaration.InstanceBinding -> App (CST.Declaration.InstanceBinding)
+processInstanceBinding :: SmartCST.Declaration.InstanceBinding -> App CST.Declaration.InstanceBinding
 processInstanceBinding (SmartCST.Declaration.InstanceBindingSignature x) = do
   type_ <- processType x.type_
   pure $ CST.Declaration.InstanceBindingSignature
@@ -503,7 +503,7 @@ processInstanceBinding (SmartCST.Declaration.InstanceBindingSignature x) = do
     }
 processInstanceBinding (SmartCST.Declaration.InstanceBindingName x) = CST.Declaration.InstanceBindingName <$> processValueBindingFields x
 
-processInstance :: SmartCST.Declaration.Instance -> App (CST.Declaration.Instance)
+processInstance :: SmartCST.Declaration.Instance -> App CST.Declaration.Instance
 processInstance x = do
   head <- processInstanceHead x.head
   body <- traverse processInstanceBinding x.body

@@ -325,7 +325,7 @@ printExpr (ExprIf { cond, true_, false_ }) =
     // printedFalse
 printExpr (ExprCase { head, branches }) =
   let
-    printBranch :: { binders :: NonEmptyArray (Binder), body :: Guarded } -> Box
+    printBranch :: { binders :: NonEmptyArray Binder, body :: Guarded } -> Box
     printBranch { binders, body } =
       let
         printedHead = (punctuateH left (text ", ") $ map printBinder binders) <<+>> text "->"
@@ -375,7 +375,7 @@ printLetBinding (LetBindingSignature { ident, type_ }) = (text <<< appendUndersc
 printLetBinding (LetBindingName valueBindingFields) = printValueBindingFields valueBindingFields
 printLetBinding (LetBindingPattern { binder, where_: { expr, whereBindings } }) = printBinder binder /+/ printExpr expr // text "where" // (vsep 1 left $ map printLetBinding whereBindings)
 
-printRecordUpdates :: NonEmptyArray (RecordUpdate) -> Box
+printRecordUpdates :: NonEmptyArray RecordUpdate -> Box
 printRecordUpdates recordUpdates = text "{" <<+>> (punctuateH left (text ",") $ map printRecordUpdate recordUpdates) <<+>> text "}"
 
 printRecordUpdate :: RecordUpdate -> Box

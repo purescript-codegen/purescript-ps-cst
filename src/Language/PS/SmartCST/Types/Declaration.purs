@@ -216,7 +216,7 @@ data Binder
 
 data Guarded
   = Unconditional (Where)
-  | Guarded (NonEmptyArray (GuardedExpr))
+  | Guarded (NonEmptyArray GuardedExpr)
 -- | derive instance genericGuarded :: Generic Guarded _
 -- | derive instance eqGuarded :: Eq Guarded
 -- | derive instance ordGuarded :: Ord Guarded
