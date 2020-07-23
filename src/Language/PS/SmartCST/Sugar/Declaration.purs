@@ -18,16 +18,16 @@ typeRow :: Array (String /\ Type) -> Type
 typeRow labels = TypeRow { rowLabels: mkRowLabels labels, rowTail: Nothing }
 
 booleanType :: Type
-booleanType = TypeConstructor $ SmartQualifiedName__Simple (mkModuleName (NonEmpty.singleton "Prim")) $ ProperName "Boolean"
+booleanType = TypeConstructor $ SmartQualifiedName__Ignore $ ProperName "Boolean"
 
 numberType :: Type
-numberType = TypeConstructor $ SmartQualifiedName__Simple (mkModuleName (NonEmpty.singleton "Prim")) $ ProperName "Number"
+numberType = TypeConstructor $ SmartQualifiedName__Ignore $ ProperName "Number"
 
 stringType :: Type
-stringType = TypeConstructor $ SmartQualifiedName__Simple (mkModuleName (NonEmpty.singleton "Prim")) $ ProperName "String"
+stringType = TypeConstructor $ SmartQualifiedName__Ignore $ ProperName "String"
 
 arrayType :: Type -> Type
-arrayType = TypeApp (TypeConstructor $ SmartQualifiedName__Simple (mkModuleName (NonEmpty.singleton "Prim")) $ ProperName "Array")
+arrayType = TypeApp (TypeConstructor $ SmartQualifiedName__Ignore $ ProperName "Array")
 
 maybeType :: Type -> Type
 maybeType = TypeApp (TypeConstructor $ SmartQualifiedName__Simple (mkModuleName (NonEmpty.cons' "Data" ["Maybe"])) $ ProperName "Maybe")
