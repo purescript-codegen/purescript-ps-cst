@@ -40,7 +40,21 @@ actualModule = Module
         [ "foo" /\ numberType
         , "bar" /\ typeRecord [ "baz" /\ dataMapMap stringType numberType ]
         , "qwe" /\ typeRecord
-          [ "rty" /\ (dataMapMap (typeRecord [ "asd" /\ numberType ]) (typeRecord [ "foo" /\ numberType, "bar" /\ (dataMapMap (dataMapMap (dataMapMap numberType booleanType) (dataMapMap numberType booleanType)) booleanType) ]))
+          [ "rty" /\
+            (dataMapMap
+              ( typeRecord [ "asd" /\ numberType ] )
+              ( typeRecord
+                [ "foo" /\ numberType
+                , "bar" /\ ( dataMapMap
+                             ( dataMapMap
+                               (dataMapMap numberType booleanType)
+                               (dataMapMap numberType booleanType)
+                             )
+                             booleanType
+                           )
+                ]
+              )
+            )
           , "uio" /\ (dataMapMap (dataMapMap (dataMapMap numberType booleanType) (dataMapMap numberType booleanType)) booleanType)
           ]
         ]
