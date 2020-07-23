@@ -4,6 +4,7 @@ import Data.Tuple.Nested
 import Language.PS.CST.Types.Leafs
 import Language.PS.CST.Types.Module
 import Language.PS.CST.Types.QualifiedName
+import Language.PS.CST.Sugar.QualifiedName
 import Language.PS.SmartCST.ProcessSmartDeclaration.Utils
 import Language.PS.SmartCST.Types.ConstructorProperName
 import Language.PS.SmartCST.Types.SmartQualifiedName
@@ -408,6 +409,7 @@ processExpr :: SmartCST.Declaration.Expr -> App CST.Declaration.Expr
 processExpr (SmartCST.Declaration.ExprHole ident)                = pure $ CST.Declaration.ExprHole ident
 processExpr SmartCST.Declaration.ExprSection                     = pure $ CST.Declaration.ExprSection
 processExpr (SmartCST.Declaration.ExprIdent ident)               = CST.Declaration.ExprIdent <$> processSmartQualifiedNameValue ident
+processExpr (SmartCST.Declaration.ExprLocalVariable ident)       = pure $ CST.Declaration.ExprIdent (nonQualifiedName ident)
 processExpr (SmartCST.Declaration.ExprConstructor name)          = CST.Declaration.ExprConstructor <$> processSmartQualifiedNameTypeConstructor name
 processExpr (SmartCST.Declaration.ExprBoolean x)                 = pure $ CST.Declaration.ExprBoolean x
 processExpr (SmartCST.Declaration.ExprChar x)                    = pure $ CST.Declaration.ExprChar x
