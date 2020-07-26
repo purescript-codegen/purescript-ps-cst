@@ -7,7 +7,7 @@ import Data.Maybe (Maybe)
 import Data.Either.Nested (type (\/))
 import Language.PS.CST.Types.Leafs (ClassFundep, Comments, DeclDeriveType, Fixity, Ident, Label, OpName, OpNameType_TypeOpName, OpNameType_ValueOpName, ProperName, ProperNameType_ClassName, ProperNameType_ConstructorName, ProperNameType_KindName, ProperNameType_TypeName, RecordLabeled)
 import Language.PS.SmartCST.Types.SmartQualifiedName (SmartQualifiedName)
-import Language.PS.SmartCST.Types.ConstructorProperName (ConstructorProperName)
+import Language.PS.SmartCST.Types.SmartQualifiedNameConstructor (SmartQualifiedNameConstructor)
 
 data Declaration
   = DeclData
@@ -84,7 +84,7 @@ type FixityFields =
   }
 
 data FixityOp
-  = FixityValue (SmartQualifiedName Ident \/ SmartQualifiedName (ConstructorProperName)) (OpName OpNameType_ValueOpName)
+  = FixityValue (SmartQualifiedName Ident \/ SmartQualifiedNameConstructor) (OpName OpNameType_ValueOpName)
   | FixityType (SmartQualifiedName (ProperName ProperNameType_TypeName)) (OpName OpNameType_TypeOpName)
 -- | derive instance genericFixityOp :: Generic FixityOp _
 -- | derive instance eqFixityOp :: Eq FixityOp
@@ -188,7 +188,7 @@ data Binder
   = BinderWildcard
   | BinderVar Ident
   | BinderNamed { ident :: Ident, binder :: Binder }
-  | BinderConstructor { name :: SmartQualifiedName (ConstructorProperName), args :: Array Binder }
+  | BinderConstructor { name :: SmartQualifiedNameConstructor, args :: Array Binder }
   | BinderBoolean Boolean
   | BinderChar Char
   | BinderString String
@@ -239,7 +239,7 @@ data Expr
   | ExprSection
   | ExprIdent (SmartQualifiedName Ident)
   | ExprVar Ident -- like ExprIdent, but without import
-  | ExprConstructor (SmartQualifiedName (ConstructorProperName))
+  | ExprConstructor (SmartQualifiedNameConstructor)
   | ExprBoolean Boolean
   | ExprChar Char
   | ExprString String

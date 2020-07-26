@@ -6,9 +6,9 @@ import Language.PS.CST.Types.Leafs (Ident, Label, ModuleName, OpName, OpNameType
 import Language.PS.CST.Types.Module (DataMembers(..), Import(..), ImportDecl(..))
 import Language.PS.CST.Types.QualifiedName (QualifiedName(..))
 import Language.PS.SmartCST.ProcessSmartDeclaration.Utils (findAndModifyOrNew)
-import Language.PS.SmartCST.Types.ConstructorProperName (ConstructorProperName(..))
+import Language.PS.SmartCST.Types.SmartQualifiedNameConstructor (SmartQualifiedNameConstructor(..))
 import Language.PS.SmartCST.Types.SmartQualifiedName (SmartQualifiedName(..))
-import Prelude (bind, discard, flip, map, pure, (#), ($), (<#>), (<$>), (<*>), (==))
+import Prelude (bind, discard, flip, pure, (#), ($), (<$>), (<*>), (==))
 
 import Control.Monad.Reader (ReaderT, ask, runReaderT)
 import Control.Monad.State (State, modify_, runState)
@@ -124,7 +124,7 @@ processSmartQualifiedName
             , qualName: name
             }
 
--- For each 6 of Import constructors (plus processSmartQualifiedNameTypeConstructor for constructors)
+-- For each 6 of Import constructors
 processSmartQualifiedNameValue :: SmartQualifiedName Ident -> App (QualifiedName Ident)
 processSmartQualifiedNameValue = processSmartQualifiedName
   (\expectedName ->
@@ -189,16 +189,102 @@ processSmartQualifiedNameKind = processSmartQualifiedName
 -------
 
 -- is like processSmartQualifiedNameType, but adds -- adds `import Module.Name (Foo(..))`
-processSmartQualifiedNameTypeConstructor :: SmartQualifiedName ConstructorProperName -> App (QualifiedName (ProperName ProperNameType_ConstructorName))
-processSmartQualifiedNameTypeConstructor = processSmartQualifiedName
-  (\(ConstructorProperName constructorProperName) ->
-    case _ of
-      ImportType name' _ -> name' == constructorProperName.type_
-      _ -> false
-  )
-  (\(ConstructorProperName constructorProperName) _currentImport -> ImportType constructorProperName.type_ (Just DataAll))
-  (\(ConstructorProperName constructorProperName) -> ImportType constructorProperName.type_ (Just DataAll))
-  <#> map (map (\(ConstructorProperName constructorProperName) -> constructorProperName.constructor))
+processSmartQualifiedNameTypeConstructor :: SmartQualifiedNameConstructor -> App (QualifiedName (ProperName ProperNameType_ConstructorName))
+processSmartQualifiedNameTypeConstructor =
+  let
+      smartFindEqToName typeName = case _ of
+        ImportType name' _ -> name' == typeName
+        _ -> false
+      smartModify typeName _currentImport = ImportType typeName (Just DataAll)
+      smartCreateNew typeName = ImportType typeName (Just DataAll)
+   in case _ of
+       SmartQualifiedNameConstructor__Ignore constructorName -> pure $ QualifiedName { qualModule: Nothing, qualName: constructorName }
+       SmartQualifiedNameConstructor__Full originalModule constructorName typeName -> do
+          modify_ $ findAndModifyOrNew
+            (\(ImportDecl import_) ->
+              case import_.qualification of
+                   Nothing -> false
+                   Just moduleName -> originalModule == moduleName
+            )
+            (\(ImportDecl import_) ->
+              ImportDecl $ import_
+                { names =
+                  findAndModifyOrNew
+                  (smartFindEqToName typeName)
+                  (smartModify typeName)
+                  (\_ -> smartCreateNew typeName)
+                  import_.names
+                }
+            )
+            (\_ -> ImportDecl
+              { moduleName: originalModule
+              , names: [smartCreateNew typeName]
+              , qualification: Just originalModule
+              }
+            )
+          currentModuleName <- ask
+          pure $ QualifiedName
+            { qualModule:
+              if currentModuleName == originalModule
+                then Nothing
+                else Just originalModule
+            , qualName: constructorName
+            }
+       SmartQualifiedNameConstructor__Simple originalModule constructorName typeName -> do
+          modify_ $ findAndModifyOrNew
+            (\(ImportDecl import_) ->
+              case import_.qualification of
+                   Nothing -> import_.moduleName == originalModule
+                   Just _ -> false
+            )
+            (\(ImportDecl import_) ->
+              ImportDecl $ import_
+                { names =
+                  findAndModifyOrNew
+                  (smartFindEqToName typeName)
+                  (smartModify typeName)
+                  (\_ -> smartCreateNew typeName)
+                  import_.names
+                }
+            )
+            (\_ -> ImportDecl
+              { moduleName: originalModule
+              , names: [smartCreateNew typeName]
+              , qualification: Nothing
+              }
+            )
+          pure $ QualifiedName { qualModule: Nothing, qualName: constructorName }
+       SmartQualifiedNameConstructor__Custom originalModule customModule constructorName typeName -> do
+          modify_ $ findAndModifyOrNew
+            (\(ImportDecl import_) ->
+              case import_.qualification of
+                   Nothing -> false
+                   Just moduleName -> moduleName == customModule
+            )
+            (\(ImportDecl import_) ->
+              ImportDecl $ import_
+                { names =
+                  findAndModifyOrNew
+                  (smartFindEqToName typeName)
+                  (smartModify typeName)
+                  (\_ -> smartCreateNew typeName)
+                  import_.names
+                }
+            )
+            (\_ -> ImportDecl
+              { moduleName: originalModule
+              , names: [smartCreateNew typeName]
+              , qualification: Just customModule
+              }
+            )
+          currentModuleName <- ask
+          pure $ QualifiedName
+            { qualModule:
+              if currentModuleName == originalModule
+                then Nothing
+                else Just originalModule
+            , qualName: constructorName
+            }
 
 ---------------------------------
 
