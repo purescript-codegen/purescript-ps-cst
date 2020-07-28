@@ -188,7 +188,9 @@ processSmartQualifiedNameKind = processSmartQualifiedName
 
 -------
 
--- is like processSmartQualifiedNameType, but adds -- adds `import Module.Name (Foo(..))`
+-- is like `processSmartQualifiedNameType`,
+-- but `processSmartQualifiedNameType` generates `import Module.Name (Foo)`
+-- this function generates `import Module.Name (Foo(..))`
 processSmartQualifiedNameTypeConstructor :: SmartQualifiedNameConstructor -> App (QualifiedName (ProperName ProperNameType_ConstructorName))
 processSmartQualifiedNameTypeConstructor =
   let
