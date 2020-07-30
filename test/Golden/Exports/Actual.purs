@@ -1,10 +1,9 @@
 module Test.Golden.Exports.Actual where
 
-import Data.Maybe (Maybe(..))
-import Language.PS.CST.Types
-import Language.PS.CST.Sugar (mkModuleName)
-import Prelude (map, ($))
+import Language.PS.CST
 
+import Prelude (map, ($))
+import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
 
 actualModule :: Module

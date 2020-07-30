@@ -1,7 +1,6 @@
 module Test.Golden.DeclFixity.Actual where
 
-import Language.PS.CST.Sugar (mkModuleName, nonQualifiedName)
-import Language.PS.CST.Types (Declaration(..), Fixity(..), FixityOp(..), Ident(..), Module(..), OpName(..), ProperName(..))
+import Language.PS.CST
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty

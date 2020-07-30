@@ -1,7 +1,6 @@
 module Test.Golden.DeclDataComplex.Actual where
 
-import Language.PS.CST.Sugar (arrayType, booleanType, kindNamed, maybeType, mkModuleName, mkRowLabels, nonQualifiedName, nonQualifiedNameTypeConstructor, numberType, qualifiedName, stringType, typeRecord, typeVar, typeVarName)
-import Language.PS.CST.Types (Constraint(..), DataCtor(..), DataHead(..), Declaration(..), Ident(..), Kind(..), Module(..), OpName(..), ProperName(..), Row(..), Type(..), TypeVarBinding(..), (====>>), (====>>>))
+import Language.PS.CST
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
@@ -17,7 +16,7 @@ dataMapMap x y =
   y
 
 myExtension :: Type
-myExtension = nonQualifiedNameTypeConstructor "MyExtension"
+myExtension = TypeConstructor $ nonQualifiedName $ ProperName "MyExtension"
 
 actualModule :: Module
 actualModule = Module
@@ -50,23 +49,23 @@ actualModule = Module
             , TypeWildcard
             , TypeHole $ Ident "myhole"
             , TypeString "PsString"
-            , TypeRow $ Row { rowLabels: [], rowTail: Nothing }
-            , TypeRow $ Row { rowLabels: [], rowTail: Just myExtension }
-            , TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType ], rowTail: Nothing }
-            , TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType ], rowTail: Just myExtension }
-            , TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Nothing }
-            , TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just myExtension }
-            , TypeRow $ Row { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just $ TypeOp myExtension (nonQualifiedName $ OpName "+") (nonQualifiedNameTypeConstructor "MyOtherExtension") }
-            , TypeRow $ Row
+            , TypeRow { rowLabels: [], rowTail: Nothing }
+            , TypeRow { rowLabels: [], rowTail: Just myExtension }
+            , TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType ], rowTail: Nothing }
+            , TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType ], rowTail: Just myExtension }
+            , TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Nothing }
+            , TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just myExtension }
+            , TypeRow { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ], rowTail: Just $ TypeOp myExtension (nonQualifiedName $ OpName "+") (TypeConstructor $ nonQualifiedName $ ProperName "MyOtherExtension") }
+            , TypeRow
               { rowLabels: mkRowLabels [ "rowField" /\ numberType, "rowField2" /\ numberType ]
               , rowTail: Just $ TypeOp myExtension
                                       (nonQualifiedName $ OpName "+")
-                                      ((nonQualifiedNameTypeConstructor "MyOtherExtension")
+                                      ((TypeConstructor $ nonQualifiedName $ ProperName "MyOtherExtension")
                                         `TypeApp`
                                         (typeRecord [ "someField" /\ numberType ])
                                       )
               }
-            , TypeRow $ Row
+            , TypeRow
               { rowLabels: mkRowLabels
                 [ "rowField" /\ (typeRecord
                   [ "foo" /\ numberType
@@ -166,27 +165,27 @@ actualModule = Module
               , rowTail: Nothing
               }
             , TypeForall
-              (NonEmpty.cons' (typeVarName "a") [(TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )])
-              (arrayType $ typeVar "a")
-            , (arrayType $ typeVar "a") ====>> (maybeType $ typeVar "a")
-            , TypeOp (nonQualifiedNameTypeConstructor "Array") (nonQualifiedName $ OpName "~>") (nonQualifiedNameTypeConstructor "Maybe")
+              (NonEmpty.cons' (TypeVarName $ Ident "a") [(TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )])
+              (arrayType $ TypeVar $ Ident "a")
+            , (arrayType $ TypeVar $ Ident "a") ====>> (maybeType $ TypeVar $ Ident "a")
+            , TypeOp (TypeConstructor $ nonQualifiedName $ ProperName "Array") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe")
             , TypeForall
-              (NonEmpty.singleton (typeVarName "f"))
+              (NonEmpty.singleton (TypeVarName $ Ident "f"))
               (TypeConstrained
-                (Constraint { className: nonQualifiedName $ ProperName "Functor", args: [typeVar "f"] })
-                (TypeOp (typeVar "f") (nonQualifiedName $ OpName "~>") (nonQualifiedNameTypeConstructor "Maybe"))
+                (Constraint { className: nonQualifiedName $ ProperName "Functor", args: [TypeVar $ Ident "f"] })
+                (TypeOp (TypeVar $ Ident "f") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe"))
               )
             , TypeConstrained
-              (Constraint { className: nonQualifiedName $ ProperName "MyClass", args: [typeVar "f", typeVar "g", typeVar "k"] })
+              (Constraint { className: nonQualifiedName $ ProperName "MyClass", args: [TypeVar $ Ident "f", TypeVar $ Ident "g", TypeVar $ Ident "k"] })
               (TypeConstrained
                 (Constraint { className: nonQualifiedName $ ProperName "MyClass2", args: [typeRecord $ [ "foo" /\ numberType ]] })
-                (typeVar "f"))
+                (TypeVar $ Ident "f"))
             , TypeKinded
               (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
-              ((kindNamed "CustomKind" ====>>> KindRow (kindNamed "Type")) ====>>> (kindNamed "Type"))
+              (((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "Type")) ====>>> (KindName $ nonQualifiedName $ ProperName "Type"))
             , TypeKinded
               (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
-              (kindNamed "CustomKind" ====>>> KindRow (kindNamed "Type") ====>>> (kindNamed "Type"))
+              ((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "Type") ====>>> (KindName $ nonQualifiedName $ ProperName "Type"))
             ]
           }
         , DataCtor

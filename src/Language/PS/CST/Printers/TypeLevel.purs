@@ -1,9 +1,11 @@
 module Language.PS.CST.Printers.TypeLevel where
 
-import Prelude
+import Prelude (flip, identity, map, (#), ($), (<#>), (<<<), (==))
 
 import Language.PS.CST.Printers.Utils (emptyColumn, ifelse, maybeWrapInParentheses, printModuleName, wrapInDoubleQuotes, wrapInParentheses)
-import Language.PS.CST.Types (ClassFundep(..), Constraint(..), DataCtor(..), DataHead(..), Fixity(..), Ident, Kind(..), Label, OpName, ProperName, QualifiedName(..), Row(..), Type(..), TypeVarBinding(..))
+import Language.PS.CST.Types.Declaration (Constraint(..), DataCtor(..), DataHead(..), Kind(..), Row, Type(..), TypeVarBinding(..))
+import Language.PS.CST.Types.QualifiedName (QualifiedName(..))
+import Language.PS.CST.Types.Leafs (ClassFundep(..), Fixity(..), Ident, Label, OpName, ProperName)
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
 
 import Data.Array (snoc) as Array
@@ -168,13 +170,13 @@ printConstraint (Constraint { className, args }) =
       else printQualifiedName_AnyProperNameType className <<+>> (punctuateH left (emptyColumn) $ map (printType context) args)
 
 printRowLikeType :: PrintType_Style -> Box -> Box -> Row -> Box
-printRowLikeType _ leftWrapper rightWrapper row@(Row { rowLabels: [], rowTail: Nothing }) = leftWrapper <<>> rightWrapper
-printRowLikeType _ leftWrapper rightWrapper row@(Row { rowLabels: [], rowTail: Just rowTail }) =
+printRowLikeType _ leftWrapper rightWrapper row@({ rowLabels: [], rowTail: Nothing }) = leftWrapper <<>> rightWrapper
+printRowLikeType _ leftWrapper rightWrapper row@({ rowLabels: [], rowTail: Just rowTail }) =
   let
     context = PrintType_OneLine
   in
     leftWrapper <<+>> text "|" <<+>> printType context rowTail <<+>> rightWrapper
-printRowLikeType PrintType_OneLine leftWrapper rightWrapper row@(Row { rowLabels, rowTail }) =
+printRowLikeType PrintType_OneLine leftWrapper rightWrapper row@({ rowLabels, rowTail }) =
   let
     context = PrintType_OneLine
 
@@ -188,14 +190,14 @@ printRowLikeType PrintType_OneLine leftWrapper rightWrapper row@(Row { rowLabels
         # (\x -> leftWrapper <<+>> x <<+>> rightWrapper)
   in
     printedRowLabels
-printRowLikeType PrintType_Multiline leftWrapper rightWrapper row@(Row { rowLabels, rowTail }) =
+printRowLikeType PrintType_Multiline leftWrapper rightWrapper row =
   let
     context = PrintType_Multiline
 
-    printedTail = rowTail <#> printType context <#> (text "|" <<+>> _)
+    printedTail = row.rowTail <#> printType context <#> (text "|" <<+>> _)
 
     printedRowLabels =
-      rowLabels
+      row.rowLabels
         <#> printRowLabel context
         # mapWithIndex (\i box -> ifelse (i == 0) leftWrapper (text ",") <<+>> box)
         # maybe identity (flip Array.snoc) printedTail

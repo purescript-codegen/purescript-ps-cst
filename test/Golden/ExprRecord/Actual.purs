@@ -1,11 +1,10 @@
 module Test.Golden.ExprRecord.Actual where
 
-import Language.PS.CST.Sugar
-import Language.PS.CST.Types
+import Language.PS.CST (Declaration(..), Expr(..), Guarded(..), Ident(..), Label(..), Module(..), ProperName(..), RecordLabeled(..), mkModuleName, nonQualifiedName)
+
+import Prelude (($), (<#>), (<>))
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
-import Data.Tuple.Nested ((/\))
-import Prelude
 
 names :: Array String
 names = ["Human", "Droid"]

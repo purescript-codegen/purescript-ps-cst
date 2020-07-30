@@ -1,7 +1,6 @@
 module Test.Golden.Case.Actual where
 
-import Language.PS.CST.Sugar (mkModuleName, nonQualifiedExprIdent, nonQualifiedName)
-import Language.PS.CST.Types (Binder(..), Declaration(..), Expr(..), Guarded(..), Ident(..), LetBinding(..), Module(..), ProperName(..))
+import Language.PS.CST
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
@@ -22,7 +21,7 @@ actualModule = Module
         , guarded: Unconditional
             { expr:
               ExprCase
-              { head: NonEmpty.cons' (nonQualifiedExprIdent "foo") []
+              { head: NonEmpty.cons' (ExprIdent $ nonQualifiedName $ Ident "foo") []
               , branches:
                 NonEmpty.cons'
                 { binders: NonEmpty.cons' (BinderConstructor { name: nonQualifiedName (ProperName "Just"), args: [BinderVar (Ident "a")] }) []

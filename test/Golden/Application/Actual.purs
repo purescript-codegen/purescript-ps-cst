@@ -1,10 +1,9 @@
 module Test.Golden.Application.Actual where
 
-import Language.PS.CST.Types (Declaration(..), Expr(..), Guarded(..), Ident(..), Module(..))
+import Language.PS.CST
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
-import Language.PS.CST.Sugar (mkModuleName, nonQualifiedExprIdent)
 import Prelude (($))
 
 actualModule :: Module
@@ -20,21 +19,21 @@ actualModule = Module
         , binders: []
         , guarded: Unconditional
             { expr:
-              nonQualifiedExprIdent "a"
+              (ExprIdent $ nonQualifiedName $ Ident "a")
               `ExprApp`
-              nonQualifiedExprIdent "b"
+              (ExprIdent $ nonQualifiedName $ Ident "b")
               `ExprApp`
-              nonQualifiedExprIdent "c"
+              (ExprIdent $ nonQualifiedName $ Ident "c")
               `ExprApp`
-              nonQualifiedExprIdent "d"
+              (ExprIdent $ nonQualifiedName $ Ident "d")
               `ExprApp`
-              nonQualifiedExprIdent "e"
+              (ExprIdent $ nonQualifiedName $ Ident "e")
               `ExprApp`
-              nonQualifiedExprIdent "f"
+              (ExprIdent $ nonQualifiedName $ Ident "f")
               `ExprApp`
-              nonQualifiedExprIdent "g"
+              (ExprIdent $ nonQualifiedName $ Ident "g")
               `ExprApp`
-              nonQualifiedExprIdent "h"
+              (ExprIdent $ nonQualifiedName $ Ident "h")
             , whereBindings: []
             }
         }
@@ -46,25 +45,25 @@ actualModule = Module
         , binders: []
         , guarded: Unconditional
             { expr:
-              nonQualifiedExprIdent "a"
+              (ExprIdent $ nonQualifiedName $ Ident "a")
               `ExprApp`
-              nonQualifiedExprIdent "b"
+              (ExprIdent $ nonQualifiedName $ Ident "b")
               `ExprApp`
               (
-                nonQualifiedExprIdent "c"
+                (ExprIdent $ nonQualifiedName $ Ident "c")
                 `ExprApp`
                 (
-                  nonQualifiedExprIdent "d"
+                  (ExprIdent $ nonQualifiedName $ Ident "d")
                   `ExprApp`
-                  nonQualifiedExprIdent "e"
+                  (ExprIdent $ nonQualifiedName $ Ident "e")
                 )
                 `ExprApp`
-                nonQualifiedExprIdent "f"
+                (ExprIdent $ nonQualifiedName $ Ident "f")
                 `ExprApp`
-                nonQualifiedExprIdent "g"
+                (ExprIdent $ nonQualifiedName $ Ident "g")
               )
               `ExprApp`
-              nonQualifiedExprIdent "h"
+              (ExprIdent $ nonQualifiedName $ Ident "h")
             , whereBindings: []
             }
         }

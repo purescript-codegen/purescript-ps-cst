@@ -1,7 +1,6 @@
 module Test.Golden.DeclForeign.Actual where
 
-import Language.PS.CST.Sugar (mkModuleName, mkRowLabels, nonQualifiedName, nonQualifiedNameTypeConstructor, typeVar, typeVarName)
-import Language.PS.CST.Types (Declaration(..), Foreign(..), Ident(..), Kind(..), Module(..), ProperName(..), Row(..), Type(..), (====>>>))
+import Language.PS.CST
 import Prelude (($))
 
 import Data.Maybe (Maybe(..))
@@ -26,12 +25,19 @@ actualModule = Module
       { comments: Nothing
       , foreign_: ForeignValue
         { ident: Ident "main_"
-        , type_: TypeForall (NonEmpty.cons' (typeVarName "e") []) (
+        , type_: TypeForall (NonEmpty.cons' (TypeVarName $ Ident "e") []) (
             (TypeConstructor $ nonQualifiedName $ ProperName "Eff")
             `TypeApp`
-            (TypeRow $ Row { rowLabels: mkRowLabels [ "console" /\ nonQualifiedNameTypeConstructor "CONSOLE", "foo" /\ nonQualifiedNameTypeConstructor "FOO" ], rowTail: Just $ typeVar "e" })
+            ( TypeRow
+              { rowLabels: mkRowLabels
+                [ "console" /\ (TypeConstructor $ nonQualifiedName $ ProperName "CONSOLE")
+                , "foo" /\ (TypeConstructor $ nonQualifiedName $ ProperName "FOO")
+                ]
+              , rowTail: Just $ TypeVar $ Ident "e"
+              }
+            )
             `TypeApp`
-            nonQualifiedNameTypeConstructor "Unit"
+            (TypeConstructor $ nonQualifiedName $ ProperName "Unit")
           )
         }
       }

@@ -1,11 +1,10 @@
 module Test.Golden.Instance.Actual where
 
-import Language.PS.CST.Sugar (mkModuleName, nonQualifiedExprIdent, nonQualifiedName, nonQualifiedNameTypeConstructor, numberType)
-import Language.PS.CST.Types (Declaration(..), Expr(..), Guarded(..), Ident(..), InstanceBinding(..), Module(..), ProperName(..), Type(..))
+import Language.PS.CST
 
+import Prelude (($))
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
-import Prelude (($))
 
 actualModule :: Module
 actualModule = Module
@@ -22,7 +21,7 @@ actualModule = Module
             { instName: Ident "fooBaz"
             , instConstraints: []
             , instClass: nonQualifiedName (ProperName "Foo")
-            , instTypes: NonEmpty.cons' (nonQualifiedNameTypeConstructor "Baz") []
+            , instTypes: NonEmpty.cons' (TypeConstructor $ nonQualifiedName $ ProperName "Baz") []
             }
           , body: []
           }
@@ -38,7 +37,7 @@ actualModule = Module
             { instName: Ident "fooBaz"
             , instConstraints: []
             , instClass: nonQualifiedName (ProperName "Foo")
-            , instTypes: NonEmpty.cons' (nonQualifiedNameTypeConstructor "Baz") []
+            , instTypes: NonEmpty.cons' (TypeConstructor $ nonQualifiedName $ ProperName "Baz") []
             }
           , body:
             [ InstanceBindingSignature { ident: Ident "foo", type_: numberType }
@@ -46,7 +45,7 @@ actualModule = Module
               { name: Ident "foo"
               , binders: []
               , guarded: Unconditional
-                { expr: nonQualifiedExprIdent "append" `ExprApp` nonQualifiedExprIdent "foo" `ExprApp` nonQualifiedExprIdent "bar"
+                { expr: (ExprIdent $ nonQualifiedName $ Ident "append") `ExprApp` (ExprIdent $ nonQualifiedName $ Ident "foo") `ExprApp` (ExprIdent $ nonQualifiedName $ Ident "bar")
                 , whereBindings: []
                 }
               }
@@ -55,7 +54,7 @@ actualModule = Module
               { name: Ident "bar"
               , binders: []
               , guarded: Unconditional
-                { expr: nonQualifiedExprIdent "append" `ExprApp` (nonQualifiedExprIdent "foo" `ExprApp` nonQualifiedExprIdent "bar")
+                { expr: (ExprIdent $ nonQualifiedName $ Ident "append") `ExprApp` ((ExprIdent $ nonQualifiedName $ Ident "foo") `ExprApp` (ExprIdent $ nonQualifiedName $ Ident "bar"))
                 , whereBindings: []
                 }
               }
@@ -75,15 +74,15 @@ actualModule = Module
             , instClass: nonQualifiedName (ProperName "Foo")
             , instTypes:
               NonEmpty.cons'
-              ( nonQualifiedNameTypeConstructor "Cor"
+              ( (TypeConstructor $ nonQualifiedName $ ProperName "Cor")
                 `TypeApp`
-                nonQualifiedNameTypeConstructor "Int"
+                (TypeConstructor $ nonQualifiedName $ ProperName "Int")
               )
-              [ nonQualifiedNameTypeConstructor "Gar"
+              [ (TypeConstructor $ nonQualifiedName $ ProperName "Gar")
                 `TypeApp`
-                nonQualifiedNameTypeConstructor "Int"
+                (TypeConstructor $ nonQualifiedName $ ProperName "Int")
                 `TypeApp`
-                nonQualifiedNameTypeConstructor "Boolean"
+                (TypeConstructor $ nonQualifiedName $ ProperName "Boolean")
               ]
             }
           , body:
@@ -91,7 +90,7 @@ actualModule = Module
               { name: Ident "foo"
               , binders: []
               , guarded: Unconditional
-                { expr: nonQualifiedExprIdent "append"
+                { expr: ExprIdent $ nonQualifiedName $ Ident "append"
                 , whereBindings: []
                 }
               }

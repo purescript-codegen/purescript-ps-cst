@@ -1,7 +1,6 @@
 module Test.Golden.MultilinePatternMatchingInWhereAndLet2.Actual where
 
-import Language.PS.CST.Sugar (mkModuleName, nonQualifiedExprIdent, nonQualifiedName, nonQualifiedNameTypeConstructor)
-import Language.PS.CST.Types (Binder(..), Declaration(..), Expr(..), Guarded(..), Ident(..), LetBinding(..), Module(..), ProperName(..), (====>>))
+import Language.PS.CST
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
@@ -17,7 +16,7 @@ actualModule = Module
     [ DeclSignature
       { comments: Nothing
       , ident: Ident "myfunc"
-      , type_: nonQualifiedNameTypeConstructor "Int" ====>> nonQualifiedNameTypeConstructor "Int"
+      , type_: (TypeConstructor $ nonQualifiedName $ ProperName "Int") ====>> (TypeConstructor $ nonQualifiedName $ ProperName "Int")
       }
     , DeclValue
       { comments: Nothing
@@ -30,7 +29,7 @@ actualModule = Module
                 NonEmpty.cons'
                 ( LetBindingSignature
                   { ident: Ident "psModuleFile"
-                  , type_: nonQualifiedNameTypeConstructor "ModulePath" ====>> nonQualifiedNameTypeConstructor "Int"
+                  , type_: (TypeConstructor $ nonQualifiedName $ ProperName "ModulePath") ====>> (TypeConstructor $ nonQualifiedName $ ProperName "Int")
                   }
                 )
                 [ LetBindingName
@@ -55,7 +54,7 @@ actualModule = Module
                   }
                 , LetBindingSignature
                   { ident: Ident "psModuleFile2"
-                  , type_: nonQualifiedNameTypeConstructor "ModulePath" ====>> nonQualifiedNameTypeConstructor "Int"
+                  , type_: (TypeConstructor $ nonQualifiedName $ ProperName "ModulePath") ====>> (TypeConstructor $ nonQualifiedName $ ProperName "Int")
                   }
                 , LetBindingName
                   { name: Ident "psModuleFile2"
@@ -78,12 +77,12 @@ actualModule = Module
                     }
                   }
                 ]
-              , body: nonQualifiedExprIdent "psModuleFile" `ExprApp` ExprNumber (Left 1)
+              , body: (ExprIdent $ nonQualifiedName $ Ident "psModuleFile") `ExprApp` ExprNumber (Left 1)
               }
             , whereBindings:
               [ LetBindingSignature
                 { ident: Ident "psModuleFile"
-                , type_: nonQualifiedNameTypeConstructor "ModulePath" ====>> nonQualifiedNameTypeConstructor "Int"
+                , type_: (TypeConstructor $ nonQualifiedName $ ProperName "ModulePath") ====>> (TypeConstructor $ nonQualifiedName $ ProperName "Int")
                 }
               , LetBindingName
                 { name: Ident "psModuleFile"
@@ -107,7 +106,7 @@ actualModule = Module
                 }
               , LetBindingSignature
                 { ident: Ident "psModuleFile2"
-                , type_: nonQualifiedNameTypeConstructor "ModulePath" ====>> nonQualifiedNameTypeConstructor "Int"
+                , type_: (TypeConstructor $ nonQualifiedName $ ProperName "ModulePath") ====>> (TypeConstructor $ nonQualifiedName $ ProperName "Int")
                 }
               , LetBindingName
                 { name: Ident "psModuleFile2"

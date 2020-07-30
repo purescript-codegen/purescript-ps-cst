@@ -1,12 +1,14 @@
 module Language.PS.CST.Printers where
 
-import Prelude
+import Prelude (flip, map, show, (#), ($), (<#>), (<<<), (==))
 
 import Language.PS.CST.Printers.PrintImports (printImports)
 import Language.PS.CST.Printers.PrintModuleModuleNameAndExports (printModuleModuleNameAndExports)
 import Language.PS.CST.Printers.TypeLevel (PrintType_Style(..), printConstraint, printDataCtor, printDataHead, printFixity, printFundep, printKind, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printTypeVarBinding)
 import Language.PS.CST.Printers.Utils (emptyColumn, emptyRow, ifelse, lines, maybeWrapInParentheses, printAndConditionallyAddNewlinesBetween, twoSpaceIdentation, wrapInParentheses)
-import Language.PS.CST.Types (Binder(..), Comments(..), DeclDeriveType(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), Module(..), RecordLabeled(..), RecordUpdate(..), Type(..), ValueBindingFields)
+import Language.PS.CST.Types.Leafs (Comments(..), DeclDeriveType(..), RecordLabeled(..))
+import Language.PS.CST.Types.Declaration (Binder(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), RecordUpdate(..), Type(..), ValueBindingFields)
+import Language.PS.CST.Types.Module (Module(..))
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
 
 import Data.Newtype (unwrap)
@@ -46,7 +48,7 @@ shouldBeNoNewlineBetweenInstanceBindings (InstanceBindingSignature { ident }) (I
 shouldBeNoNewlineBetweenInstanceBindings (InstanceBindingName { name }) (InstanceBindingName { name: nameNext }) = name == nameNext
 shouldBeNoNewlineBetweenInstanceBindings _ _ = false
 
-printDeclarations :: Array Declaration -> Box
+printDeclarations :: Array (Declaration) -> Box
 printDeclarations [] = nullBox
 printDeclarations declarations = emptyRow // printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenDeclarations printDeclaration declarations
 
@@ -337,7 +339,7 @@ printExpr (ExprCase { head, branches }) =
           ExprDo _ -> true
           ExprAdo _ -> true
           _ -> false
-      )
+       )
   in
     if headShouldBeMultiline
       then text "case"
