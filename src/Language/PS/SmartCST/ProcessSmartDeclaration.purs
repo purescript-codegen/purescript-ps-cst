@@ -118,9 +118,9 @@ processSmartQualifiedName
           currentModuleName <- ask
           pure $ QualifiedName
             { qualModule:
-              if currentModuleName == originalModule
+              if currentModuleName == customModule
                 then Nothing
-                else Just originalModule
+                else Just customModule
             , qualName: name
             }
 
@@ -282,9 +282,9 @@ processSmartQualifiedNameTypeConstructor =
           currentModuleName <- ask
           pure $ QualifiedName
             { qualModule:
-              if currentModuleName == originalModule
+              if currentModuleName == customModule
                 then Nothing
-                else Just originalModule
+                else Just customModule
             , qualName: constructorName
             }
 
