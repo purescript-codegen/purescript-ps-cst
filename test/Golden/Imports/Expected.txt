@@ -1,9 +1,7 @@
 module Foo where
 
 import Prelude
-import Data.Maybe
-  ( Maybe
-  )
+import Data.Maybe (Maybe)
 import Prelude
   ( class EuclideanRing
   , kind MyKind
@@ -13,9 +11,6 @@ import Prelude
   , Void
   , compose
   , (&&)
-  )
-import Data.Array
-  ( head
-  , tail
-  ) as Array
+  ) as CustomPrelude
+import Data.Array (head, tail) as Array
 import Data.List as My.Data.List

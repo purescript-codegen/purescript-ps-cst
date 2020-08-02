@@ -2,7 +2,7 @@ module Test.Golden.ExprRecord.Actual where
 
 import Language.PS.CST (Declaration(..), Expr(..), Guarded(..), Ident(..), Label(..), Module(..), ProperName(..), RecordLabeled(..), mkModuleName, nonQualifiedName)
 
-import Prelude (($), (<#>), (<>))
+import Prelude
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
 

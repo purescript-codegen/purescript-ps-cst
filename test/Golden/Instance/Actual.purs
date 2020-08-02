@@ -2,7 +2,7 @@ module Test.Golden.Instance.Actual where
 
 import Language.PS.CST
 
-import Prelude (($))
+import Prelude
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
 

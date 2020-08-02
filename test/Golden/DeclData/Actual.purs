@@ -1,6 +1,6 @@
 module Test.Golden.DeclData.Actual where
 
-import Prelude (($))
+import Prelude
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty

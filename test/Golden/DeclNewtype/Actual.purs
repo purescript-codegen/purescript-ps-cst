@@ -5,7 +5,7 @@ import Language.PS.CST
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
 import Data.Tuple.Nested ((/\))
-import Prelude (($))
+import Prelude
 
 head :: DataHead
 head =

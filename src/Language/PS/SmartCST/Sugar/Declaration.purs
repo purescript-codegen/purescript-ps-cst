@@ -4,7 +4,7 @@ import Language.PS.SmartCST.Types.Declaration (Type(..))
 import Language.PS.SmartCST.Types.SmartQualifiedName (SmartQualifiedName(..))
 import Language.PS.CST.Types.Leafs (ProperName(..))
 import Language.PS.CST.Sugar.Leafs (mkModuleName, mkRowLabels)
-import Prelude (($))
+import Prelude
 
 import Data.Array.NonEmpty as NonEmpty
 import Data.Maybe (Maybe(..))

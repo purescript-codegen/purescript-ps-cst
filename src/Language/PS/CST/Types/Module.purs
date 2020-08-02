@@ -1,6 +1,6 @@
 module Language.PS.CST.Types.Module where
 
-import Prelude (class Eq, class Ord, class Show)
+import Prelude
 
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)

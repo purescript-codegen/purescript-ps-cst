@@ -1,7 +1,7 @@
 module Language.PS.CST.Sugar.Leafs where
 
 import Language.PS.CST.Types.Leafs
-import Prelude (map, (<<<))
+import Prelude
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty (NonEmptyArray)

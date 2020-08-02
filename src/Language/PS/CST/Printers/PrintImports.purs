@@ -1,62 +1,61 @@
 module Language.PS.CST.Printers.PrintImports where
 
-import Prelude (map, ($), (-), (<#>), (<<<), (<>))
+import Prelude
 
-import Language.PS.CST.Printers.Utils (emptyColumn, emptyRow, printConstructors, printModuleName, twoSpaceIdentation, wrapInParentheses)
+import Language.PS.CST.Printers.Utils
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
 
 import Language.PS.CST.Types.Module (DataMembers(..), Import(..), ImportDecl(..))
 
-import Text.PrettyPrint.Boxes (Box, left, nullBox, text, vcat, vsep, (//), (<<+>>), (<<>>))
+import Data.Array as Array
 import Data.Foldable (length, null)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Newtype (unwrap)
 import Data.Unfoldable (replicate)
+import Text.Pretty
+import Text.Pretty as Pretty
+import Text.Pretty.Symbols.String hiding (space)
+import Text.Pretty.Code.Purescript (tupled, encloseSep)
+import Data.Container.Class
 
-printImports :: Array ImportDecl -> Box
-printImports [] = nullBox
-printImports imports =
-  emptyRow
-    // (vsep 0 left $ map printImport imports)
+printImports :: Array ImportDecl -> Doc String
+printImports imports = vsep $ map printImport imports
 
-printImport :: ImportDecl -> Box
+printImport :: ImportDecl -> Doc String
 printImport (ImportDecl { moduleName, names, qualification }) =
   let
-    head = text "import" <<+>> printModuleName moduleName
+    head = text "import" <+> printModuleName moduleName
 
-    qualification' = qualification <#> (\qualificationModuleName -> text "as" <<+>> printModuleName qualificationModuleName)
-
-    prependSpace x = emptyColumn <<>> x
+    qualification' :: Doc String
+    qualification' = maybe emptyDoc (\qualificationModuleName -> text " as" <+> printModuleName qualificationModuleName) qualification
   in
-    if null names then
-      head <<>> maybe nullBox prependSpace qualification' -- in one line
-    else
-      let
-        printImportName :: Import -> Box
-        printImportName (ImportValue ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
-        printImportName (ImportOp valueOpName) = wrapInParentheses $ (text <<< appendUnderscoreIfReserved <<< unwrap) valueOpName
-        printImportName (ImportType properNameTypeName maybeDataMembers) =
+    case names of
+         [] -> head <> qualification' -- in one line
+         _ ->
           let
-            printedProperNameTypeName :: Box
-            printedProperNameTypeName = (text <<< appendUnderscoreIfReserved <<< unwrap) properNameTypeName
+            exports :: Array (Doc String)
+            exports = map printImportName names
 
-            printedMaybeDataMembers :: Box
-            printedMaybeDataMembers = case maybeDataMembers of
-              Nothing -> nullBox
-              (Just DataAll) -> text "(..)"
-              (Just (DataEnumerated constructors)) -> wrapInParentheses $ printConstructors constructors
-          in
-            printedProperNameTypeName <<>> printedMaybeDataMembers
-        printImportName (ImportTypeOp opName) = text "type" <<+>> (wrapInParentheses $ (text <<< appendUnderscoreIfReserved <<< unwrap) $ opName)
-        printImportName (ImportClass properName) = text "class" <<+>> ((text <<< appendUnderscoreIfReserved <<< unwrap) $ properName)
-        printImportName (ImportKind properName) = text "kind" <<+>> ((text <<< appendUnderscoreIfReserved <<< unwrap) $ properName)
+            exports' = encloseSep (text "(") (text ")") (text ", ") exports
 
-        printedNamesColumn = vcat left $ map printImportName names
+            prefer1SpaceOr2OnGroup = flatAlt (text "  ") (text " ")
+          in group (head <> line' <> nest 2 (prefer1SpaceOr2OnGroup <> align exports')) <> qualification'
 
-        commasColumn = vcat left $ [ text "(" ] <> replicate (length names - 1) (text ",")
+printImportName :: Import -> Doc String
+printImportName (ImportValue ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
+printImportName (ImportOp valueOpName) = parens $ (text <<< appendUnderscoreIfReserved <<< unwrap) valueOpName
+printImportName (ImportType properNameTypeName maybeDataMembers) =
+  let
+    printedProperNameTypeName :: Doc String
+    printedProperNameTypeName = (text <<< appendUnderscoreIfReserved <<< unwrap) properNameTypeName
 
-        printedNames = twoSpaceIdentation <<>> commasColumn <<+>> printedNamesColumn
-      in
-        head
-          // printedNames
-          // (twoSpaceIdentation <<>> text ")" <<+>> fromMaybe nullBox qualification')
+    printedMaybeDataMembers :: Doc String
+    printedMaybeDataMembers = case maybeDataMembers of
+      Nothing -> emptyDoc
+      (Just DataAll) -> text "(..)"
+      (Just (DataEnumerated constructors)) -> parens $ printConstructors constructors
+  in
+    printedProperNameTypeName <> printedMaybeDataMembers
+printImportName (ImportTypeOp opName) = text "type" <+> (parens $ (text <<< appendUnderscoreIfReserved <<< unwrap) $ opName)
+printImportName (ImportClass properName) = text "class" <+> ((text <<< appendUnderscoreIfReserved <<< unwrap) $ properName)
+printImportName (ImportKind properName) = text "kind" <+> ((text <<< appendUnderscoreIfReserved <<< unwrap) $ properName)
