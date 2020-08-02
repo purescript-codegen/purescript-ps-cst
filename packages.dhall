@@ -4,10 +4,14 @@ let upstream =
 let overrides = {=}
 
 let additions =
-      { boxes =
+      { prettyprinter =
         { dependencies =
-          [ "generics-rep", "prelude", "profunctor", "strings", "stringutils" ]
-        , repo = "https://github.com/srghma/purescript-boxes.git"
+          [ "prelude"
+          , "unfoldable"
+          , "console"
+          , "stringutils"
+          ]
+        , repo = "https://github.com/srghma/purescript-prettyprinter.git"
         , version = "master"
         }
       }

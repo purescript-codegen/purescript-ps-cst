@@ -10,7 +10,7 @@
     , "node-path"
     , "node-fs-aff"
     , "ansi"
-    , "boxes"
+    , "prettyprinter"
     , "debug"
     ]
 , packages = ./packages.dhall

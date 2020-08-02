@@ -1,6 +1,6 @@
 module Language.PS.CST.Types.Leafs where
 
-import Prelude (class Eq, class Functor, class Ord, class Show, mempty, pure, show, (<$>), (<>))
+import Prelude
 
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Foldable (class Foldable, foldlDefault, foldrDefault)

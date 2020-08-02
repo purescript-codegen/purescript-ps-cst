@@ -8,7 +8,7 @@ import Language.PS.CST.Types.QualifiedName (QualifiedName(..))
 import Language.PS.SmartCST.ProcessSmartDeclaration.Utils (findAndModifyOrNew)
 import Language.PS.SmartCST.Types.SmartQualifiedNameConstructor (SmartQualifiedNameConstructor(..))
 import Language.PS.SmartCST.Types.SmartQualifiedName (SmartQualifiedName(..))
-import Prelude (bind, discard, flip, pure, (#), ($), (<$>), (<*>), (==))
+import Prelude
 
 import Control.Monad.Reader (ReaderT, ask, runReaderT)
 import Control.Monad.State (State, modify_, runState)

@@ -1,6 +1,6 @@
 module Language.PS.CST.Types.QualifiedName where
 
-import Prelude (class Eq, class Functor, class Ord, class Show, show, (<>))
+import Prelude
 
 import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)

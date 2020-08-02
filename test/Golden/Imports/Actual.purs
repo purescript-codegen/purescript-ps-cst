@@ -1,6 +1,6 @@
 module Test.Golden.Imports.Actual where
 
-import Prelude (map, ($))
+import Prelude
 import Data.Maybe (Maybe(..))
 import Language.PS.CST
 
@@ -34,7 +34,7 @@ actualModule = Module
         , ImportValue (Ident "compose")
         , ImportOp (OpName "&&")
         ]
-      , qualification: Nothing
+      , qualification: Just $ mkModuleName $ NonEmpty.cons' "CustomPrelude" []
       }
     , ImportDecl
       { moduleName: mkModuleName $ NonEmpty.cons' "Data" ["Array"]

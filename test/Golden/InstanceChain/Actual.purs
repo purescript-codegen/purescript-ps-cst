@@ -4,7 +4,7 @@ import Language.PS.CST
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
-import Prelude (($))
+import Prelude
 
 actualModule :: Module
 actualModule = Module

@@ -4,7 +4,7 @@ import Language.PS.CST.Types.Declaration (Type(..))
 import Language.PS.CST.Types.Leafs (ProperName(..))
 import Language.PS.CST.Sugar.QualifiedName (nonQualifiedName)
 import Language.PS.CST.Sugar.Leafs (mkRowLabels)
-import Prelude (($))
+import Prelude
 
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested (type (/\))

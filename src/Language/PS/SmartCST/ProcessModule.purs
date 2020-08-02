@@ -3,12 +3,12 @@ module Language.PS.SmartCST.ProcessModule where
 import Data.Tuple.Nested ((/\))
 import Language.PS.CST.Types.Leafs (ModuleName)
 import Language.PS.CST.Types.Module (Export, ImportDecl(..))
-import Prelude ((/=), (<<<))
+import Prelude
 
 import Data.Array as Array
 import Language.PS.SmartCST.Types.Declaration as SmartCST.Declaration
 import Language.PS.SmartCST.ProcessSmartDeclaration as Language.PS.SmartCST.ProcessSmartDeclaration
-import Text.PrettyPrint.Boxes (render) as Text.PrettyPrint.Boxes
+import Text.Pretty as Text.Pretty
 import Language.PS.CST.Printers as Language.PS.CST.Printers
 import Language.PS.CST.Types.Module as Language.PS.CST.Types.Module
 
@@ -32,5 +32,5 @@ moduleToCstModule (Module module_) =
     , declarations
     }
 
-printModuleToString :: Module -> String
-printModuleToString = Text.PrettyPrint.Boxes.render <<< Language.PS.CST.Printers.printModule <<< moduleToCstModule
+printModuleToString :: Int -> Module -> String
+printModuleToString width = Text.Pretty.render width <<< Language.PS.CST.Printers.printModule <<< moduleToCstModule

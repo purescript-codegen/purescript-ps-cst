@@ -1,6 +1,6 @@
 module Language.PS.SmartCST.Types.SmartQualifiedName where
 
-import Prelude (class Functor)
+import Prelude
 
 import Language.PS.CST.Types.Leafs (ModuleName)
 

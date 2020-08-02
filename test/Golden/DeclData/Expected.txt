@@ -4,6 +4,4 @@ module DeclData where
   line1
   line2
 -}
-data Foo
-  = Bar
-  | Baz
+data Foo = Bar | Baz
