@@ -159,39 +159,36 @@ printDeclaration (DeclClass { comments, head: { name, vars, super, fundeps }, me
               $ map (\({ ident, type_ }) -> (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_) $ methods
               )
           )
-printDeclaration (DeclInstanceChain { comments, instances }) =
-  let
-    printInstance :: Instance -> Doc String
-    printInstance { head: { instName, instConstraints, instClass, instTypes }, body } =
-      let
-        head = text "instance" <+> (text <<< appendUnderscoreIfReserved <<< unwrap) instName <+> text "::" <+> printQualifiedName_AnyProperNameType instClass
-
-        doWrap :: Type -> Boolean
-        doWrap (TypeApp _ _) = true
-        doWrap (TypeForall _ _) = true
-        doWrap (TypeArr _ _) = true
-        doWrap (TypeOp _ _ _) = true
-        doWrap (TypeConstrained _ _) = true
-        doWrap _ = false
-
-        tail =
-          if null instTypes
-            then emptyDoc
-            else space <> (instTypes <#> (\type_ -> maybeWrapInParentheses (doWrap type_) (printType type_)) # vsep)
-
-        firstRow = head <> tail
-       in
-        if null body
-          then printMaybeComments comments firstRow
-          else
-          let
-            printedBody = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenInstanceBindings printInstanceBinding body
-           in
-            printMaybeComments comments
-            (firstRow <+> text "where" <> line <> text (spaces 2) <> printedBody)
-   in text "else" <> hardline <> vcatOmittingEmptyNonEmpty (instances <#> printInstance)
+printDeclaration (DeclInstanceChain { comments, instances }) = printMaybeComments comments (concatWithNonEmpty (surroundOmittingEmpty (hardline <> hardline <> text "else" <> hardline <> hardline)) (map printInstance instances))
 printDeclaration (DeclSignature { comments, ident, type_ }) = printMaybeComments comments ((text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_)
 printDeclaration (DeclValue { comments, valueBindingFields }) = printMaybeComments comments (printValueBindingFields valueBindingFields)
+
+printInstance :: Instance -> Doc String
+printInstance instance_ =
+  let
+    head = text "instance" <+> (text <<< appendUnderscoreIfReserved <<< unwrap) instance_.head.instName <+> text "::" <+> printQualifiedName_AnyProperNameType instance_.head.instClass
+
+    doWrap :: Type -> Boolean
+    doWrap (TypeApp _ _) = true
+    doWrap (TypeForall _ _) = true
+    doWrap (TypeArr _ _) = true
+    doWrap (TypeOp _ _ _) = true
+    doWrap (TypeConstrained _ _) = true
+    doWrap _ = false
+
+    tail =
+      if null instance_.head.instTypes
+        then emptyDoc
+        else concatWithNonEmpty (surround line) $ map (\type_ -> maybeWrapInParentheses (doWrap type_) (printType type_)) instance_.head.instTypes
+
+    firstRow = group $ concatWith (surround line) [head, tail]
+   in
+    if null instance_.body
+      then firstRow
+      else
+      let
+        printedBody = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenInstanceBindings printInstanceBinding instance_.body
+       in firstRow <+> text "where" <> line <> indent 2 printedBody
 
 printInstanceBinding :: InstanceBinding -> Doc String
 printInstanceBinding (InstanceBindingSignature { ident, type_ }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_
@@ -289,18 +286,18 @@ printExpr (ExprIf { cond, true_, false_ }) =
   let
     printedCond =
       if exprShouldBeOnNextLine cond
-        then text "if" <> line <>(text (spaces 2) <> printExpr cond)
+        then text "if" <> hardline <> (indent 2 $ printExpr cond)
         else text "if" <+> printExpr cond
 
     printedTrue =
       if exprShouldBeOnNextLine true_
-        then text (spaces 2) <> (text "then" <> line <>(text (spaces 2) <> printExpr true_))
-        else text (spaces 2) <> text "then" <+> printExpr true_
+        then indent 2 $ (text "then" <> hardline <> (indent 2 $ printExpr true_))
+        else indent 2 $ text "then" <+> printExpr true_
 
     printedFalse =
       if exprShouldBeOnNextLine false_
-        then text (spaces 2) <> (text "else" <> line <>(text (spaces 2) <> printExpr false_))
-        else text (spaces 2) <> text "else" <+> printExpr false_
+        then indent 2 $ (text "else" <> hardline <>(indent 2 $ printExpr false_))
+        else indent 2 $ text "else" <+> printExpr false_
    in
     printedCond
     <> line <>printedTrue

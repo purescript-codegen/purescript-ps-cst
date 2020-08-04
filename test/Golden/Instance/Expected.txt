@@ -5,7 +5,7 @@ instance fooBaz :: Foo Baz
 instance fooBaz :: Foo Baz where
   foo :: Number
   foo = append foo bar
-
+  
   bar :: Number
   bar = append (foo bar)
 

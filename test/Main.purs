@@ -76,10 +76,10 @@ goldenTests =
   , { name: "MultilinePatternMatchingInWhere2", actualModule: Test.Golden.MultilinePatternMatchingInWhere2.Actual.actualModule }
   , { name: "MultilinePatternMatchingInWhereAndLet2", actualModule: Test.Golden.MultilinePatternMatchingInWhereAndLet2.Actual.actualModule }
   , { name: "Case", actualModule: Test.Golden.Case.Actual.actualModule }
-  -- | , { name: "If", actualModule: Test.Golden.If.Actual.actualModule }
-  -- | , { name: "Instance", actualModule: Test.Golden.Instance.Actual.actualModule }
-  -- | , { name: "InstanceChain", actualModule: Test.Golden.InstanceChain.Actual.actualModule }
-  -- | , { name: "ExprRecord", actualModule: Test.Golden.ExprRecord.Actual.actualModule }
+  , { name: "If", actualModule: Test.Golden.If.Actual.actualModule }
+  , { name: "Instance", actualModule: Test.Golden.Instance.Actual.actualModule }
+  , { name: "InstanceChain", actualModule: Test.Golden.InstanceChain.Actual.actualModule }
+  , { name: "ExprRecord", actualModule: Test.Golden.ExprRecord.Actual.actualModule }
   ]
 
 addText :: GoldenTest -> Aff GoldenTestWithExpected
