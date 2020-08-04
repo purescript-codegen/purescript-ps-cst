@@ -31,6 +31,7 @@ import Test.Golden.DeclNewtype.Actual as Test.Golden.DeclNewtype.Actual
 import Test.Golden.DeclType.Actual as Test.Golden.DeclType.Actual
 import Test.Golden.Exports.Actual as Test.Golden.Exports.Actual
 import Test.Golden.ExprRecord.Actual as Test.Golden.ExprRecord.Actual
+import Test.Golden.ExprArray.Actual as Test.Golden.ExprArray.Actual
 import Test.Golden.If.Actual as Test.Golden.If.Actual
 import Test.Golden.Imports.Actual as Test.Golden.Imports.Actual
 import Test.Golden.Instance.Actual as Test.Golden.Instance.Actual
@@ -80,6 +81,7 @@ goldenTests =
   , { name: "Instance", actualModule: Test.Golden.Instance.Actual.actualModule }
   , { name: "InstanceChain", actualModule: Test.Golden.InstanceChain.Actual.actualModule }
   , { name: "ExprRecord", actualModule: Test.Golden.ExprRecord.Actual.actualModule }
+  , { name: "ExprArray", actualModule: Test.Golden.ExprArray.Actual.actualModule }
   ]
 
 addText :: GoldenTest -> Aff GoldenTestWithExpected
