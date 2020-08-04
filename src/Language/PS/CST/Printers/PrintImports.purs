@@ -38,8 +38,14 @@ printImport (ImportDecl { moduleName, names, qualification }) =
 
             exports' = encloseSep (text "(") (text ")") (text ", ") exports
 
-            prefer1SpaceOr2OnGroup = flatAlt (text "  ") (text " ")
-          in group (head <> line' <> nest 2 (prefer1SpaceOr2OnGroup <> align exports')) <> qualification'
+            onV2OnFlatten1Space = flatAlt (text "  ") (text " ")
+          in
+            group ( vcatOmittingEmpty
+                    [ head
+                    , nest 2 (onV2OnFlatten1Space <> align exports')
+                    ]
+                  )
+            <> qualification'
 
 printImportName :: Import -> Doc String
 printImportName (ImportValue ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident

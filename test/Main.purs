@@ -61,8 +61,8 @@ goldenTests =
   [ { name: "Imports", actualModule: Test.Golden.Imports.Actual.actualModule }
   , { name: "Exports", actualModule: Test.Golden.Exports.Actual.actualModule }
   , { name: "DeclData", actualModule: Test.Golden.DeclData.Actual.actualModule }
-  -- | , { name: "DeclDataComplex", actualModule: Test.Golden.DeclDataComplex.Actual.actualModule }
-  -- | , { name: "DeclType", actualModule: Test.Golden.DeclType.Actual.actualModule }
+  , { name: "DeclDataComplex", actualModule: Test.Golden.DeclDataComplex.Actual.actualModule }
+  , { name: "DeclType", actualModule: Test.Golden.DeclType.Actual.actualModule }
   -- | , { name: "DeclNewtype", actualModule: Test.Golden.DeclNewtype.Actual.actualModule }
   -- | , { name: "DeclFixity", actualModule: Test.Golden.DeclFixity.Actual.actualModule }
   -- | , { name: "DeclForeign", actualModule: Test.Golden.DeclForeign.Actual.actualModule }
@@ -99,9 +99,9 @@ mkAllTests tests = traverse_ mkTest tests
         -- | String.replace (String.unsafeRegex "\\s+$" String.global) "" $
         Language.PS.CST.Printers.printModuleToString 80 test.actualModule
 
-    -- | liftEffect $ log actualParsed
-    -- | traceM actualParsed
-    -- | traceM test.expected
+    liftEffect $ log actualParsed
+    traceM actualParsed
+    traceM test.expected
     -- | actualParsed `shouldEqual` test.expected
     actualParsed `textShouldMatch` test.expected
 

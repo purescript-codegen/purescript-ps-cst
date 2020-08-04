@@ -5,7 +5,8 @@ import Data.List (List(..), (:))
 import Data.List (fromFoldable) as List
 import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
-import Language.PS.CST.Types.Leafs (ModuleName(..), ProperName, ProperNameType_ConstructorName)
+import Language.PS.CST.Types.Leafs
+import Language.PS.CST.Types.Declaration
 import Prelude
 import Text.Pretty
 import Text.Pretty.Symbols.String
@@ -42,3 +43,18 @@ printAndConditionallyAddNewlinesBetween shouldBeNoNewlines print =
                                                   else accum <> line' <> hardline <> (print current)
    in
     foldWithPrev foldDeclaration emptyDoc <<< List.fromFoldable
+
+shouldBeNoNewlineBetweenDeclarations :: Declaration -> Declaration -> Boolean
+shouldBeNoNewlineBetweenDeclarations (DeclSignature { ident }) (DeclValue { valueBindingFields: { name } }) = ident == name
+shouldBeNoNewlineBetweenDeclarations (DeclValue { valueBindingFields: { name } }) (DeclValue { valueBindingFields: { name: nameNext } }) = name == nameNext
+shouldBeNoNewlineBetweenDeclarations _ _ = false
+
+shouldBeNoNewlineBetweenLetBindings :: LetBinding -> LetBinding -> Boolean
+shouldBeNoNewlineBetweenLetBindings (LetBindingSignature { ident }) (LetBindingName { name }) = ident == name
+shouldBeNoNewlineBetweenLetBindings (LetBindingName { name }) (LetBindingName { name: nameNext }) = name == nameNext
+shouldBeNoNewlineBetweenLetBindings _ _ = false
+
+shouldBeNoNewlineBetweenInstanceBindings :: InstanceBinding -> InstanceBinding -> Boolean
+shouldBeNoNewlineBetweenInstanceBindings (InstanceBindingSignature { ident }) (InstanceBindingName { name }) = ident == name
+shouldBeNoNewlineBetweenInstanceBindings (InstanceBindingName { name }) (InstanceBindingName { name: nameNext }) = name == nameNext
+shouldBeNoNewlineBetweenInstanceBindings _ _ = false

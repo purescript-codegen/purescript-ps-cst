@@ -22,9 +22,9 @@ printModuleModuleNameAndExports moduleName exports =
   let
     printedNames = encloseSep (text "(") (text ")") (text ", ") (map printExportName exports)
 
-    prefer1SpaceOr2OnGroup = flatAlt (text "  ") (text " ")
+    onV2OnFlatten1Space = flatAlt (text "  ") (text " ")
   in
-    text "module" <+> printModuleName moduleName <> line' <> (nest 2 (prefer1SpaceOr2OnGroup <> printedNames <+> text "where"))
+    text "module" <+> printModuleName moduleName <> line' <> (nest 2 (onV2OnFlatten1Space <> printedNames <+> text "where"))
 
 printExportName :: Export -> Doc String
 printExportName (ExportValue ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
