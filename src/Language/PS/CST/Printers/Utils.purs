@@ -1,28 +1,23 @@
 module Language.PS.CST.Printers.Utils where
 
+import Data.Container.Class
+import Language.PS.CST.Types.Declaration
+import Language.PS.CST.Types.Leafs
+import Prelude
+import Text.Pretty
+import Text.Pretty.Symbols.String
+
 import Data.Foldable (class Foldable)
 import Data.List (List(..), (:))
 import Data.List (fromFoldable) as List
 import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
-import Language.PS.CST.Types.Leafs
-import Language.PS.CST.Types.Declaration
-import Prelude
-import Text.Pretty
-import Text.Pretty.Symbols.String
-import Data.Container.Class
 
 printModuleName :: ModuleName -> Doc String
-printModuleName (ModuleName nonEmptyArray) = concatWithNonEmpty (surround dot) $ map (unwrap >>> text) (nonEmptyArray)
-
-punctuateWithComma :: forall f . Container f => Foldable f => f (Doc String) -> Doc String
-punctuateWithComma = concatWith (surround (text ", "))
-
-twoSpaceIdentation :: Doc String
-twoSpaceIdentation = text "  "
+printModuleName (ModuleName nonEmptyArray) = concatWithNonEmpty (surroundOmittingEmpty dot) $ map (unwrap >>> text) nonEmptyArray
 
 printConstructors :: Array (ProperName ProperNameType_ConstructorName) -> Doc String
-printConstructors = punctuateWithComma <<< map (text <<< unwrap)
+printConstructors = concatWith (surroundOmittingEmpty (text ", ")) <<< map (text <<< unwrap)
 
 foldWithPrev :: ∀ a b . (b -> Maybe a -> a -> b) -> b -> List a -> b
 foldWithPrev _   default' Nil   = default'
@@ -58,3 +53,9 @@ shouldBeNoNewlineBetweenInstanceBindings :: InstanceBinding -> InstanceBinding -
 shouldBeNoNewlineBetweenInstanceBindings (InstanceBindingSignature { ident }) (InstanceBindingName { name }) = ident == name
 shouldBeNoNewlineBetweenInstanceBindings (InstanceBindingName { name }) (InstanceBindingName { name: nameNext }) = name == nameNext
 shouldBeNoNewlineBetweenInstanceBindings _ _ = false
+
+exprShouldBeOnNextLine :: Expr -> Boolean
+exprShouldBeOnNextLine (ExprLet _) = true
+exprShouldBeOnNextLine (ExprCase _) = true
+exprShouldBeOnNextLine (ExprIf _) = true
+exprShouldBeOnNextLine _ = false

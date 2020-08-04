@@ -3,10 +3,29 @@ module DeclNewtype where
 newtype Foo = Foo Boolean
 
 newtype Foo = Foo { foo :: Number
-                  , bar :: { baz :: Data.Map.Map String Number
-                           }
-                  , qwe :: { rty :: Data.Map.Map { asd :: Number } { foo :: Number, bar :: Data.Map.Map (Data.Map.Map (Data.Map.Map Number Boolean) (Data.Map.Map Number Boolean)) Boolean }
-                           , uio :: Data.Map.Map (Data.Map.Map (Data.Map.Map Number Boolean) (Data.Map.Map Number Boolean)) Boolean
+                  , bar :: { baz :: Data.Map.Map String Number }
+                  , qwe :: { rty :: Data.Map.Map
+                                    { asd :: Number }
+                                    { foo :: Number
+                                    , bar :: Data.Map.Map
+                                             (Data.Map.Map
+                                              (Data.Map.Map
+                                               Number
+                                               Boolean)
+                                              (Data.Map.Map
+                                               Number
+                                               Boolean))
+                                             Boolean
+                                    }
+                           , uio :: Data.Map.Map
+                                    (Data.Map.Map
+                                     (Data.Map.Map
+                                      Number
+                                      Boolean)
+                                     (Data.Map.Map
+                                      Number
+                                      Boolean))
+                                    Boolean
                            }
                   }
 
@@ -26,21 +45,13 @@ newtype Foo = Foo ()
 
 newtype Foo = Foo ( | MyExtension )
 
-newtype Foo = Foo ( rowField :: Number
-                  )
+newtype Foo = Foo ( rowField :: Number )
 
-newtype Foo = Foo ( rowField :: Number
-                  | MyExtension
-                  )
+newtype Foo = Foo ( rowField :: Number | MyExtension )
 
-newtype Foo = Foo ( rowField :: Number
-                  , rowField2 :: Number
-                  )
+newtype Foo = Foo ( rowField :: Number, rowField2 :: Number )
 
-newtype Foo = Foo ( rowField :: Number
-                  , rowField2 :: Number
-                  | MyExtension
-                  )
+newtype Foo = Foo ( rowField :: Number, rowField2 :: Number | MyExtension )
 
 newtype Foo = Foo ( rowField :: Number
                   , rowField2 :: Number
@@ -49,11 +60,20 @@ newtype Foo = Foo ( rowField :: Number
 
 newtype Foo = Foo ( rowField :: Number
                   , rowField2 :: Number
-                  | MyExtension + MyOtherExtension { someField :: Number }
+                  | MyExtension + MyOtherExtension
+                                  { someField :: Number }
                   )
 
 newtype Foo = Foo ( rowField :: { foo :: Number
-                                , bar :: Data.Map.Map (Data.Map.Map (Data.Map.Map Number Boolean) (Data.Map.Map Number Boolean)) Boolean
+                                , bar :: Data.Map.Map
+                                         (Data.Map.Map
+                                          (Data.Map.Map
+                                           Number
+                                           Boolean)
+                                          (Data.Map.Map
+                                           Number
+                                           Boolean))
+                                         Boolean
                                 , baz :: Complex A B C D F G H
                                 , qux :: Complex (A B C) D (F G H)
                                 }

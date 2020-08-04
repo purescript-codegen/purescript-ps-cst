@@ -4,4 +4,6 @@ foreign import kind Foo
 
 foreign import data Foo :: # Type -> Type
 
-foreign import main_ :: forall e . Eff ( console :: CONSOLE, foo :: FOO | e ) Unit
+foreign import main_ :: forall e . Eff
+                                   ( console :: CONSOLE, foo :: FOO | e )
+                                   Unit

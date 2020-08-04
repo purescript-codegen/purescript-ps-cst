@@ -89,7 +89,6 @@ printQualifiedName_AnyOpNameType (QualifiedName qualifiedName) = case qualifiedN
   Nothing -> (text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName
   (Just moduleName) -> printModuleName moduleName <> text "." <> parens ((text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName)
 
--- should not call group inside
 printType :: Type -> Doc String
 printType type_ =
   case type_ of
@@ -133,7 +132,7 @@ printConstraint :: Constraint -> Doc String
 printConstraint (Constraint { className, args }) =
   if null args
     then printQualifiedName_AnyProperNameType className
-    else printQualifiedName_AnyProperNameType className <+> (vsep $ map printType args)
+    else printQualifiedName_AnyProperNameType className <+> (align $ group $ concatWith (surround line) $ map printType args)
 
 printRowLikeType :: Doc String -> Doc String -> Row -> Doc String
 printRowLikeType leftWrapper rightWrapper row =

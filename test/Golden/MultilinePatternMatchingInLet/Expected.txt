@@ -6,5 +6,5 @@ myfunc 1 =
     psModuleFile :: ModulePath -> Int
     psModuleFile Path = 1
     psModuleFile Name = 2
-  in
+   in
     psModuleFile 1
