@@ -78,5 +78,21 @@ actualModule = Module
         , instTypes: NonEmpty.singleton $ (TypeConstructor $ nonQualifiedName $ ProperName "Tuple") `TypeApp` (TypeVar $ Ident "a") `TypeApp` (TypeVar $ Ident "b")
         }
       }
+    , DeclDerive
+      { comments: Nothing
+      , deriveType: DeclDeriveType_Odrinary
+      , head:
+        { instName: Ident "foo"
+        , instConstraints:
+          [ Constraint { className: nonQualifiedName (ProperName "Foo"), args: [TypeVar $ Ident "a"] }
+          , Constraint { className: nonQualifiedName (ProperName "Bar"), args: [TypeVar $ Ident "b", TypeVar $ Ident "c"] }
+          , Constraint { className: nonQualifiedName (ProperName "Partial"), args: [] }
+          , Constraint { className: nonQualifiedName (ProperName "Partial1"), args: [] }
+          , Constraint { className: nonQualifiedName (ProperName "Partial2"), args: [] }
+          ]
+        , instClass: nonQualifiedName $ ProperName "Foo"
+        , instTypes: NonEmpty.singleton $ (TypeConstructor $ nonQualifiedName $ ProperName "Tuple") `TypeApp` (TypeVar $ Ident "a") `TypeApp` (TypeVar $ Ident "b")
+        }
+      }
     ]
   }
