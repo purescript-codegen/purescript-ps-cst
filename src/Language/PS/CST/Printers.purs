@@ -16,7 +16,7 @@ import Data.Newtype (unwrap)
 import Debug.Trace (spy)
 import Language.PS.CST.Printers.PrintImports (printImports)
 import Language.PS.CST.Printers.PrintModuleModuleNameAndExports (printModuleModuleNameAndExports)
-import Language.PS.CST.Printers.TypeLevel (PrintType_Style(..), printConstraint, printDataCtor, printDataHead, printFixity, printFundep, printKind, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printTypeVarBinding)
+import Language.PS.CST.Printers.TypeLevel (printConstraint, printDataCtor, printDataHead, printFixity, printFundep, printKind, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printTypeVarBinding)
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
 import Language.PS.CST.Types.Declaration (Binder(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), RecordUpdate(..), Type(..), ValueBindingFields)
 import Language.PS.CST.Types.Leafs (Comments(..), DeclDeriveType(..), RecordLabeled(..))
@@ -34,27 +34,12 @@ printModule (Module { moduleName, imports, exports, declarations }) =
     , printDeclarations declarations
     ] <> hardline
 
-shouldBeNoNewlineBetweenDeclarations :: Declaration -> Declaration -> Boolean
-shouldBeNoNewlineBetweenDeclarations (DeclSignature { ident }) (DeclValue { valueBindingFields: { name } }) = ident == name
-shouldBeNoNewlineBetweenDeclarations (DeclValue { valueBindingFields: { name } }) (DeclValue { valueBindingFields: { name: nameNext } }) = name == nameNext
-shouldBeNoNewlineBetweenDeclarations _ _ = false
-
-shouldBeNoNewlineBetweenLetBindings :: LetBinding -> LetBinding -> Boolean
-shouldBeNoNewlineBetweenLetBindings (LetBindingSignature { ident }) (LetBindingName { name }) = ident == name
-shouldBeNoNewlineBetweenLetBindings (LetBindingName { name }) (LetBindingName { name: nameNext }) = name == nameNext
-shouldBeNoNewlineBetweenLetBindings _ _ = false
-
-shouldBeNoNewlineBetweenInstanceBindings :: InstanceBinding -> InstanceBinding -> Boolean
-shouldBeNoNewlineBetweenInstanceBindings (InstanceBindingSignature { ident }) (InstanceBindingName { name }) = ident == name
-shouldBeNoNewlineBetweenInstanceBindings (InstanceBindingName { name }) (InstanceBindingName { name: nameNext }) = name == nameNext
-shouldBeNoNewlineBetweenInstanceBindings _ _ = false
-
 printDeclarations :: Array (Declaration) -> Doc String
 printDeclarations declarations = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenDeclarations printDeclaration declarations
 
 printComments :: Comments -> Doc String
-printComments (OneLineComments strings) = strings <#> (\x -> text "-- |" <+> text x) # vcat
-printComments (BlockComments strings) = text "{-" <> line <> indent 2 (vcat $ map text strings) <> line <> text "-}"
+printComments (OneLineComments strings) = strings <#> (\x -> text "-- |" <+> text x) # vcatOmittingEmpty
+printComments (BlockComments strings) = text "{-" <> line <> indent 2 (vcatOmittingEmpty $ map text strings) <> line <> text "-}"
 
 printMaybeComments :: Maybe Comments -> Doc String
 printMaybeComments = maybe emptyDoc printComments
@@ -63,9 +48,14 @@ printDeclaration :: Declaration -> Doc String
 printDeclaration (DeclData { comments, head, constructors: [] }) = printMaybeComments comments <> line <> printDataHead (text "data") head
 printDeclaration (DeclData { comments, head, constructors }) =
   let
-    printedCtors = align $ group $ vsep $ Array.zipWith (<+>) ([text "="] <> Array.replicate (Array.length constructors - 1) (text "|")) (map printDataCtor constructors)
+    printedCtorsArray = map (align <<< printDataCtor) constructors
+
+    printedCtors = align $ group $ concatWith (surroundOmittingEmpty line) $ Array.zipWith (<+>) ([text "="] <> Array.replicate (Array.length constructors - 1) (text "|")) printedCtorsArray
   in
-    printMaybeComments comments <> line' <> printDataHead (text "data") head <+> printedCtors
+    vcatOmittingEmpty
+      [ printMaybeComments comments
+      , group $ vcat [ printDataHead (text "data") head, flatAlt (text "  ") (text " ") <> printedCtors ]
+      ]
 printDeclaration (DeclType { comments, head, type_ }) =
   let
     doWrap :: Type -> Boolean
@@ -76,7 +66,7 @@ printDeclaration (DeclType { comments, head, type_ }) =
     doWrap _ = false
 
     printedType :: Doc String
-    printedType = maybeWrapInParentheses (doWrap type_) $ printType PrintType_Multiline $ type_
+    printedType = maybeWrapInParentheses (doWrap type_) $ printType $ type_
   in
     printMaybeComments comments <> printDataHead (text "type") head <+> text "=" <+> printedType
 printDeclaration (DeclNewtype { comments, head, name, type_ }) =
@@ -90,7 +80,7 @@ printDeclaration (DeclNewtype { comments, head, name, type_ }) =
     doWrap _ = false
 
     printedType :: Doc String
-    printedType = maybeWrapInParentheses (doWrap type_) $ printType PrintType_Multiline $ type_
+    printedType = maybeWrapInParentheses (doWrap type_) $ printType $ type_
   in
     printMaybeComments comments <> line <>(printDataHead (text "newtype") head <+> text "=" <+> ((text <<< appendUnderscoreIfReserved <<< unwrap) name <+> printedType))
 printDeclaration (DeclFixity { comments, fixityFields: { keyword, precedence, operator } }) =
@@ -105,7 +95,7 @@ printDeclaration (DeclForeign { comments, foreign_ }) =
   printMaybeComments comments <> line <>
     ( text "foreign" <+> text "import" <+>
         case foreign_ of
-           (ForeignValue { ident, type_ }) -> (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType PrintType_Multiline type_
+           (ForeignValue { ident, type_ }) -> (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_
            (ForeignData { name, kind_ }) -> text "data" <+> (text <<< appendUnderscoreIfReserved <<< unwrap) name <+> text "::" <+> printKind kind_
            (ForeignKind { name }) -> text "kind" <+> (text <<< appendUnderscoreIfReserved <<< unwrap) name
     )
@@ -130,7 +120,7 @@ printDeclaration (DeclDerive { comments, deriveType, head: { instName, instConst
         [constraint] -> space <> printConstraint constraint <+> text "=>"
         constrainsts -> space <> (parens $ punctuateWithComma $ map printConstraint constrainsts) <+> text "=>"
 
-    types' = vsep $ map (\type_ -> maybeWrapInParentheses (doWrap type_) $ printType PrintType_OneLine type_) instTypes
+    types' = vsep $ map (\type_ -> maybeWrapInParentheses (doWrap type_) $ printType type_) instTypes
    in
    printMaybeComments comments <> line <>(text "derive" <> deriveType' <+> text "instance" <+> (text <<< appendUnderscoreIfReserved <<< unwrap) instName <+> text "::" <> constraints' <+> printQualifiedName_AnyProperNameType instClass <+> types')
 printDeclaration (DeclClass { comments, head: { name, vars, super, fundeps }, methods }) =
@@ -159,9 +149,9 @@ printDeclaration (DeclClass { comments, head: { name, vars, super, fundeps }, me
         printMaybeComments comments <> line <>
           ( printedHeader <+> (text "where")
             <> line <>(methods
-                <#> (\({ ident, type_ }) -> (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> (printType PrintType_Multiline type_))
+                <#> (\({ ident, type_ }) -> (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> (printType type_))
                 <#> (twoSpaceIdentation <> _)
-                # vcat
+                # vcatOmittingEmpty
                 )
           )
 printDeclaration (DeclInstanceChain { comments, instances }) =
@@ -182,7 +172,7 @@ printDeclaration (DeclInstanceChain { comments, instances }) =
         tail =
           if null instTypes
             then emptyDoc
-            else space <> (instTypes <#> (\type_ -> maybeWrapInParentheses (doWrap type_) (printType PrintType_OneLine type_)) # vsep)
+            else space <> (instTypes <#> (\type_ -> maybeWrapInParentheses (doWrap type_) (printType type_)) # vsep)
 
         firstRow = head <> tail
        in
@@ -195,12 +185,12 @@ printDeclaration (DeclInstanceChain { comments, instances }) =
             printMaybeComments comments
             <> line <>(firstRow <+> text "where")
             <> line <>(twoSpaceIdentation <> printedBody)
-   in text "else" <> hardline <> vcat (instances <#> printInstance)
-printDeclaration (DeclSignature { comments, ident, type_ }) = printMaybeComments comments <> line <>((text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType PrintType_Multiline type_)
+   in text "else" <> hardline <> vcatOmittingEmptyNonEmpty (instances <#> printInstance)
+printDeclaration (DeclSignature { comments, ident, type_ }) = printMaybeComments comments <> line <>((text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_)
 printDeclaration (DeclValue { comments, valueBindingFields }) = printMaybeComments comments <> line <>(printValueBindingFields valueBindingFields)
 
 printInstanceBinding :: InstanceBinding -> Doc String
-printInstanceBinding (InstanceBindingSignature { ident, type_ }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType PrintType_Multiline type_
+printInstanceBinding (InstanceBindingSignature { ident, type_ }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_
 printInstanceBinding (InstanceBindingName valueBindingFields) = printValueBindingFields valueBindingFields
 
 printValueBindingFields :: ValueBindingFields -> Doc String
@@ -251,7 +241,7 @@ printBinder (BinderNumber (Left int)) = text $ show int
 printBinder (BinderNumber (Right number)) = text $ show number
 printBinder (BinderArray binders) = text "[" <> (punctuateWithComma $ map printBinder binders) <> text "]"
 printBinder (BinderRecord arrayRecordLabeledBinder) = punctuateWithComma $ map (printRecordLabeled printBinder) arrayRecordLabeledBinder
-printBinder (BinderTyped binder type_) = printBinder binder <+> text "::" <+> printType PrintType_OneLine type_
+printBinder (BinderTyped binder type_) = printBinder binder <+> text "::" <+> printType type_
 printBinder (BinderOp binderLeft operator binderRight) = printBinder binderLeft <+> printQualifiedName_AnyOpNameType operator <+> printBinder binderRight
 
 printRecordLabeled :: ∀ a . (a -> Doc String) -> RecordLabeled a -> Doc String
@@ -270,7 +260,7 @@ printExpr (ExprNumber (Left int)) = text $ show int
 printExpr (ExprNumber (Right num)) = text $ show num
 printExpr (ExprArray array) = text "[" <> (punctuateWithComma $ map printExpr array) <> text "]"
 printExpr (ExprRecord arrayRecordLabeled) = text "{" <+> (punctuateWithComma $ map (printRecordLabeled printExpr) arrayRecordLabeled) <+> text "}"
-printExpr (ExprTyped expr type_) = printExpr expr <+> text "::" <+> printType PrintType_OneLine type_
+printExpr (ExprTyped expr type_) = printExpr expr <+> text "::" <+> printType type_
 printExpr (ExprInfix exprLeft operator exprRight) = printExpr exprLeft <+> printExpr operator <+> printExpr exprRight
 printExpr (ExprOp exprLeft operator exprRight) = printExpr exprLeft <+> printQualifiedName_AnyOpNameType operator <+> printExpr exprRight
 printExpr (ExprOpName opName) = printQualifiedName_AnyOpNameType opName
@@ -343,11 +333,11 @@ printExpr (ExprCase { head, branches }) =
         # List.fromFoldable
         <#> printExpr
         # mapWithIndex (\i box -> text ", " <> box)
-        # vcat
+        # vcatOmittingEmpty
       )
       <> line <>text "of"
-      <> line <>(twoSpaceIdentation <> (vcat $ map printBranch branches))
-      else text "case" <+> (concatWithNonEmpty (surround (text ", ")) $ map printExpr head) <+> text "of" <> line <>(twoSpaceIdentation <> (vcat $ map printBranch branches))
+      <> line <>(twoSpaceIdentation <> (vcatOmittingEmptyNonEmpty $ map printBranch branches))
+      else text "case" <+> (concatWithNonEmpty (surround (text ", ")) $ map printExpr head) <+> text "of" <> line <>(twoSpaceIdentation <> (vcatOmittingEmptyNonEmpty $ map printBranch branches))
 printExpr (ExprLet { bindings, body }) =
   let
     printedBindings = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenLetBindings printLetBinding bindings
@@ -365,7 +355,7 @@ printExpr (ExprDo doStatements) = emptyDoc -- TODO
 printExpr (ExprAdo { statements, result }) = emptyDoc -- TODO
 
 printLetBinding :: LetBinding -> Doc String
-printLetBinding (LetBindingSignature { ident, type_ }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType PrintType_Multiline type_
+printLetBinding (LetBindingSignature { ident, type_ }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_
 printLetBinding (LetBindingName valueBindingFields) = printValueBindingFields valueBindingFields
 printLetBinding (LetBindingPattern { binder, where_: { expr, whereBindings } }) = printBinder binder <> hardline <> printExpr expr <> line <>text "where" <> line <>(vsep $ map printLetBinding whereBindings)
 
