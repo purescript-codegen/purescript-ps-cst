@@ -244,118 +244,100 @@ printRecordLabeled _ (RecordPun ident) = (text <<< quoteIfReserved <<< unwrap) i
 printRecordLabeled print (RecordField label a) = (text <<< quoteIfReserved <<< unwrap) label <> text ":" <+> print a
 
 printExpr :: Expr -> Doc String
-printExpr (ExprHole hole) = text "?" <> (text <<< appendUnderscoreIfReserved <<< unwrap) hole
-printExpr ExprSection = text "_"
-printExpr (ExprIdent qualifiedIdent) = printQualifiedName_Ident qualifiedIdent
-printExpr (ExprConstructor qualifiedPropName) = printQualifiedName_AnyProperNameType qualifiedPropName
-printExpr (ExprBoolean boolean) = text $ show boolean
-printExpr (ExprChar char) = text $ show char
-printExpr (ExprString string) = text $ show string
-printExpr (ExprNumber (Left int)) = text $ show int
-printExpr (ExprNumber (Right num)) = text $ show num
-printExpr (ExprArray array) = align $ group $ encloseSep (text "[") (text "]") (text ", ") (map printExpr array)
-printExpr (ExprRecord arrayRecordLabeled) = text "{" <+> (concatWith (surroundOmittingEmpty (text ", ")) $ map (printRecordLabeled printExpr) arrayRecordLabeled) <+> text "}"
-printExpr (ExprTyped expr type_) = printExpr expr <+> text "::" <+> printType type_
-printExpr (ExprInfix exprLeft operator exprRight) = printExpr exprLeft <+> printExpr operator <+> printExpr exprRight
-printExpr (ExprOp exprLeft operator exprRight) = printExpr exprLeft <+> printQualifiedName_AnyOpNameType operator <+> printExpr exprRight
-printExpr (ExprOpName opName) = printQualifiedName_AnyOpNameType opName
-printExpr (ExprNegate expr) = text "-" <> printExpr expr
-printExpr (ExprRecordAccessor { recExpr, recPath }) = printExpr recExpr <> text "." <> (concatWithNonEmpty (surround dot) $ map (text <<< appendUnderscoreIfReserved <<< unwrap) recPath)
-printExpr (ExprRecordUpdate expr recordUpdates) = parens $ printExpr expr <+> printRecordUpdates recordUpdates
-printExpr (ExprApp exprLeft exprRight) =
+printExpr =
   let
-    doWrapRight =
-      case exprRight of
-        (ExprApp _ _) -> true -- always wrap right side application
-        (ExprInfix _ _ _) -> true
-        (ExprOp _ _ _) -> true
-        _ -> false
+    processTopLevel printExprImplementation' expr =
+        case expr of
+             (ExprApp _ _) -> align $ group $ printExprImplementation' expr
+             (ExprArray _) -> group $ printExprImplementation' expr
+             (ExprRecord _) -> group $ printExprImplementation' expr
+             _ -> printExprImplementation' expr
 
-    printedLeft :: Doc String
-    printedLeft = printExpr exprLeft
-
-    printedRight :: Doc String
-    printedRight = printExpr exprRight
-
-    printed :: Doc String
-    printed = printedLeft <+> maybeWrapInParentheses doWrapRight printedRight
-  in
-    printed
-printExpr (ExprLambda { binders, body }) = (parens $ vsep $ map printBinder binders) <+> text "=" <+> printExpr body
-printExpr (ExprIf { cond, true_, false_ }) =
-  let
-    printedCond =
-      if exprShouldBeOnNextLine cond
-        then text "if" <> hardline <> (indent 2 $ printExpr cond)
-        else text "if" <+> printExpr cond
-
-    printedTrue =
-      if exprShouldBeOnNextLine true_
-        then indent 2 $ (text "then" <> hardline <> (indent 2 $ printExpr true_))
-        else indent 2 $ text "then" <+> printExpr true_
-
-    printedFalse =
-      if exprShouldBeOnNextLine false_
-        then indent 2 $ (text "else" <> hardline <>(indent 2 $ printExpr false_))
-        else indent 2 $ text "else" <+> printExpr false_
-   in
-    printedCond
-    <> line <>printedTrue
-    <> line <>printedFalse
-printExpr (ExprCase { head, branches }) =
-  let
-    printBranch :: { binders :: NonEmptyArray Binder, body :: Guarded } -> Doc String
-    printBranch { binders, body } =
+    printExprImplementation (ExprHole hole) = text "?" <> (text <<< appendUnderscoreIfReserved <<< unwrap) hole
+    printExprImplementation ExprSection = text "_"
+    printExprImplementation (ExprIdent qualifiedIdent) = printQualifiedName_Ident qualifiedIdent
+    printExprImplementation (ExprConstructor qualifiedPropName) = printQualifiedName_AnyProperNameType qualifiedPropName
+    printExprImplementation (ExprBoolean boolean) = text $ show boolean
+    printExprImplementation (ExprChar char) = text $ show char
+    printExprImplementation (ExprString string) = text $ show string
+    printExprImplementation (ExprNumber (Left int)) = text $ show int
+    printExprImplementation (ExprNumber (Right num)) = text $ show num
+    printExprImplementation (ExprArray array) = align $ encloseSep (text "[") (text "]") (text ", ") (map (processTopLevel printExprImplementation) array)
+    printExprImplementation (ExprRecord arrayRecordLabeled) = text "{" <+> (concatWith (surroundOmittingEmpty (text ", ")) $ map (printRecordLabeled printExprImplementation) arrayRecordLabeled) <+> text "}"
+    printExprImplementation (ExprTyped expr type_) = printExprImplementation expr <+> text "::" <+> printType type_
+    printExprImplementation (ExprInfix exprLeft operator exprRight) = printExprImplementation exprLeft <+> printExprImplementation operator <+> printExprImplementation exprRight
+    printExprImplementation (ExprOp exprLeft operator exprRight) = printExprImplementation exprLeft <+> printQualifiedName_AnyOpNameType operator <+> printExprImplementation exprRight
+    printExprImplementation (ExprOpName opName) = printQualifiedName_AnyOpNameType opName
+    printExprImplementation (ExprNegate expr) = text "-" <> printExprImplementation expr
+    printExprImplementation (ExprRecordAccessor { recExpr, recPath }) = printExprImplementation recExpr <> text "." <> (concatWithNonEmpty (surround dot) $ map (text <<< appendUnderscoreIfReserved <<< unwrap) recPath)
+    printExprImplementation (ExprRecordUpdate expr recordUpdates) = parens $ printExprImplementation expr <+> printRecordUpdates recordUpdates
+    printExprImplementation (ExprApp exprLeft exprRight) =
       let
-        printedHead = (concatWithNonEmpty (surround (text ", ")) $ map printBinder binders) <+> text "->"
-       in printGuarded printedHead body
-
-    headShouldBeMultiline =
-      head `flip any` (
-        case _ of
-          ExprIf _ -> true
-          ExprCase _ -> true
-          ExprLet _ -> true
-          ExprDo _ -> true
-          ExprAdo _ -> true
-          _ -> false
-       )
-
-    headDocs :: Array (Doc String)
-    headDocs = NonEmptyArray.toArray $ map printExpr head
-  in
-    if headShouldBeMultiline
-      then concatWith (surroundOmittingEmpty line)
-        [ text "case"
-        , concatWith (surroundOmittingEmpty line') $
-          Array.zipWith
-          (<>)
-          ([text "  "] <> Array.replicate (Array.length headDocs - 1) (text ", "))
-          (map align headDocs)
-        , text "of"
-        , indent 2 $ vcatOmittingEmptyNonEmpty $ map printBranch branches
-        ]
-      else
-        text "case" <+> (concatWith (surround (text ", ")) headDocs) <+> text "of"
-        <> hardline <>
-        (indent 2 $ vcatOmittingEmptyNonEmpty $ map printBranch branches)
-printExpr (ExprLet { bindings, body }) =
-  let
-    printedBindings = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenLetBindings printLetBinding bindings
-
-    printedBody = printExpr body
-
-    printed =
-      align $ concatWith (surroundOmittingEmpty hardline)
-      [ text "let"
-      , indent 2 printedBindings
-      , text " in"
-      , indent 2 printedBody
+        doWrapRight =
+          case exprRight of
+            (ExprApp _ _) -> true -- always wrap right side application
+            (ExprInfix _ _ _) -> true
+            (ExprOp _ _ _) -> true
+            _ -> false
+      in concatWith (surround line) $ [ printExprImplementation exprLeft, maybeWrapInParentheses doWrapRight (printExprImplementation exprRight) ]
+    printExprImplementation (ExprLambda { binders, body }) = (parens $ vsep $ map printBinder binders) <+> text "=" <+> printExprImplementation body
+    printExprImplementation (ExprIf { cond, true_, false_ }) = concatWith (surround line)
+      [ if exprShouldBeOnNextLine cond
+          then text "if" <> hardline <> (indent 2 $ printExprImplementation cond)
+          else text "if" <+> printExprImplementation cond
+      , if exprShouldBeOnNextLine true_
+          then indent 2 $ text "then" <> hardline <> (indent 2 $ printExprImplementation true_)
+          else indent 2 $ text "then" <+> printExprImplementation true_
+      , if exprShouldBeOnNextLine false_
+          then indent 2 $ text "else" <> hardline <> (indent 2 $ printExprImplementation false_)
+          else indent 2 $ text "else" <+> printExprImplementation false_
       ]
-   in
-    printed
-printExpr (ExprDo doStatements) = emptyDoc -- TODO
-printExpr (ExprAdo { statements, result }) = emptyDoc -- TODO
+    printExprImplementation (ExprCase { head, branches }) =
+      let
+        headShouldBeMultiline =
+          head `flip any` (
+            case _ of
+              ExprIf _ -> true
+              ExprCase _ -> true
+              ExprLet _ -> true
+              ExprDo _ -> true
+              ExprAdo _ -> true
+              _ -> false
+          )
+
+        headDocs :: Array (Doc String)
+        headDocs = NonEmptyArray.toArray $ map printExprImplementation head
+      in
+        if headShouldBeMultiline
+          then concatWith (surroundOmittingEmpty line)
+            [ text "case"
+            , concatWith (surroundOmittingEmpty line') $
+              Array.zipWith
+              (<>)
+              ([text "  "] <> Array.replicate (Array.length headDocs - 1) (text ", "))
+              (map align headDocs)
+            , text "of"
+            , indent 2 $ vcatOmittingEmptyNonEmpty $ map printBranch branches
+            ]
+          else
+            text "case" <+> (concatWith (surround (text ", ")) headDocs) <+> text "of"
+            <> hardline <>
+            (indent 2 $ vcatOmittingEmptyNonEmpty $ map printBranch branches)
+    printExprImplementation (ExprLet { bindings, body }) = align $ concatWith (surroundOmittingEmpty hardline)
+      [ text "let"
+      , indent 2 (printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenLetBindings printLetBinding bindings)
+      , text " in"
+      , indent 2 (processTopLevel printExprImplementation body)
+      ]
+    printExprImplementation (ExprDo doStatements) = emptyDoc -- TODO
+    printExprImplementation (ExprAdo { statements, result }) = emptyDoc -- TODO
+  in processTopLevel printExprImplementation
+
+printBranch :: { binders :: NonEmptyArray Binder, body :: Guarded } -> Doc String
+printBranch { binders, body } =
+  let
+    printedHead = (concatWithNonEmpty (surround (text ", ")) $ map printBinder binders) <+> text "->"
+   in printGuarded printedHead body
 
 printLetBinding :: LetBinding -> Doc String
 printLetBinding (LetBindingSignature { ident, type_ }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_

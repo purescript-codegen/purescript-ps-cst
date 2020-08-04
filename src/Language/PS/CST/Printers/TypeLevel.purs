@@ -90,13 +90,12 @@ printQualifiedName_AnyOpNameType (QualifiedName qualifiedName) = case qualifiedN
   (Just moduleName) -> printModuleName moduleName <> text "." <> parens ((text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName)
 
 printType :: Type -> Doc String
-printType type_ =
-  case type_ of
-       (TypeApp _ _) -> group $ printTypeImplementation type_
-       (TypeForall _ _) -> group $ printTypeImplementation type_
-       (TypeConstrained _ _) -> group $ printTypeImplementation type_
-       (TypeArr _ _) -> group $ printTypeImplementation type_
-       _ -> printTypeImplementation type_
+printType = \type_ -> case type_ of
+                           (TypeApp _ _) -> group $ printTypeImplementation type_
+                           (TypeForall _ _) -> group $ printTypeImplementation type_
+                           (TypeConstrained _ _) -> group $ printTypeImplementation type_
+                           (TypeArr _ _) -> group $ printTypeImplementation type_
+                           _ -> printTypeImplementation type_
   where
     printTypeImplementation (TypeVar ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
     printTypeImplementation (TypeConstructor qualifiedTypeName) = printQualifiedName_AnyProperNameType qualifiedTypeName
