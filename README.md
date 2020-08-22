@@ -7,7 +7,7 @@
 
 ### TODO:
 
-- [ ] use https://pursuit.purescript.org/packages/purescript-optparse/3.0.0/docs/Text.PrettyPrint.Leijen instead of Boxes to allow for example:
+- [x] use https://pursuit.purescript.org/packages/purescript-optparse/3.0.0/docs/Text.PrettyPrint.Leijen instead of Boxes to allow for example:
 
    - configuring width of printed document
    - conditionally print `Type`'s in one line or in multiple lines based on expected line width (and not based on context as it is now)
