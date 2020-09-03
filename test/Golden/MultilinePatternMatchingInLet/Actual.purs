@@ -1,6 +1,6 @@
 module Test.Golden.MultilinePatternMatchingInLet.Actual where
 
-import Language.PS.CST
+import Language.PS.CST (Binder(..), Declaration(..), Expr(..), Guarded(..), Ident(..), LetBinding(..), Module(..), ProperName(..), Type(..), mkModuleName, nonQualifiedName, (====>>))
 
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))

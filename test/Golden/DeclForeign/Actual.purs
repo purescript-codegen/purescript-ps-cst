@@ -1,6 +1,6 @@
 module Test.Golden.DeclForeign.Actual where
 
-import Language.PS.CST
+import Language.PS.CST (Declaration(..), Foreign(..), Ident(..), Kind(..), Module(..), ProperName(..), Type(..), TypeVarBinding(..), mkModuleName, mkRowLabels, nonQualifiedName, (====>>>))
 import Prelude
 
 import Data.Maybe (Maybe(..))

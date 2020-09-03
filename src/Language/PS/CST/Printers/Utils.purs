@@ -1,11 +1,10 @@
 module Language.PS.CST.Printers.Utils where
 
-import Data.Container.Class
-import Language.PS.CST.Types.Declaration
-import Language.PS.CST.Types.Leafs
+import Language.PS.CST.Types.Declaration (Declaration(..), Expr(..), InstanceBinding(..), LetBinding(..))
+import Language.PS.CST.Types.Leafs (ModuleName(..), ProperName, ProperNameType_ConstructorName)
 import Prelude
-import Text.Pretty
-import Text.Pretty.Symbols.String
+import PrettyprinterRenderable (Doc, concatWith, concatWithNonEmpty, emptyDoc, hardline, line', surroundOmittingEmpty, text)
+import PrettyprinterRenderable.Symbols.String (dot, parens)
 
 import Data.Foldable (class Foldable)
 import Data.List (List(..), (:))

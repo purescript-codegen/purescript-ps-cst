@@ -1,6 +1,6 @@
 module Test.Golden.InstanceChain.Actual where
 
-import Language.PS.CST
+import Language.PS.CST (Declaration(..), Expr(..), Guarded(..), Ident(..), InstanceBinding(..), Module(..), ProperName(..), Type(..), mkModuleName, nonQualifiedName, numberType)
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty

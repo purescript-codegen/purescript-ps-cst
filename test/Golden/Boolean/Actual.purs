@@ -1,6 +1,6 @@
 module Test.Golden.Boolean.Actual where
 
-import Language.PS.CST
+import Language.PS.CST (Binder(..), Declaration(..), Expr(..), Guarded(..), Ident(..), Module(..), booleanType, mkModuleName, (====>>))
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty

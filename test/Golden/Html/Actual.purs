@@ -1,13 +1,12 @@
 module Test.Golden.Html.Actual where
 
-import Language.PS.CST
+import Language.PS.CST (Declaration(..), Expr(..), Guarded(..), Ident(..), Module(..), ProperName(..), Type(..), mkModuleName, nonQualifiedName)
 import Prelude
 
 import Data.Array.NonEmpty as NonEmpty
-import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Tuple.Nested (type (/\), (/\))
 
+declValue :: String -> Type -> Expr -> Array Declaration
 declValue name type_ expr =
   [ DeclSignature
     { comments: Nothing
@@ -27,6 +26,7 @@ declValue name type_ expr =
     }
   ]
 
+exprIdent :: String -> Expr
 exprIdent n = ExprIdent (nonQualifiedName (Ident n))
 
 actualModule :: Module

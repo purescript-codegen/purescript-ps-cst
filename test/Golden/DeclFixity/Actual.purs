@@ -1,6 +1,6 @@
 module Test.Golden.DeclFixity.Actual where
 
-import Language.PS.CST
+import Language.PS.CST (Declaration(..), Fixity(..), FixityOp(..), Ident(..), Module(..), OpName(..), ProperName(..), mkModuleName, nonQualifiedName)
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty

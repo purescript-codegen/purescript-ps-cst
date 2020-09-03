@@ -1,6 +1,6 @@
 module Test.Golden.DeclClass.Actual where
 
-import Language.PS.CST
+import Language.PS.CST (ClassFundep(..), Comments(..), Constraint(..), Declaration(..), Ident(..), Module(..), ProperName(..), Type(..), TypeVarBinding(..), mkModuleName, nonQualifiedName, (====>>))
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty

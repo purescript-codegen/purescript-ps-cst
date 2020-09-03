@@ -1,6 +1,6 @@
 module Test.Golden.Exports.Actual where
 
-import Language.PS.CST
+import Language.PS.CST (DataMembers(..), Export(..), Ident(..), Module(..), OpName(..), ProperName(..), mkModuleName)
 
 import Prelude
 import Data.Maybe (Maybe(..))

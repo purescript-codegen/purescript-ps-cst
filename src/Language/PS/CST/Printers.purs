@@ -1,21 +1,17 @@
 module Language.PS.CST.Printers where
 
-import Language.PS.CST.Printers.Utils
+import Language.PS.CST.Printers.Utils (exprShouldBeOnNextLine, maybeWrapInParentheses, printAndConditionallyAddNewlinesBetween, shouldBeNoNewlineBetweenDeclarations, shouldBeNoNewlineBetweenInstanceBindings, shouldBeNoNewlineBetweenLetBindings)
 import Prelude
-import Text.Pretty
-import Text.Pretty.Symbols.String hiding (space)
+import PrettyprinterRenderable (Doc, align, concatWith, concatWithNonEmpty, emptyDoc, flatAlt, group, hardline, indent, line, line', space, surround, surroundOmittingEmpty, text, vcat, vcatOmittingEmpty, vcatOmittingEmptyNonEmpty, vsep, (<+>))
+import PrettyprinterRenderable.Symbols.String (dot, parens)
 
 import Data.Array as Array
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Either (Either(..))
-import Data.Foldable (any, intercalate, null)
-import Data.FunctorWithIndex (mapWithIndex)
-import Data.List (fromFoldable) as List
+import Data.Foldable (any, null)
 import Data.Maybe (Maybe, maybe)
 import Data.Newtype (unwrap)
-import Data.NonEmpty (NonEmpty(..))
-import Debug.Trace (spy)
 import Language.PS.CST.Printers.PrintImports (printImports)
 import Language.PS.CST.Printers.PrintModuleModuleNameAndExports (printModuleModuleNameAndExports)
 import Language.PS.CST.Printers.TypeLevel (printConstraint, printDataCtor, printDataHead, printFixity, printFundep, printKind, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printTypeVarBinding)
@@ -23,8 +19,8 @@ import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserve
 import Language.PS.CST.Types.Declaration (Binder(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), RecordUpdate(..), Type(..), ValueBindingFields)
 import Language.PS.CST.Types.Leafs (Comments(..), DeclDeriveType(..), RecordLabeled(..))
 import Language.PS.CST.Types.Module (Module(..))
-import Text.Pretty as Pretty
-import Text.Pretty.Code.Purescript (encloseSep)
+import PrettyprinterRenderable as Pretty
+import PrettyprinterRenderable.Code.Purescript (encloseSep)
 
 printModuleToString :: Int -> Module -> String
 printModuleToString width = Pretty.render width <<< printModule

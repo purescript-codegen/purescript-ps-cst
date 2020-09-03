@@ -1,22 +1,18 @@
 module Language.PS.CST.Printers.TypeLevel where
 
-import Data.Container.Class
-import Language.PS.CST.Printers.Utils
+import Language.PS.CST.Printers.Utils (maybeWrapInParentheses, printModuleName)
 import Prelude
-import Text.Pretty hiding (space)
-import Text.Pretty.Symbols.String
+import PrettyprinterRenderable (Doc(..), align, concatWith, concatWithNonEmpty, emptyDoc, group, line, line', surround, surroundOmittingEmpty, text, vsep, (<+>))
+import PrettyprinterRenderable.Symbols.String (dquotes, parens, space)
 
 import Data.Array as Array
 import Data.Foldable (null)
-import Data.FunctorWithIndex (mapWithIndex)
-import Data.Identity (Identity(..))
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
 import Language.PS.CST.Types.Declaration (Constraint(..), DataCtor(..), DataHead(..), Kind(..), Row, Type(..), TypeVarBinding(..))
 import Language.PS.CST.Types.Leafs (ClassFundep(..), Fixity(..), Ident, Label, OpName, ProperName)
 import Language.PS.CST.Types.QualifiedName (QualifiedName(..))
-import Text.Pretty (concatWith)
 
 printFundep :: ClassFundep -> Doc String
 printFundep (FundepDetermines lefts rights) = (vsep $ map (text <<< appendUnderscoreIfReserved <<< unwrap) lefts) <+> text "->" <+> (vsep $ map (text <<< appendUnderscoreIfReserved <<< unwrap) rights)

@@ -10,8 +10,7 @@
     , "node-path"
     , "node-fs-aff"
     , "ansi"
-    , "prettyprinter"
-    , "debug"
+    , "prettyprinter-renderable"
     ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

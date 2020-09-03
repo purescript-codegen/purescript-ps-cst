@@ -3,15 +3,10 @@ module Test.Main where
 import Prelude
 
 import Control.Parallel (parTraverse)
-import Data.String.Regex as String
-import Data.String.Regex.Flags as String
-import Data.String.Regex.Unsafe as String
 import Data.Traversable (traverse_)
-import Debug.Trace (traceM)
 import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
 import Effect.Class (liftEffect)
-import Effect.Console (log)
 import Language.PS.CST (Module)
 import Language.PS.CST.Printers as Language.PS.CST.Printers
 import Node.Encoding (Encoding(..))
@@ -43,7 +38,6 @@ import Test.Golden.MultilinePatternMatchingInWhere.Actual as Test.Golden.Multili
 import Test.Golden.MultilinePatternMatchingInWhere2.Actual as Test.Golden.MultilinePatternMatchingInWhere2.Actual
 import Test.Golden.MultilinePatternMatchingInWhereAndLet2.Actual as Test.Golden.MultilinePatternMatchingInWhereAndLet2.Actual
 import Test.Spec as Test.Spec
-import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.Reporter as Test.Spec.Reporter
 import Test.Spec.Runner as Test.Spec.Runner
 

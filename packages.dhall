@@ -4,14 +4,14 @@ let upstream =
 let overrides = {=}
 
 let additions =
-      { prettyprinter =
+      { prettyprinter-renderable =
         { dependencies =
           [ "prelude"
           , "unfoldable"
           , "console"
           , "stringutils"
           ]
-        , repo = "https://github.com/srghma/purescript-prettyprinter.git"
+        , repo = "https://github.com/purescript-codegen/purescript-prettyprinter-renderable.git"
         , version = "master"
         }
       }

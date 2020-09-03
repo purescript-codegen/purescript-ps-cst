@@ -1,6 +1,6 @@
 module Test.Golden.Instance.Actual where
 
-import Language.PS.CST
+import Language.PS.CST (Declaration(..), Expr(..), Guarded(..), Ident(..), InstanceBinding(..), Module(..), ProperName(..), Type(..), mkModuleName, nonQualifiedName, numberType)
 
 import Prelude
 import Data.Maybe (Maybe(..))

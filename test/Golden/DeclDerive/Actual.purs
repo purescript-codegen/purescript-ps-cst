@@ -1,6 +1,6 @@
 module Test.Golden.DeclDerive.Actual where
 
-import Language.PS.CST
+import Language.PS.CST (Constraint(..), DeclDeriveType(..), Declaration(..), Ident(..), Module(..), ProperName(..), Type(..), mkModuleName, mkRowLabels, nonQualifiedName, numberType)
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty

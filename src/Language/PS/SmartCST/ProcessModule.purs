@@ -8,7 +8,7 @@ import Prelude
 import Data.Array as Array
 import Language.PS.SmartCST.Types.Declaration as SmartCST.Declaration
 import Language.PS.SmartCST.ProcessSmartDeclaration as Language.PS.SmartCST.ProcessSmartDeclaration
-import Text.Pretty as Text.Pretty
+import PrettyprinterRenderable as PrettyprinterRenderable
 import Language.PS.CST.Printers as Language.PS.CST.Printers
 import Language.PS.CST.Types.Module as Language.PS.CST.Types.Module
 
@@ -33,4 +33,4 @@ moduleToCstModule (Module module_) =
     }
 
 printModuleToString :: Int -> Module -> String
-printModuleToString width = Text.Pretty.render width <<< Language.PS.CST.Printers.printModule <<< moduleToCstModule
+printModuleToString width = PrettyprinterRenderable.render width <<< Language.PS.CST.Printers.printModule <<< moduleToCstModule

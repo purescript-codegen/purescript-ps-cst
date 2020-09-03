@@ -2,7 +2,7 @@ module Test.Golden.Imports.Actual where
 
 import Prelude
 import Data.Maybe (Maybe(..))
-import Language.PS.CST
+import Language.PS.CST (DataMembers(..), Ident(..), Import(..), ImportDecl(..), Module(..), OpName(..), ProperName(..), mkModuleName)
 
 import Data.Array.NonEmpty as NonEmpty
 

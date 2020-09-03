@@ -1,6 +1,6 @@
 module Language.PS.CST.Sugar.Leafs where
 
-import Language.PS.CST.Types.Leafs
+import Language.PS.CST.Types.Leafs (Label(..), ModuleName(..), ProperName(..))
 import Prelude
 
 import Data.Maybe (Maybe(..))

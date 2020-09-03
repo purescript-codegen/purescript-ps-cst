@@ -2,21 +2,16 @@ module Language.PS.CST.Printers.PrintImports where
 
 import Prelude
 
-import Language.PS.CST.Printers.Utils
+import Language.PS.CST.Printers.Utils (printConstructors, printModuleName)
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
 
 import Language.PS.CST.Types.Module (DataMembers(..), Import(..), ImportDecl(..))
 
-import Data.Array as Array
-import Data.Foldable (length, null)
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
-import Data.Unfoldable (replicate)
-import Text.Pretty
-import Text.Pretty as Pretty
-import Text.Pretty.Symbols.String hiding (space)
-import Text.Pretty.Code.Purescript (tupled, encloseSep)
-import Data.Container.Class
+import PrettyprinterRenderable (Doc, align, emptyDoc, flatAlt, group, nest, text, vcatOmittingEmpty, vsep, (<+>))
+import PrettyprinterRenderable.Symbols.String (parens)
+import PrettyprinterRenderable.Code.Purescript (encloseSep)
 
 printImports :: Array ImportDecl -> Doc String
 printImports imports = vsep $ map printImport imports

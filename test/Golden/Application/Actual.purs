@@ -1,6 +1,6 @@
 module Test.Golden.Application.Actual where
 
-import Language.PS.CST
+import Language.PS.CST (Declaration(..), Expr(..), Guarded(..), Ident(..), Module(..), mkModuleName, nonQualifiedName)
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty

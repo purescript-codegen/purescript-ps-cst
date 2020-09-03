@@ -5,16 +5,13 @@ import Prelude
 import Language.PS.CST.Types.Module (DataMembers(..), Export(..))
 import Language.PS.CST.Types.Leafs (ModuleName)
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
-import Language.PS.CST.Printers.Utils
+import Language.PS.CST.Printers.Utils (printConstructors, printModuleName)
 
 import Data.Newtype (unwrap)
-import Data.Foldable (length)
 import Data.Maybe (Maybe(..))
-import Data.Unfoldable (replicate)
-import Text.Pretty
-import Text.Pretty.Code.Purescript (encloseSep)
-import Text.Pretty.Symbols.String
-import Data.Container.Class
+import PrettyprinterRenderable (Doc, emptyDoc, flatAlt, line', nest, text, (<+>))
+import PrettyprinterRenderable.Code.Purescript (encloseSep)
+import PrettyprinterRenderable.Symbols.String (parens)
 
 printModuleModuleNameAndExports :: ModuleName -> Array Export -> Doc String
 printModuleModuleNameAndExports moduleName [] = text "module" <+> printModuleName moduleName <+> text "where"
