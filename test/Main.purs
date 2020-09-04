@@ -61,26 +61,26 @@ goldenTests =
   , { name: "Exports", actualModule: Test.Golden.Exports.Actual.actualModule }
   , { name: "DeclData", actualModule: Test.Golden.DeclData.Actual.actualModule }
   , { name: "DeclDataComplex", actualModule: Test.Golden.DeclDataComplex.Actual.actualModule }
-  -- | , { name: "DeclType", actualModule: Test.Golden.DeclType.Actual.actualModule }
-  -- | , { name: "DeclNewtype", actualModule: Test.Golden.DeclNewtype.Actual.actualModule }
-  -- | , { name: "DeclFixity", actualModule: Test.Golden.DeclFixity.Actual.actualModule }
-  -- | , { name: "DeclForeign", actualModule: Test.Golden.DeclForeign.Actual.actualModule }
-  -- | , { name: "DeclDerive", actualModule: Test.Golden.DeclDerive.Actual.actualModule }
-  -- | , { name: "DeclClass", actualModule: Test.Golden.DeclClass.Actual.actualModule }
-  -- | , { name: "Boolean", actualModule: Test.Golden.Boolean.Actual.actualModule }
-  -- | , { name: "Application", actualModule: Test.Golden.Application.Actual.actualModule }
-  -- | , { name: "MultilinePatternMatchingInLet", actualModule: Test.Golden.MultilinePatternMatchingInLet.Actual.actualModule }
-  -- | , { name: "MultilinePatternMatchingInLet2", actualModule: Test.Golden.MultilinePatternMatchingInLet2.Actual.actualModule }
-  -- | , { name: "MultilinePatternMatchingInWhere", actualModule: Test.Golden.MultilinePatternMatchingInWhere.Actual.actualModule }
-  -- | , { name: "MultilinePatternMatchingInWhere2", actualModule: Test.Golden.MultilinePatternMatchingInWhere2.Actual.actualModule }
-  -- | , { name: "MultilinePatternMatchingInWhereAndLet2", actualModule: Test.Golden.MultilinePatternMatchingInWhereAndLet2.Actual.actualModule }
-  -- | , { name: "Case", actualModule: Test.Golden.Case.Actual.actualModule }
-  -- | , { name: "If", actualModule: Test.Golden.If.Actual.actualModule }
-  -- | , { name: "Instance", actualModule: Test.Golden.Instance.Actual.actualModule }
-  -- | , { name: "InstanceChain", actualModule: Test.Golden.InstanceChain.Actual.actualModule }
-  -- | , { name: "ExprRecord", actualModule: Test.Golden.ExprRecord.Actual.actualModule }
-  -- | , { name: "ExprArray", actualModule: Test.Golden.ExprArray.Actual.actualModule }
-  -- | , { name: "Html", actualModule: Test.Golden.Html.Actual.actualModule }
+  , { name: "DeclType", actualModule: Test.Golden.DeclType.Actual.actualModule }
+  , { name: "DeclNewtype", actualModule: Test.Golden.DeclNewtype.Actual.actualModule }
+  , { name: "DeclFixity", actualModule: Test.Golden.DeclFixity.Actual.actualModule }
+  , { name: "DeclForeign", actualModule: Test.Golden.DeclForeign.Actual.actualModule }
+  , { name: "DeclDerive", actualModule: Test.Golden.DeclDerive.Actual.actualModule }
+  , { name: "DeclClass", actualModule: Test.Golden.DeclClass.Actual.actualModule }
+  , { name: "Boolean", actualModule: Test.Golden.Boolean.Actual.actualModule }
+  , { name: "Application", actualModule: Test.Golden.Application.Actual.actualModule }
+  , { name: "MultilinePatternMatchingInLet", actualModule: Test.Golden.MultilinePatternMatchingInLet.Actual.actualModule }
+  , { name: "MultilinePatternMatchingInLet2", actualModule: Test.Golden.MultilinePatternMatchingInLet2.Actual.actualModule }
+  , { name: "MultilinePatternMatchingInWhere", actualModule: Test.Golden.MultilinePatternMatchingInWhere.Actual.actualModule }
+  , { name: "MultilinePatternMatchingInWhere2", actualModule: Test.Golden.MultilinePatternMatchingInWhere2.Actual.actualModule }
+  , { name: "MultilinePatternMatchingInWhereAndLet2", actualModule: Test.Golden.MultilinePatternMatchingInWhereAndLet2.Actual.actualModule }
+  , { name: "Case", actualModule: Test.Golden.Case.Actual.actualModule }
+  , { name: "If", actualModule: Test.Golden.If.Actual.actualModule }
+  , { name: "Instance", actualModule: Test.Golden.Instance.Actual.actualModule }
+  , { name: "InstanceChain", actualModule: Test.Golden.InstanceChain.Actual.actualModule }
+  , { name: "ExprRecord", actualModule: Test.Golden.ExprRecord.Actual.actualModule }
+  , { name: "ExprArray", actualModule: Test.Golden.ExprArray.Actual.actualModule }
+  , { name: "Html", actualModule: Test.Golden.Html.Actual.actualModule }
   ]
 
 addText :: GoldenTest -> Aff GoldenTestWithExpected
