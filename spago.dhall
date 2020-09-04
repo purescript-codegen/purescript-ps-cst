@@ -10,7 +10,9 @@
     , "node-path"
     , "node-fs-aff"
     , "ansi"
-    , "prettyprinter-renderable"
+    , "dodo-printer"
+    , "debug"
+    , "protolude"
     ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

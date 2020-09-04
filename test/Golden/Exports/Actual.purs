@@ -12,6 +12,7 @@ actualModule = Module
   , imports: []
   , exports:
       [ ExportModule (mkModuleName $ NonEmpty.cons' "A" [])
+      , ExportModule (mkModuleName $ NonEmpty.cons' "LongLongLongName" [])
       , ExportModule (mkModuleName $ NonEmpty.cons' "A" ["B"])
       , ExportClass (ProperName "A")
       , ExportKind (ProperName "A")

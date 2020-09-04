@@ -3,8 +3,8 @@ module Language.PS.CST.Printers.Utils where
 import Language.PS.CST.Types.Declaration (Declaration(..), Expr(..), InstanceBinding(..), LetBinding(..))
 import Language.PS.CST.Types.Leafs (ModuleName(..), ProperName, ProperNameType_ConstructorName)
 import Prelude
-import PrettyprinterRenderable (Doc, concatWith, concatWithNonEmpty, emptyDoc, hardline, line', surroundOmittingEmpty, text)
-import PrettyprinterRenderable.Symbols.String (dot, parens)
+import Dodo
+import Dodo.Symbols.Ascii
 
 import Data.Foldable (class Foldable)
 import Data.List (List(..), (:))
@@ -12,11 +12,11 @@ import Data.List (fromFoldable) as List
 import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
 
-printModuleName :: ModuleName -> Doc String
-printModuleName (ModuleName nonEmptyArray) = concatWithNonEmpty (surroundOmittingEmpty dot) $ map (unwrap >>> text) nonEmptyArray
+printModuleName :: ModuleName -> Doc Void
+printModuleName (ModuleName nonEmptyArray) = foldWithSeparator dot $ map (unwrap >>> text) nonEmptyArray
 
-printConstructors :: Array (ProperName ProperNameType_ConstructorName) -> Doc String
-printConstructors = concatWith (surroundOmittingEmpty (text ", ")) <<< map (text <<< unwrap)
+printConstructors :: Array (ProperName ProperNameType_ConstructorName) -> Doc Void
+printConstructors = foldWithSeparator (text ", ") <<< map (text <<< unwrap)
 
 foldWithPrev :: ∀ a b . (b -> Maybe a -> a -> b) -> b -> List a -> b
 foldWithPrev _   default' Nil   = default'
@@ -24,19 +24,19 @@ foldWithPrev fun default' list = foo default' Nothing list
     where foo acc _    Nil     = acc
           foo acc prev (x : xs) = foo (fun acc prev x) (Just x) xs
 
-maybeWrapInParentheses :: Boolean -> Doc String -> Doc String
+maybeWrapInParentheses :: Boolean -> Doc Void -> Doc Void
 maybeWrapInParentheses b = if b then parens else identity
 
-printAndConditionallyAddNewlinesBetween :: ∀ a f . Foldable f => (a -> a -> Boolean) -> (a -> Doc String) -> f a -> Doc String
+printAndConditionallyAddNewlinesBetween :: ∀ a f . Foldable f => (a -> a -> Boolean) -> (a -> Doc Void) -> f a -> Doc Void
 printAndConditionallyAddNewlinesBetween shouldBeNoNewlines print =
   let
-    foldDeclaration :: Doc String -> Maybe a -> a -> Doc String
+    foldDeclaration :: Doc Void -> Maybe a -> a -> Doc Void
     foldDeclaration accum Nothing current = print current
     foldDeclaration accum (Just prev) current = if shouldBeNoNewlines prev current
-                                                  then accum <> line' <> print current
-                                                  else accum <> line' <> hardline <> (print current)
+                                                  then accum <> softBreak <> print current
+                                                  else accum <> softBreak <> break <> (print current)
    in
-    foldWithPrev foldDeclaration emptyDoc <<< List.fromFoldable
+    foldWithPrev foldDeclaration mempty <<< List.fromFoldable
 
 shouldBeNoNewlineBetweenDeclarations :: Declaration -> Declaration -> Boolean
 shouldBeNoNewlineBetweenDeclarations (DeclSignature { ident }) (DeclValue { valueBindingFields: { name } }) = ident == name

@@ -1,28 +1,29 @@
 module Language.PS.CST.Printers.TypeLevel where
 
-import Language.PS.CST.Printers.Utils (maybeWrapInParentheses, printModuleName)
+import Dodo
+import Dodo.Symbols.Ascii
 import Prelude
-import PrettyprinterRenderable (Doc(..), align, concatWith, concatWithNonEmpty, emptyDoc, group, line, line', surround, surroundOmittingEmpty, text, vsep, (<+>))
-import PrettyprinterRenderable.Symbols.String (dquotes, parens, space)
 
 import Data.Array as Array
 import Data.Foldable (null)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
+import Debug.Trace
+import Language.PS.CST.Printers.Utils (maybeWrapInParentheses, printModuleName)
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
 import Language.PS.CST.Types.Declaration (Constraint(..), DataCtor(..), DataHead(..), Kind(..), Row, Type(..), TypeVarBinding(..))
 import Language.PS.CST.Types.Leafs (ClassFundep(..), Fixity(..), Ident, Label, OpName, ProperName)
 import Language.PS.CST.Types.QualifiedName (QualifiedName(..))
 
-printFundep :: ClassFundep -> Doc String
-printFundep (FundepDetermines lefts rights) = (vsep $ map (text <<< appendUnderscoreIfReserved <<< unwrap) lefts) <+> text "->" <+> (vsep $ map (text <<< appendUnderscoreIfReserved <<< unwrap) rights)
+printFundep :: ClassFundep -> Doc Void
+printFundep (FundepDetermines lefts rights) = (paragraph $ map (text <<< appendUnderscoreIfReserved <<< unwrap) lefts) <+> text "->" <+> (paragraph $ map (text <<< appendUnderscoreIfReserved <<< unwrap) rights)
 
-printFixity :: Fixity -> Doc String
+printFixity :: Fixity -> Doc Void
 printFixity Infix  = text "infix"
 printFixity Infixl = text "infixl"
 printFixity Infixr = text "infixr"
 
-printDataCtor :: DataCtor -> Doc String
+printDataCtor :: DataCtor -> Doc Void
 printDataCtor (DataCtor dataCtor) =
   let
     doWrap :: Type -> Boolean
@@ -33,29 +34,29 @@ printDataCtor (DataCtor dataCtor) =
     doWrap (TypeConstrained _ _) = true
     doWrap _ = false
 
-    printType' :: Type -> Doc String
+    printType' :: Type -> Doc Void
     printType' type_ = maybeWrapInParentheses (doWrap type_) $ printType type_
 
     name = (text <<< appendUnderscoreIfReserved <<< unwrap) dataCtor.dataCtorName
 
     fields = dataCtor.dataCtorFields <#> printType'
   in
-    group $ concatWith (surroundOmittingEmpty line) $ [name, concatWith (surroundOmittingEmpty line') $ fields]
+    flexGroup $ foldWithSeparator spaceBreak $ [name, foldWithSeparator softBreak $ fields]
 
-printDataHead :: Doc String -> DataHead -> Doc String
+printDataHead :: Doc Void -> DataHead -> Doc Void
 printDataHead reservedWord (DataHead dataHead) =
   let
     head = reservedWord <+> (text <<< appendUnderscoreIfReserved <<< unwrap) dataHead.dataHdName
 
     vars = map printTypeVarBinding dataHead.dataHdVars
   in
-    if null vars then head else head <+> vsep vars
+    if null vars then head else head <+> paragraph vars
 
-printTypeVarBinding :: TypeVarBinding -> Doc String
+printTypeVarBinding :: TypeVarBinding -> Doc Void
 printTypeVarBinding (TypeVarName ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
 printTypeVarBinding (TypeVarKinded ident kind_) = parens $ (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printKind kind_
 
-printKind :: Kind -> Doc String
+printKind :: Kind -> Doc Void
 printKind (KindName qualifiedKindName) = printQualifiedName_AnyProperNameType qualifiedKindName
 printKind (KindArr kindLeft_ kindRight_) =
   let
@@ -70,27 +71,27 @@ printKind (KindArr kindLeft_ kindRight_) =
     printedLeft' <+> text "->" <+> printKind kindRight_
 printKind (KindRow kind_) = text "#" <+> printKind kind_
 
-printQualifiedName_Ident :: QualifiedName Ident -> Doc String
+printQualifiedName_Ident :: QualifiedName Ident -> Doc Void
 printQualifiedName_Ident (QualifiedName qualifiedName) = case qualifiedName.qualModule of
   Nothing -> (text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName
   (Just moduleName) -> printModuleName moduleName <> text "." <> (text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName
 
-printQualifiedName_AnyProperNameType :: ∀ proxy. QualifiedName (ProperName proxy) -> Doc String
+printQualifiedName_AnyProperNameType :: ∀ proxy. QualifiedName (ProperName proxy) -> Doc Void
 printQualifiedName_AnyProperNameType (QualifiedName qualifiedName) = case qualifiedName.qualModule of
   Nothing -> (text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName
   (Just moduleName) -> printModuleName moduleName <> text "." <> (text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName
 
-printQualifiedName_AnyOpNameType :: ∀ proxy. QualifiedName (OpName proxy) -> Doc String
+printQualifiedName_AnyOpNameType :: ∀ proxy. QualifiedName (OpName proxy) -> Doc Void
 printQualifiedName_AnyOpNameType (QualifiedName qualifiedName) = case qualifiedName.qualModule of
   Nothing -> (text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName
   (Just moduleName) -> printModuleName moduleName <> text "." <> parens ((text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName)
 
-printType :: Type -> Doc String
+printType :: Type -> Doc Void
 printType = \type_ -> case type_ of
-                           (TypeApp _ _) -> group $ printTypeImplementation type_
-                           (TypeForall _ _) -> group $ printTypeImplementation type_
-                           (TypeConstrained _ _) -> group $ printTypeImplementation type_
-                           (TypeArr _ _) -> group $ printTypeImplementation type_
+                           (TypeApp _ _) -> flexGroup $ printTypeImplementation type_
+                           (TypeForall _ _) -> flexGroup $ printTypeImplementation type_
+                           (TypeConstrained _ _) -> flexGroup $ printTypeImplementation type_
+                           (TypeArr _ _) -> flexGroup $ printTypeImplementation type_
                            _ -> printTypeImplementation type_
   where
     printTypeImplementation (TypeVar ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
@@ -111,48 +112,48 @@ printType = \type_ -> case type_ of
             (TypeConstrained _ _) -> true
             _ -> false
 
-        printedLeft :: Doc String
+        printedLeft :: Doc Void
         printedLeft = printTypeImplementation leftType
 
-        printedRight :: Doc String
+        printedRight :: Doc Void
         printedRight = printTypeImplementation rightType
-      in align $ concatWith (surround line) $ [ printedLeft, maybeWrapInParentheses doWrapRight printedRight ]
-    printTypeImplementation (TypeForall typeVarBindings type_) = text "forall" <+> concatWithNonEmpty (surroundOmittingEmpty line) (map printTypeVarBinding typeVarBindings) <+> text "." <+> printTypeImplementation type_
+      in alignCurrentColumn $ foldWithSeparator spaceBreak [ printedLeft, maybeWrapInParentheses doWrapRight printedRight ]
+    printTypeImplementation (TypeForall typeVarBindings type_) = text "forall" <+> foldWithSeparator spaceBreak (map printTypeVarBinding typeVarBindings) <+> text "." <+> printTypeImplementation type_
     printTypeImplementation (TypeArr leftType rightType) = printTypeImplementation leftType <+> text "->" <+> printTypeImplementation rightType
     printTypeImplementation (TypeKinded type_ kind_) = parens $ printTypeImplementation type_ <+> text "::" <+> printKind kind_
     printTypeImplementation (TypeOp leftType qualifiedOpName rightType) = printTypeImplementation leftType <+> printQualifiedName_AnyOpNameType qualifiedOpName <+> printTypeImplementation rightType
     printTypeImplementation (TypeConstrained constraint type_) = printConstraint constraint <+> text "=>" <+> printTypeImplementation type_
 
-printConstraint :: Constraint -> Doc String
+printConstraint :: Constraint -> Doc Void
 printConstraint (Constraint { className, args }) =
   if null args
     then printQualifiedName_AnyProperNameType className
-    else printQualifiedName_AnyProperNameType className <+> (align $ group $ concatWith (surround line) $ map printType args)
+    else printQualifiedName_AnyProperNameType className <+> (alignCurrentColumn $ flexGroup $ foldWithSeparator spaceBreak $ map printType args)
 
-printRowLikeType :: Doc String -> Doc String -> Row -> Doc String
+printRowLikeType :: Doc Void -> Doc Void -> Row -> Doc Void
 printRowLikeType leftWrapper rightWrapper row =
   let
-      rowTail :: Doc String
+      rowTail :: Doc Void
       rowTail =
         maybe
-        emptyDoc
+        mempty
         (\(rowTail' :: Type) -> text "|" <+> printType rowTail')
         row.rowTail
 
    in case row.rowLabels of
            [] ->
-             case rowTail of
-                  Empty -> leftWrapper <> rightWrapper
-                  _     -> group $ concatWith (surroundOmittingEmpty line) [leftWrapper, rowTail, rightWrapper]
+             if isEmpty rowTail
+               then leftWrapper <> rightWrapper
+               else flexGroup $ foldWithSeparator spaceBreak [leftWrapper, rowTail, rightWrapper]
            _ ->
              let
-                 rowLabelDocs :: Array (Doc String)
+                 rowLabelDocs :: Array (Doc Void)
                  rowLabelDocs = row.rowLabels <#> printRowLabel
-              in align $ group $ concatWith (surroundOmittingEmpty line)
-                [ concatWith (surroundOmittingEmpty line') $ (Array.zipWith (<>) ([leftWrapper <> space] <> Array.replicate (Array.length rowLabelDocs - 1) (text ", ")) (map align rowLabelDocs))
+              in alignCurrentColumn $ flexGroup $ foldWithSeparator spaceBreak
+                [ foldWithSeparator softBreak $ Array.zipWith (<>) ([leftWrapper <> space] <> Array.replicate (Array.length rowLabelDocs - 1) (text ", ")) rowLabelDocs
                 , rowTail
                 , rightWrapper
                 ]
 
-printRowLabel :: { label :: Label, type_ :: Type } -> Doc String
+printRowLabel :: { label :: Label, type_ :: Type } -> Doc Void
 printRowLabel { label, type_ } = (text <<< quoteIfReserved <<< unwrap) label <+> text "::" <+> printType type_

@@ -2,8 +2,8 @@ module Language.PS.CST.Printers where
 
 import Language.PS.CST.Printers.Utils (exprShouldBeOnNextLine, maybeWrapInParentheses, printAndConditionallyAddNewlinesBetween, shouldBeNoNewlineBetweenDeclarations, shouldBeNoNewlineBetweenInstanceBindings, shouldBeNoNewlineBetweenLetBindings)
 import Prelude
-import PrettyprinterRenderable (Doc, align, concatWith, concatWithNonEmpty, emptyDoc, flatAlt, group, hardline, indent, line, line', space, surround, surroundOmittingEmpty, text, vcat, vcatOmittingEmpty, vcatOmittingEmptyNonEmpty, vsep, (<+>))
-import PrettyprinterRenderable.Symbols.String (dot, parens)
+import Dodo
+import Dodo.Symbols.Ascii
 
 import Data.Array as Array
 import Data.Array.NonEmpty (NonEmptyArray)
@@ -19,42 +19,41 @@ import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserve
 import Language.PS.CST.Types.Declaration (Binder(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), RecordUpdate(..), Type(..), ValueBindingFields)
 import Language.PS.CST.Types.Leafs (Comments(..), DeclDeriveType(..), RecordLabeled(..))
 import Language.PS.CST.Types.Module (Module(..))
-import PrettyprinterRenderable as Pretty
-import PrettyprinterRenderable.Code.Purescript (encloseSep)
+import Dodo as Dodo
+import Dodo.Common
 
-printModuleToString :: Int -> Module -> String
-printModuleToString width = Pretty.render width <<< printModule
-
-printModule :: Module -> Doc String
+-- | This is an entry point
+printModule :: Module -> Doc Void
 printModule (Module { moduleName, imports, exports, declarations }) =
-  concatWith (surroundOmittingEmpty (hardline <> hardline))
+  foldWithSeparator (break <> break)
     [ printModuleModuleNameAndExports moduleName exports
     , printImports imports
     , printDeclarations declarations
-    ] <> hardline
+    ] <> break
 
-printDeclarations :: Array (Declaration) -> Doc String
+printDeclarations :: Array (Declaration) -> Doc Void
 printDeclarations declarations = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenDeclarations printDeclaration declarations
 
-printComments :: Comments -> Doc String
-printComments (OneLineComments strings) = strings <#> (\x -> text "-- |" <+> text x) # vcatOmittingEmpty
-printComments (BlockComments strings) = text "{-" <> line <> indent 2 (vcatOmittingEmpty $ map text strings) <> line <> text "-}"
+printComments :: Comments -> Doc Void
+printComments (OneLineComments strings) = strings <#> (\x -> text "-- |" <+> text x) # lines
+printComments (BlockComments strings) = text "{-" <> break <> indent (lines $ map text strings) <> break <> text "-}"
 
-printMaybeComments :: Maybe Comments -> Doc String -> Doc String
+printMaybeComments :: Maybe Comments -> Doc Void -> Doc Void
 printMaybeComments comments doc =
-  vcatOmittingEmpty
-    [ maybe emptyDoc printComments comments
+  lines
+    [ maybe mempty printComments comments
     , doc
     ]
 
-printDeclaration :: Declaration -> Doc String
+printDeclaration :: Declaration -> Doc Void
 printDeclaration (DeclData { comments, head, constructors: [] }) = printMaybeComments comments (printDataHead (text "data") head)
 printDeclaration (DeclData { comments, head, constructors }) =
   let
-    printedCtorsArray = map (align <<< printDataCtor) constructors
+    printedCtorsArray = map (indent <<< printDataCtor) constructors
 
-    printedCtors = align $ group $ concatWith (surroundOmittingEmpty line) $ Array.zipWith (<+>) ([text "="] <> Array.replicate (Array.length constructors - 1) (text "|")) printedCtorsArray
-  in printMaybeComments comments (group $ vcat [ printDataHead (text "data") head, flatAlt (text "  ") (text " ") <> printedCtors ])
+    printedCtors = alignCurrentColumn $ flexGroup $ foldWithSeparator spaceBreak $ Array.zipWith (<+>) ([text "="] <> Array.replicate (Array.length constructors - 1) (text "|")) printedCtorsArray
+  in printMaybeComments comments $
+    flexGroup $ paragraph [ printDataHead (text "data") head, flexAlt mempty (text "  ") <> printedCtors ]
 printDeclaration (DeclType { comments, head, type_ }) =
   let
     doWrap :: Type -> Boolean
@@ -64,7 +63,7 @@ printDeclaration (DeclType { comments, head, type_ }) =
     doWrap (TypeConstrained _ _) = true
     doWrap _ = false
 
-    printedType :: Doc String
+    printedType :: Doc Void
     printedType = maybeWrapInParentheses (doWrap type_) $ printType $ type_
   in printMaybeComments comments (printDataHead (text "type") head <+> text "=" <+> printedType)
 printDeclaration (DeclNewtype { comments, head, name, type_ }) =
@@ -77,12 +76,12 @@ printDeclaration (DeclNewtype { comments, head, name, type_ }) =
     doWrap (TypeConstrained _ _) = true
     doWrap _ = false
 
-    printedType :: Doc String
+    printedType :: Doc Void
     printedType = maybeWrapInParentheses (doWrap type_) $ printType $ type_
   in printMaybeComments comments (printDataHead (text "newtype") head <+> text "=" <+> ((text <<< appendUnderscoreIfReserved <<< unwrap) name <+> printedType))
 printDeclaration (DeclFixity { comments, fixityFields: { keyword, precedence, operator } }) =
   let
-    printFixityOp :: FixityOp -> Doc String
+    printFixityOp :: FixityOp -> Doc Void
     printFixityOp (FixityValue (Left qualifiedIdent) opName) = printQualifiedName_Ident qualifiedIdent <+> text "as" <+> (text <<< appendUnderscoreIfReserved <<< unwrap) opName
     printFixityOp (FixityValue (Right qualifiedPropName) opName) = printQualifiedName_AnyProperNameType qualifiedPropName <+> text "as" <+> (text <<< appendUnderscoreIfReserved <<< unwrap) opName
     printFixityOp (FixityType qualifiedPropName opName) = text "type" <+> printQualifiedName_AnyProperNameType qualifiedPropName <+> text "as" <+> (text <<< appendUnderscoreIfReserved <<< unwrap) opName
@@ -108,17 +107,17 @@ printDeclaration (DeclDerive { comments, deriveType, head: { instName, instConst
     deriveType' =
       case deriveType of
         DeclDeriveType_Newtype -> text "newtype"
-        DeclDeriveType_Odrinary -> emptyDoc
+        DeclDeriveType_Odrinary -> mempty
 
     constraints' =
       case instConstraints of
-        [] -> emptyDoc
+        [] -> mempty
         [constraint] -> printConstraint constraint <+> text "=>"
-        constrainsts -> (align $ group $ encloseSep (text "(") (text ")") (text ", ") $ map printConstraint constrainsts) <+> text "=>"
+        constrainsts -> (alignCurrentColumn $ pursParens $ foldWithSeparator leadingComma $ map printConstraint constrainsts) <+> text "=>"
 
-    types' = concatWithNonEmpty (surround space) $ map (\type_ -> maybeWrapInParentheses (doWrap type_) $ printType type_) instTypes
+    types' = foldWithSeparator space $ map (\type_ -> maybeWrapInParentheses (doWrap type_) $ printType type_) instTypes
    in
-    printMaybeComments comments $ concatWith (surroundOmittingEmpty space)
+    printMaybeComments comments $ foldWithSeparator space
       [ text "derive"
       , deriveType'
       , text "instance"
@@ -130,36 +129,36 @@ printDeclaration (DeclDerive { comments, deriveType, head: { instName, instConst
       ]
 printDeclaration (DeclClass { comments, head: { name, vars, super, fundeps }, methods }) =
   let
-    printedHeader = concatWith (surroundOmittingEmpty space)
+    printedHeader = foldWithSeparator space
       [ text "class"
       , case super of
-             [] -> emptyDoc
+             [] -> mempty
              [constraint] -> printConstraint constraint <+> text "<="
-             constraints -> (align $ group $ encloseSep (text "(") (text ")") (text ", ") $ map printConstraint constraints) <+> text "<="
+             constraints -> (alignCurrentColumn $ pursParens $ foldWithSeparator leadingComma $ map printConstraint constraints) <+> text "<="
       , (text <<< appendUnderscoreIfReserved <<< unwrap) name
       , case vars of
-             [] -> emptyDoc
-             _ -> align $ group $ concatWith (surroundOmittingEmpty line) $ map printTypeVarBinding vars
+             [] -> mempty
+             _ -> alignCurrentColumn $ flexGroup $ foldWithSeparator spaceBreak $ map printTypeVarBinding vars
       , case fundeps of
-             [] -> emptyDoc
-             _ -> text "|" <+> (align $ group $ concatWith (surroundOmittingEmpty (text ", ")) $ map printFundep $ fundeps)
+             [] -> mempty
+             _ -> text "|" <+> (alignCurrentColumn $ flexGroup $ foldWithSeparator (text ", ") $ map printFundep $ fundeps)
       ]
    in
     if null methods
       then printMaybeComments comments printedHeader
       else
         printMaybeComments comments
-          ( printedHeader <+> (text "where") <> hardline <>
-              ( indent 2
-              $ vcatOmittingEmpty
+          ( printedHeader <+> (text "where") <> break <>
+              ( indent
+              $ paragraph
               $ map (\({ ident, type_ }) -> (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_) $ methods
               )
           )
-printDeclaration (DeclInstanceChain { comments, instances }) = printMaybeComments comments (concatWithNonEmpty (surroundOmittingEmpty (hardline <> hardline <> text "else" <> hardline <> hardline)) (map printInstance instances))
+printDeclaration (DeclInstanceChain { comments, instances }) = printMaybeComments comments (foldWithSeparator (break <> break <> text "else" <> break <> break) (map printInstance instances))
 printDeclaration (DeclSignature { comments, ident, type_ }) = printMaybeComments comments ((text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_)
 printDeclaration (DeclValue { comments, valueBindingFields }) = printMaybeComments comments (printValueBindingFields valueBindingFields)
 
-printInstance :: Instance -> Doc String
+printInstance :: Instance -> Doc Void
 printInstance instance_ =
   let
     head = text "instance" <+> (text <<< appendUnderscoreIfReserved <<< unwrap) instance_.head.instName <+> text "::" <+> printQualifiedName_AnyProperNameType instance_.head.instClass
@@ -174,79 +173,79 @@ printInstance instance_ =
 
     tail =
       if null instance_.head.instTypes
-        then emptyDoc
-        else concatWithNonEmpty (surround line) $ map (\type_ -> maybeWrapInParentheses (doWrap type_) (printType type_)) instance_.head.instTypes
+        then mempty
+        else foldWithSeparator spaceBreak $ map (\type_ -> maybeWrapInParentheses (doWrap type_) (printType type_)) instance_.head.instTypes
 
-    firstRow = group $ concatWith (surround line) [head, tail]
+    firstRow = flexGroup $ foldWithSeparator spaceBreak [head, tail]
    in
     if null instance_.body
       then firstRow
       else
       let
         printedBody = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenInstanceBindings printInstanceBinding instance_.body
-       in firstRow <+> text "where" <> line <> indent 2 printedBody
+       in firstRow <+> text "where" <> spaceBreak <> indent printedBody
 
-printInstanceBinding :: InstanceBinding -> Doc String
+printInstanceBinding :: InstanceBinding -> Doc Void
 printInstanceBinding (InstanceBindingSignature { ident, type_ }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_
 printInstanceBinding (InstanceBindingName valueBindingFields) = printValueBindingFields valueBindingFields
 
-printValueBindingFields :: ValueBindingFields -> Doc String
+printValueBindingFields :: ValueBindingFields -> Doc Void
 printValueBindingFields { name, binders, guarded } =
   let
     printedBinders =
       if null binders
-        then emptyDoc
-        else (vsep $ map printBinder binders) <> space
+        then mempty
+        else (paragraph $ map printBinder binders) <> space
 
     printedHead = (text <<< appendUnderscoreIfReserved <<< unwrap) name <+> printedBinders <> text "="
    in printGuarded printedHead guarded
 
-printGuarded :: Doc String -> Guarded -> Doc String
+printGuarded :: Doc Void -> Guarded -> Doc Void
 printGuarded printedHead guarded =
   case guarded of
     (Unconditional where_) ->
       case where_ of
         { expr, whereBindings: [] } ->
           if exprShouldBeOnNextLine expr
-            then printedHead <> line <>(indent 2 $ printExpr expr)
+            then printedHead <> spaceBreak <>(indent $ printExpr expr)
             else printedHead <+> printExpr expr
         { expr, whereBindings } ->
           let
-            printedBindings = indent 2 (text "where" <> line <>(printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenLetBindings printLetBinding whereBindings))
+            printedBindings = indent (text "where" <> spaceBreak <>(printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenLetBindings printLetBinding whereBindings))
           in
             if exprShouldBeOnNextLine expr
-              then printedHead <> line <> (indent 2 $ printExpr expr) <> line <>printedBindings
-              else printedHead <+> printExpr expr <> line <>printedBindings
-    (Guarded _) -> emptyDoc -- TODO
+              then printedHead <> spaceBreak <> (indent $ printExpr expr) <> spaceBreak <>printedBindings
+              else printedHead <+> printExpr expr <> spaceBreak <>printedBindings
+    (Guarded _) -> mempty -- TODO
 
-printBinder :: Binder -> Doc String
+printBinder :: Binder -> Doc Void
 printBinder BinderWildcard = text "_"
 printBinder (BinderVar ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
 printBinder (BinderNamed { ident, binder }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <> text "@" <> (parens $ printBinder binder)
 printBinder (BinderConstructor { name, args: [] }) = printQualifiedName_AnyProperNameType name
-printBinder (BinderConstructor { name, args }) = printQualifiedName_AnyProperNameType name <+> (vsep $ map printBinder args)
+printBinder (BinderConstructor { name, args }) = printQualifiedName_AnyProperNameType name <+> (paragraph $ map printBinder args)
 printBinder (BinderBoolean boolean) = text $ show boolean
 printBinder (BinderChar char) = text $ show char
 printBinder (BinderString string) = text $ show string
 printBinder (BinderNumber (Left int)) = text $ show int
 printBinder (BinderNumber (Right number)) = text $ show number
-printBinder (BinderArray binders) = text "[" <> (concatWith (surroundOmittingEmpty (text ", ")) $ map printBinder binders) <> text "]"
-printBinder (BinderRecord arrayRecordLabeledBinder) = concatWith (surroundOmittingEmpty (text ", ")) $ map (printRecordLabeled printBinder) arrayRecordLabeledBinder
+printBinder (BinderArray binders) = text "[" <> (foldWithSeparator (text ", ") $ map printBinder binders) <> text "]"
+printBinder (BinderRecord arrayRecordLabeledBinder) = foldWithSeparator (text ", ") $ map (printRecordLabeled printBinder) arrayRecordLabeledBinder
 printBinder (BinderTyped binder type_) = printBinder binder <+> text "::" <+> printType type_
 printBinder (BinderOp binderLeft operator binderRight) = printBinder binderLeft <+> printQualifiedName_AnyOpNameType operator <+> printBinder binderRight
 
-printRecordLabeled :: ∀ a . (a -> Doc String) -> RecordLabeled a -> Doc String
+printRecordLabeled :: ∀ a . (a -> Doc Void) -> RecordLabeled a -> Doc Void
 printRecordLabeled _ (RecordPun ident) = (text <<< quoteIfReserved <<< unwrap) ident
 printRecordLabeled print (RecordField label a) = (text <<< quoteIfReserved <<< unwrap) label <> text ":" <+> print a
 
-printExpr :: Expr -> Doc String
+printExpr :: Expr -> Doc Void
 printExpr =
   let
     processTopLevel printExprImplementation' expr =
         case expr of
-             (ExprApp _ _) -> align $ group $ printExprImplementation' expr
-             (ExprArray _) -> group $ printExprImplementation' expr
-             (ExprRecord _) -> group $ printExprImplementation' expr
+             (ExprApp _ _) -> alignCurrentColumn $ flexGroup $ printExprImplementation' expr
+             (ExprArray _) -> flexGroup $ printExprImplementation' expr
+             (ExprRecord _) -> flexGroup $ printExprImplementation' expr
              _ -> printExprImplementation' expr
 
     printExprImplementation (ExprHole hole) = text "?" <> (text <<< appendUnderscoreIfReserved <<< unwrap) hole
@@ -258,14 +257,14 @@ printExpr =
     printExprImplementation (ExprString string) = text $ show string
     printExprImplementation (ExprNumber (Left int)) = text $ show int
     printExprImplementation (ExprNumber (Right num)) = text $ show num
-    printExprImplementation (ExprArray array) = align $ encloseSep (text "[") (text "]") (text ", ") (map (processTopLevel printExprImplementation) array)
-    printExprImplementation (ExprRecord arrayRecordLabeled) = text "{" <+> (concatWith (surroundOmittingEmpty (text ", ")) $ map (printRecordLabeled printExprImplementation) arrayRecordLabeled) <+> text "}"
+    printExprImplementation (ExprArray array) = alignCurrentColumn $ pursSquares $ foldWithSeparator leadingComma (map (processTopLevel printExprImplementation) array)
+    printExprImplementation (ExprRecord arrayRecordLabeled) = pursCurlies $ foldWithSeparator leadingComma $ map (printRecordLabeled printExprImplementation) arrayRecordLabeled
     printExprImplementation (ExprTyped expr type_) = printExprImplementation expr <+> text "::" <+> printType type_
     printExprImplementation (ExprInfix exprLeft operator exprRight) = printExprImplementation exprLeft <+> printExprImplementation operator <+> printExprImplementation exprRight
     printExprImplementation (ExprOp exprLeft operator exprRight) = printExprImplementation exprLeft <+> printQualifiedName_AnyOpNameType operator <+> printExprImplementation exprRight
     printExprImplementation (ExprOpName opName) = printQualifiedName_AnyOpNameType opName
     printExprImplementation (ExprNegate expr) = text "-" <> printExprImplementation expr
-    printExprImplementation (ExprRecordAccessor { recExpr, recPath }) = printExprImplementation recExpr <> text "." <> (concatWithNonEmpty (surround dot) $ map (text <<< appendUnderscoreIfReserved <<< unwrap) recPath)
+    printExprImplementation (ExprRecordAccessor { recExpr, recPath }) = printExprImplementation recExpr <> text "." <> (foldWithSeparator dot $ map (text <<< appendUnderscoreIfReserved <<< unwrap) recPath)
     printExprImplementation (ExprRecordUpdate expr recordUpdates) = parens $ printExprImplementation expr <+> printRecordUpdates recordUpdates
     printExprImplementation (ExprApp exprLeft exprRight) =
       let
@@ -275,18 +274,18 @@ printExpr =
             (ExprInfix _ _ _) -> true
             (ExprOp _ _ _) -> true
             _ -> false
-      in concatWith (surround line) $ [ printExprImplementation exprLeft, maybeWrapInParentheses doWrapRight (printExprImplementation exprRight) ]
-    printExprImplementation (ExprLambda { binders, body }) = (parens $ vsep $ map printBinder binders) <+> text "=" <+> printExprImplementation body
-    printExprImplementation (ExprIf { cond, true_, false_ }) = concatWith (surround line)
+      in foldWithSeparator spaceBreak $ [ printExprImplementation exprLeft, maybeWrapInParentheses doWrapRight (printExprImplementation exprRight) ]
+    printExprImplementation (ExprLambda { binders, body }) = (parens $ paragraph $ map printBinder binders) <+> text "=" <+> printExprImplementation body
+    printExprImplementation (ExprIf { cond, true_, false_ }) = foldWithSeparator spaceBreak
       [ if exprShouldBeOnNextLine cond
-          then text "if" <> hardline <> (indent 2 $ printExprImplementation cond)
+          then text "if" <> break <> (indent $ printExprImplementation cond)
           else text "if" <+> printExprImplementation cond
       , if exprShouldBeOnNextLine true_
-          then indent 2 $ text "then" <> hardline <> (indent 2 $ printExprImplementation true_)
-          else indent 2 $ text "then" <+> printExprImplementation true_
+          then indent $ text "then" <> break <> (indent $ printExprImplementation true_)
+          else indent $ text "then" <+> printExprImplementation true_
       , if exprShouldBeOnNextLine false_
-          then indent 2 $ text "else" <> hardline <> (indent 2 $ printExprImplementation false_)
-          else indent 2 $ text "else" <+> printExprImplementation false_
+          then indent $ text "else" <> break <> (indent $ printExprImplementation false_)
+          else indent $ text "else" <+> printExprImplementation false_
       ]
     printExprImplementation (ExprCase { head, branches }) =
       let
@@ -301,48 +300,48 @@ printExpr =
               _ -> false
           )
 
-        headDocs :: Array (Doc String)
+        headDocs :: Array (Doc Void)
         headDocs = NonEmptyArray.toArray $ map printExprImplementation head
       in
         if headShouldBeMultiline
-          then concatWith (surroundOmittingEmpty line)
+          then foldWithSeparator spaceBreak
             [ text "case"
-            , concatWith (surroundOmittingEmpty line') $
+            , foldWithSeparator softBreak $
               Array.zipWith
               (<>)
               ([text "  "] <> Array.replicate (Array.length headDocs - 1) (text ", "))
-              (map align headDocs)
+              (map alignCurrentColumn headDocs)
             , text "of"
-            , indent 2 $ vcatOmittingEmptyNonEmpty $ map printBranch branches
+            , indent $ paragraph $ map printBranch branches
             ]
           else
-            text "case" <+> (concatWith (surround (text ", ")) headDocs) <+> text "of"
-            <> hardline <>
-            (indent 2 $ vcatOmittingEmptyNonEmpty $ map printBranch branches)
-    printExprImplementation (ExprLet { bindings, body }) = align $ concatWith (surroundOmittingEmpty hardline)
+            text "case" <+> foldWithSeparator (text ", ") headDocs <+> text "of"
+            <> break <>
+            (indent $ paragraph $ map printBranch branches)
+    printExprImplementation (ExprLet { bindings, body }) = alignCurrentColumn $ foldWithSeparator break
       [ text "let"
-      , indent 2 (printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenLetBindings printLetBinding bindings)
+      , indent (printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenLetBindings printLetBinding bindings)
       , text " in"
-      , indent 2 (processTopLevel printExprImplementation body)
+      , indent (processTopLevel printExprImplementation body)
       ]
-    printExprImplementation (ExprDo doStatements) = emptyDoc -- TODO
-    printExprImplementation (ExprAdo { statements, result }) = emptyDoc -- TODO
+    printExprImplementation (ExprDo doStatements) = mempty -- TODO
+    printExprImplementation (ExprAdo { statements, result }) = mempty -- TODO
   in processTopLevel printExprImplementation
 
-printBranch :: { binders :: NonEmptyArray Binder, body :: Guarded } -> Doc String
+printBranch :: { binders :: NonEmptyArray Binder, body :: Guarded } -> Doc Void
 printBranch { binders, body } =
   let
-    printedHead = (concatWithNonEmpty (surround (text ", ")) $ map printBinder binders) <+> text "->"
+    printedHead = (foldWithSeparator (text ", ") $ map printBinder binders) <+> text "->"
    in printGuarded printedHead body
 
-printLetBinding :: LetBinding -> Doc String
+printLetBinding :: LetBinding -> Doc Void
 printLetBinding (LetBindingSignature { ident, type_ }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_
 printLetBinding (LetBindingName valueBindingFields) = printValueBindingFields valueBindingFields
-printLetBinding (LetBindingPattern { binder, where_: { expr, whereBindings } }) = printBinder binder <> hardline <> printExpr expr <> line <>text "where" <> line <>(vsep $ map printLetBinding whereBindings)
+printLetBinding (LetBindingPattern { binder, where_: { expr, whereBindings } }) = printBinder binder <> break <> printExpr expr <> spaceBreak <>text "where" <> spaceBreak <>(paragraph $ map printLetBinding whereBindings)
 
-printRecordUpdates :: NonEmptyArray RecordUpdate -> Doc String
-printRecordUpdates recordUpdates = text "{" <+> (concatWithNonEmpty (surround (text ",")) $ map printRecordUpdate recordUpdates) <+> text "}"
+printRecordUpdates :: NonEmptyArray RecordUpdate -> Doc Void
+printRecordUpdates recordUpdates = text "{" <+> (foldWithSeparator (text ",") $ map printRecordUpdate recordUpdates) <+> text "}"
 
-printRecordUpdate :: RecordUpdate -> Doc String
+printRecordUpdate :: RecordUpdate -> Doc Void
 printRecordUpdate (RecordUpdateLeaf label expr) = (text <<< appendUnderscoreIfReserved <<< unwrap) label <+> text "=" <+> printExpr expr
 printRecordUpdate (RecordUpdateBranch label recordUpdates) = (text <<< appendUnderscoreIfReserved <<< unwrap) label <+> text "=" <+> printRecordUpdates recordUpdates
