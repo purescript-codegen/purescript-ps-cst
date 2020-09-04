@@ -5,13 +5,12 @@ import Prelude
 import Language.PS.CST.Types.Module (DataMembers(..), Export(..))
 import Language.PS.CST.Types.Leafs (ModuleName)
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
-import Language.PS.CST.Printers.Utils (printConstructors, printModuleName)
+import Language.PS.CST.Printers.Utils
 
 import Data.Newtype (unwrap)
 import Data.Maybe (Maybe(..))
 import Dodo
 import Dodo.Common
-import Dodo.Symbols.Ascii
 
 printModuleModuleNameAndExports :: ModuleName -> Array Export -> Doc Void
 printModuleModuleNameAndExports moduleName [] = text "module" <+> printModuleName moduleName <+> text "where"

@@ -4,13 +4,38 @@ import Language.PS.CST.Types.Declaration (Declaration(..), Expr(..), InstanceBin
 import Language.PS.CST.Types.Leafs (ModuleName(..), ProperName, ProperNameType_ConstructorName)
 import Prelude
 import Dodo
-import Dodo.Symbols.Ascii
 
 import Data.Foldable (class Foldable)
 import Data.List (List(..), (:))
 import Data.List (fromFoldable) as List
 import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
+
+-- | >>> dquotes "·"
+-- "·"
+dquotes :: forall a. Doc a -> Doc a
+dquotes = enclose dquote dquote
+
+dquote :: forall a. Doc a
+dquote = text "\""
+
+-- | >>> parens "·"
+-- (·)
+parens :: forall a. Doc a -> Doc a
+parens = enclose lparen rparen
+
+-- | >>> lparen
+-- (
+lparen :: forall a. Doc a
+lparen = text "("
+
+-- | >>> rparen
+-- )
+rparen :: forall a. Doc a
+rparen = text ")"
+
+dot :: forall a. Doc a
+dot = text "."
 
 printModuleName :: ModuleName -> Doc Void
 printModuleName (ModuleName nonEmptyArray) = foldWithSeparator dot $ map (unwrap >>> text) nonEmptyArray

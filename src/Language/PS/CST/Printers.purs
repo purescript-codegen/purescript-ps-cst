@@ -1,9 +1,8 @@
 module Language.PS.CST.Printers where
 
-import Language.PS.CST.Printers.Utils (exprShouldBeOnNextLine, maybeWrapInParentheses, printAndConditionallyAddNewlinesBetween, shouldBeNoNewlineBetweenDeclarations, shouldBeNoNewlineBetweenInstanceBindings, shouldBeNoNewlineBetweenLetBindings)
+import Language.PS.CST.Printers.Utils
 import Prelude
 import Dodo
-import Dodo.Symbols.Ascii
 
 import Data.Array as Array
 import Data.Array.NonEmpty (NonEmptyArray)
