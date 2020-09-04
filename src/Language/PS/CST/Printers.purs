@@ -117,7 +117,7 @@ printDeclaration (DeclDerive { comments, deriveType, head: { instName, instConst
 
     types' = foldWithSeparator space $ map (\type_ -> maybeWrapInParentheses (doWrap type_) $ printType type_) instTypes
    in
-    printMaybeComments comments $ foldWithSeparator space
+    printMaybeComments comments $ flexGroup $ foldWithSeparator space
       [ text "derive"
       , deriveType'
       , text "instance"
@@ -243,7 +243,7 @@ printExpr =
   let
     processTopLevel printExprImplementation' expr =
         case expr of
-             (ExprApp _ _) -> alignCurrentColumn $ flexGroup $ printExprImplementation' expr
+             (ExprApp _ _) -> flexGroup $ printExprImplementation' expr
              (ExprArray _) -> flexGroup $ printExprImplementation' expr
              (ExprRecord _) -> flexGroup $ printExprImplementation' expr
              _ -> printExprImplementation' expr
@@ -258,7 +258,7 @@ printExpr =
     printExprImplementation (ExprNumber (Left int)) = text $ show int
     printExprImplementation (ExprNumber (Right num)) = text $ show num
     printExprImplementation (ExprArray array) = alignCurrentColumn $ pursSquares $ foldWithSeparator leadingComma (map (processTopLevel printExprImplementation) array)
-    printExprImplementation (ExprRecord arrayRecordLabeled) = pursCurlies $ foldWithSeparator leadingComma $ map (printRecordLabeled printExprImplementation) arrayRecordLabeled
+    printExprImplementation (ExprRecord arrayRecordLabeled) = alignCurrentColumn $ pursCurlies $ foldWithSeparator leadingComma $ map (printRecordLabeled printExprImplementation) arrayRecordLabeled
     printExprImplementation (ExprTyped expr type_) = printExprImplementation expr <+> text "::" <+> printType type_
     printExprImplementation (ExprInfix exprLeft operator exprRight) = printExprImplementation exprLeft <+> printExprImplementation operator <+> printExprImplementation exprRight
     printExprImplementation (ExprOp exprLeft operator exprRight) = printExprImplementation exprLeft <+> printQualifiedName_AnyOpNameType operator <+> printExprImplementation exprRight
@@ -274,7 +274,7 @@ printExpr =
             (ExprInfix _ _ _) -> true
             (ExprOp _ _ _) -> true
             _ -> false
-      in foldWithSeparator spaceBreak $ [ printExprImplementation exprLeft, maybeWrapInParentheses doWrapRight (printExprImplementation exprRight) ]
+      in alignCurrentColumn $ foldWithSeparator spaceBreak $ [ printExprImplementation exprLeft, maybeWrapInParentheses doWrapRight (printExprImplementation exprRight) ]
     printExprImplementation (ExprLambda { binders, body }) = (parens $ paragraph $ map printBinder binders) <+> text "=" <+> printExprImplementation body
     printExprImplementation (ExprIf { cond, true_, false_ }) = foldWithSeparator spaceBreak
       [ if exprShouldBeOnNextLine cond
@@ -312,12 +312,12 @@ printExpr =
               ([text "  "] <> Array.replicate (Array.length headDocs - 1) (text ", "))
               (map alignCurrentColumn headDocs)
             , text "of"
-            , indent $ paragraph $ map printBranch branches
+            , indent $ lines $ map printBranch branches
             ]
           else
             text "case" <+> foldWithSeparator (text ", ") headDocs <+> text "of"
             <> break <>
-            (indent $ paragraph $ map printBranch branches)
+            (indent $ lines $ map printBranch branches)
     printExprImplementation (ExprLet { bindings, body }) = alignCurrentColumn $ foldWithSeparator break
       [ text "let"
       , indent (printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenLetBindings printLetBinding bindings)

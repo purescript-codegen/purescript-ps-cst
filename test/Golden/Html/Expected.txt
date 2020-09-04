@@ -2,21 +2,19 @@ module Array where
 
 html :: HTML
 html = div
-       [ class_ main
-       , id "zero"
-       ]
+       [ class_ main, id "zero" ]
        [ div
-         [ class_ main
-         , id "zero"
-         ]
-         [ div [class_ main, id "zero"] []
-         , div [class_ main, id "zero"] []
+         [ class_ main, id "zero" ]
+         [ div
+           [ class_ main, id "zero" ]
+           []
+         , div [ class_ main, id "zero" ] []
          ]
        , div
-         [ class_ main
-         , id "zero"
-         ]
-         [ div [class_ main, id "zero"] []
-         , div [class_ main, id "zero"] []
+         [ class_ main, id "zero" ]
+         [ div
+           [ class_ main, id "zero" ]
+           []
+         , div [ class_ main, id "zero" ] []
          ]
        ]
