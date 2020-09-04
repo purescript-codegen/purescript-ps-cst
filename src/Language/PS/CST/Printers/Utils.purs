@@ -3,7 +3,7 @@ module Language.PS.CST.Printers.Utils where
 import Language.PS.CST.Types.Declaration (Declaration(..), Expr(..), InstanceBinding(..), LetBinding(..))
 import Language.PS.CST.Types.Leafs (ModuleName(..), ProperName, ProperNameType_ConstructorName)
 import Prelude
-import Dodo
+import Dodo (Doc, break, enclose, foldWithSeparator, softBreak, text)
 
 import Data.Foldable (class Foldable)
 import Data.List (List(..), (:))

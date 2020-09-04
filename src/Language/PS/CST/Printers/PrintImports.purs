@@ -2,15 +2,15 @@ module Language.PS.CST.Printers.PrintImports where
 
 import Prelude
 
-import Language.PS.CST.Printers.Utils
+import Language.PS.CST.Printers.Utils (parens, printConstructors, printModuleName)
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
 
 import Language.PS.CST.Types.Module (DataMembers(..), Import(..), ImportDecl(..))
 
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
-import Dodo
-import Dodo.Common
+import Dodo (Doc, alignCurrentColumn, flexGroup, foldWithSeparator, indent, lines, paragraph, text, (<+>))
+import Dodo.Common (leadingComma, pursParens)
 
 printImports :: Array ImportDecl -> Doc Void
 printImports imports = lines $ map printImport imports

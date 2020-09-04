@@ -1,8 +1,8 @@
 module Language.PS.CST.Printers where
 
-import Language.PS.CST.Printers.Utils
+import Language.PS.CST.Printers.Utils (dot, exprShouldBeOnNextLine, maybeWrapInParentheses, parens, printAndConditionallyAddNewlinesBetween, shouldBeNoNewlineBetweenDeclarations, shouldBeNoNewlineBetweenInstanceBindings, shouldBeNoNewlineBetweenLetBindings)
 import Prelude
-import Dodo
+import Dodo (Doc, alignCurrentColumn, break, flexAlt, flexGroup, foldWithSeparator, indent, lines, paragraph, softBreak, space, spaceBreak, text, (<+>))
 
 import Data.Array as Array
 import Data.Array.NonEmpty (NonEmptyArray)
@@ -18,8 +18,7 @@ import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserve
 import Language.PS.CST.Types.Declaration (Binder(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), RecordUpdate(..), Type(..), ValueBindingFields)
 import Language.PS.CST.Types.Leafs (Comments(..), DeclDeriveType(..), RecordLabeled(..))
 import Language.PS.CST.Types.Module (Module(..))
-import Dodo as Dodo
-import Dodo.Common
+import Dodo.Common (leadingComma, pursCurlies, pursParens, pursSquares)
 
 -- | This is an entry point
 printModule :: Module -> Doc Void
