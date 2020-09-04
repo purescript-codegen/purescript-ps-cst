@@ -29,7 +29,7 @@ let additions =
           , "psci-support"
           , "strings"
           ]
-        , repo = "https://github.com/srghma/purescript-dodo-printer.git"
+        , repo = "https://github.com/natefaubion/purescript-dodo-printer.git"
         , version = "master"
         }
       , protolude =

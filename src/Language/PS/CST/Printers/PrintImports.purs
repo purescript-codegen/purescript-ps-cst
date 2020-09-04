@@ -2,7 +2,7 @@ module Language.PS.CST.Printers.PrintImports where
 
 import Prelude
 
-import Language.PS.CST.Printers.Utils (printConstructors, printModuleName)
+import Language.PS.CST.Printers.Utils
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
 
 import Language.PS.CST.Types.Module (DataMembers(..), Import(..), ImportDecl(..))
@@ -10,7 +10,6 @@ import Language.PS.CST.Types.Module (DataMembers(..), Import(..), ImportDecl(..)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
 import Dodo
-import Dodo.Symbols.Ascii
 import Dodo.Common
 
 printImports :: Array ImportDecl -> Doc Void

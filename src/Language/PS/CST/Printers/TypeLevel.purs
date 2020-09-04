@@ -1,7 +1,6 @@
 module Language.PS.CST.Printers.TypeLevel where
 
 import Dodo
-import Dodo.Symbols.Ascii
 import Prelude
 
 import Data.Array as Array
@@ -9,7 +8,7 @@ import Data.Foldable (null)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
 import Debug.Trace
-import Language.PS.CST.Printers.Utils (maybeWrapInParentheses, printModuleName)
+import Language.PS.CST.Printers.Utils
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
 import Language.PS.CST.Types.Declaration (Constraint(..), DataCtor(..), DataHead(..), Kind(..), Row, Type(..), TypeVarBinding(..))
 import Language.PS.CST.Types.Leafs (ClassFundep(..), Fixity(..), Ident, Label, OpName, ProperName)
