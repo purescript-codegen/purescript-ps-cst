@@ -9,7 +9,6 @@ import Dodo as Dodo
 import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
 import Effect.Class (liftEffect)
-import Effect.Class.Console (log)
 import Language.PS.CST (Module)
 import Language.PS.CST.Printers as Language.PS.CST.Printers
 import Node.Encoding (Encoding(..))
