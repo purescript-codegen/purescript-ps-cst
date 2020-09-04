@@ -11,8 +11,6 @@
     , "node-fs-aff"
     , "ansi"
     , "dodo-printer"
-    , "debug"
-    , "protolude"
     ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

@@ -4,7 +4,7 @@ import Prelude
 
 import Control.Parallel (parTraverse)
 import Data.Traversable (traverse_)
-import Debug.Trace (traceM)
+-- | import Debug.Trace (traceM)
 import Dodo as Dodo
 import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
@@ -100,7 +100,7 @@ mkAllTests tests = traverse_ mkTest tests
         Dodo.print Dodo.plainText Dodo.twoSpaces $ Language.PS.CST.Printers.printModule test.actualModule
 
     -- | liftEffect $ log actualParsed
-    traceM actualParsed
+    -- | traceM actualParsed
     -- | traceM test.expected
     -- | actualParsed `shouldEqual` test.expected
     actualParsed `textShouldMatch` test.expected
