@@ -9,30 +9,28 @@ import Language.PS.CST.Printers.Utils (printConstructors, printModuleName)
 
 import Data.Newtype (unwrap)
 import Data.Maybe (Maybe(..))
-import PrettyprinterRenderable (Doc, emptyDoc, flatAlt, line', nest, text, (<+>))
-import PrettyprinterRenderable.Code.Purescript (encloseSep)
-import PrettyprinterRenderable.Symbols.String (parens)
+import Dodo
+import Dodo.Common
+import Dodo.Symbols.Ascii
 
-printModuleModuleNameAndExports :: ModuleName -> Array Export -> Doc String
+printModuleModuleNameAndExports :: ModuleName -> Array Export -> Doc Void
 printModuleModuleNameAndExports moduleName [] = text "module" <+> printModuleName moduleName <+> text "where"
 printModuleModuleNameAndExports moduleName exports =
   let
-    printedNames = encloseSep (text "(") (text ")") (text ", ") (map printExportName exports)
-
-    onV2OnFlatten1Space = flatAlt (text "  ") (text " ")
+    printedNames = pursParens $ foldWithSeparator leadingComma (map printExportName exports)
   in
-    text "module" <+> printModuleName moduleName <> line' <> (nest 2 (onV2OnFlatten1Space <> printedNames <+> text "where"))
+  flexGroup $ text "module" <+> printModuleName moduleName <> softBreak <> (indent (printedNames <+> text "where"))
 
-printExportName :: Export -> Doc String
+printExportName :: Export -> Doc Void
 printExportName (ExportValue ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
 printExportName (ExportOp valueOpName) = parens $ (text <<< appendUnderscoreIfReserved <<< unwrap) valueOpName
 printExportName (ExportType properNameTypeName maybeDataMembers) =
   let
-    printedProperNameTypeName :: Doc String
+    printedProperNameTypeName :: Doc Void
     printedProperNameTypeName = (text <<< appendUnderscoreIfReserved <<< unwrap) properNameTypeName
-    printedMaybeDataMembers :: Doc String
+    printedMaybeDataMembers :: Doc Void
     printedMaybeDataMembers = case maybeDataMembers of
-      Nothing -> emptyDoc
+      Nothing -> mempty
       (Just DataAll) -> text "(..)"
       (Just (DataEnumerated constructors)) -> parens $ printConstructors constructors
   in

@@ -9,50 +9,48 @@ import Language.PS.CST.Types.Module (DataMembers(..), Import(..), ImportDecl(..)
 
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
-import PrettyprinterRenderable (Doc, align, emptyDoc, flatAlt, group, nest, text, vcatOmittingEmpty, vsep, (<+>))
-import PrettyprinterRenderable.Symbols.String (parens)
-import PrettyprinterRenderable.Code.Purescript (encloseSep)
+import Dodo
+import Dodo.Symbols.Ascii
+import Dodo.Common
 
-printImports :: Array ImportDecl -> Doc String
-printImports imports = vsep $ map printImport imports
+printImports :: Array ImportDecl -> Doc Void
+printImports imports = lines $ map printImport imports
 
-printImport :: ImportDecl -> Doc String
+printImport :: ImportDecl -> Doc Void
 printImport (ImportDecl { moduleName, names, qualification }) =
   let
     head = text "import" <+> printModuleName moduleName
 
-    qualification' :: Doc String
-    qualification' = maybe emptyDoc (\qualificationModuleName -> text " as" <+> printModuleName qualificationModuleName) qualification
+    qualification' :: Doc Void
+    qualification' = maybe mempty (\qualificationModuleName -> text " as" <+> printModuleName qualificationModuleName) qualification
   in
     case names of
-         [] -> head <> qualification' -- in one line
+         [] -> head <> qualification' -- in one spaceBreak
          _ ->
           let
-            exports :: Array (Doc String)
+            exports :: Array (Doc Void)
             exports = map printImportName names
 
-            exports' = encloseSep (text "(") (text ")") (text ", ") exports
-
-            onV2OnFlatten1Space = flatAlt (text "  ") (text " ")
+            exports' = pursParens $ foldWithSeparator leadingComma exports
           in
-            group ( vcatOmittingEmpty
+            flexGroup ( paragraph
                     [ head
-                    , nest 2 (onV2OnFlatten1Space <> align exports')
+                    , indent (alignCurrentColumn exports')
                     ]
                   )
             <> qualification'
 
-printImportName :: Import -> Doc String
+printImportName :: Import -> Doc Void
 printImportName (ImportValue ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
 printImportName (ImportOp valueOpName) = parens $ (text <<< appendUnderscoreIfReserved <<< unwrap) valueOpName
 printImportName (ImportType properNameTypeName maybeDataMembers) =
   let
-    printedProperNameTypeName :: Doc String
+    printedProperNameTypeName :: Doc Void
     printedProperNameTypeName = (text <<< appendUnderscoreIfReserved <<< unwrap) properNameTypeName
 
-    printedMaybeDataMembers :: Doc String
+    printedMaybeDataMembers :: Doc Void
     printedMaybeDataMembers = case maybeDataMembers of
-      Nothing -> emptyDoc
+      Nothing -> mempty
       (Just DataAll) -> text "(..)"
       (Just (DataEnumerated constructors)) -> parens $ printConstructors constructors
   in
