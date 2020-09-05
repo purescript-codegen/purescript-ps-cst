@@ -1,8 +1,6 @@
 module Language.PS.CST.Printers where
 
-import Language.PS.CST.Printers.Utils (dot, exprShouldBeOnNextLine, maybeWrapInParentheses, parens, printAndConditionallyAddNewlinesBetween, shouldBeNoNewlineBetweenDeclarations, shouldBeNoNewlineBetweenInstanceBindings, shouldBeNoNewlineBetweenLetBindings)
 import Prelude
-import Dodo (Doc, alignCurrentColumn, break, flexAlt, flexGroup, foldWithSeparator, indent, lines, paragraph, softBreak, space, spaceBreak, text, (<+>))
 
 import Data.Array as Array
 import Data.Array.NonEmpty (NonEmptyArray)
@@ -11,14 +9,18 @@ import Data.Either (Either(..))
 import Data.Foldable (any, null)
 import Data.Maybe (Maybe, maybe)
 import Data.Newtype (unwrap)
+import Data.NonEmpty (NonEmpty(..))
+import Dodo
+import Dodo.Common (leadingComma, pursCurlies, pursParens, pursSquares)
 import Language.PS.CST.Printers.PrintImports (printImports)
 import Language.PS.CST.Printers.PrintModuleModuleNameAndExports (printModuleModuleNameAndExports)
 import Language.PS.CST.Printers.TypeLevel (printConstraint, printDataCtor, printDataHead, printFixity, printFundep, printKind, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printTypeVarBinding)
+import Language.PS.CST.Printers.Utils (dot, exprShouldBeOnNextLine, maybeWrapInParentheses, parens, printAndConditionallyAddNewlinesBetween, shouldBeNoNewlineBetweenDeclarations, shouldBeNoNewlineBetweenInstanceBindings, shouldBeNoNewlineBetweenLetBindings)
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
 import Language.PS.CST.Types.Declaration (Binder(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), RecordUpdate(..), Type(..), ValueBindingFields)
 import Language.PS.CST.Types.Leafs (Comments(..), DeclDeriveType(..), RecordLabeled(..))
 import Language.PS.CST.Types.Module (Module(..))
-import Dodo.Common (leadingComma, pursCurlies, pursParens, pursSquares)
+import Effect.Exception.Unsafe as Effect.Exception.Unsafe
 
 -- | This is an entry point
 printModule :: Module -> Doc Void
@@ -159,7 +161,7 @@ printDeclaration (DeclValue { comments, valueBindingFields }) = printMaybeCommen
 printInstance :: Instance -> Doc Void
 printInstance instance_ =
   let
-    head = text "instance" <+> (text <<< appendUnderscoreIfReserved <<< unwrap) instance_.head.instName <+> text "::" <+> printQualifiedName_AnyProperNameType instance_.head.instClass
+    head = text "instance" <+> (text <<< appendUnderscoreIfReserved <<< unwrap) instance_.head.instName <+> text "::"
 
     doWrap :: Type -> Boolean
     doWrap (TypeApp _ _) = true
@@ -169,19 +171,29 @@ printInstance instance_ =
     doWrap (TypeConstrained _ _) = true
     doWrap _ = false
 
-    tail =
-      if null instance_.head.instTypes
-        then mempty
-        else foldWithSeparator spaceBreak $ map (\type_ -> maybeWrapInParentheses (doWrap type_) (printType type_)) instance_.head.instTypes
+    printedBody = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenInstanceBindings printInstanceBinding instance_.body
 
-    firstRow = flexGroup $ foldWithSeparator spaceBreak [head, tail]
+    printedBodyAssert =
+      if
+        ( if null instance_.body
+          then isEmpty printedBody
+          else not (isEmpty printedBody)
+        )
+        then true
+        else Effect.Exception.Unsafe.unsafeThrow "should be consistent"
+
+    where_ = if null instance_.body then mempty else text "where"
    in
-    if null instance_.body
-      then firstRow
-      else
-      let
-        printedBody = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenInstanceBindings printInstanceBinding instance_.body
-       in firstRow <+> text "where" <> spaceBreak <> indent printedBody
+    ( flexGroup $ foldWithSeparator space
+      [ head
+      , alignCurrentColumn $ foldWithSeparator spaceBreak $
+        [ printQualifiedName_AnyProperNameType instance_.head.instClass
+        ]
+        <> NonEmptyArray.toArray (map (\type_ -> maybeWrapInParentheses (doWrap type_) (printType type_)) instance_.head.instTypes)
+      ]
+    )
+    <+> where_
+    <%> indent printedBody
 
 printInstanceBinding :: InstanceBinding -> Doc Void
 printInstanceBinding (InstanceBindingSignature { ident, type_ }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_

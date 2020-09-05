@@ -99,5 +99,41 @@ actualModule = Module
           []
         )
       }
+    , DeclInstanceChain
+      { comments: Nothing
+      , instances:
+        (
+          NonEmpty.cons'
+          { head:
+            { instName: Ident "fooBazLongLongLong"
+            , instConstraints: []
+            , instClass: nonQualifiedName (ProperName "FooLongLongLong")
+            , instTypes:
+              NonEmpty.cons'
+              ( (TypeConstructor $ nonQualifiedName $ ProperName "CorLongLongLong")
+                `TypeApp`
+                (TypeConstructor $ nonQualifiedName $ ProperName "IntLongLongLong")
+              )
+              [ (TypeConstructor $ nonQualifiedName $ ProperName "GarLongLongLong")
+                `TypeApp`
+                (TypeConstructor $ nonQualifiedName $ ProperName "IntLongLongLong")
+                `TypeApp`
+                (TypeConstructor $ nonQualifiedName $ ProperName "BooleanLongLongLong")
+              ]
+            }
+          , body:
+            [ InstanceBindingName
+              { name: Ident "foo"
+              , binders: []
+              , guarded: Unconditional
+                { expr: ExprIdent $ nonQualifiedName $ Ident "append"
+                , whereBindings: []
+                }
+              }
+            ]
+          }
+          []
+        )
+      }
     ]
   }
