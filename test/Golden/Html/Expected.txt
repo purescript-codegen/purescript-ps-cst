@@ -5,16 +5,12 @@ html = div
        [ class_ main, id "zero" ]
        [ div
          [ class_ main, id "zero" ]
-         [ div
-           [ class_ main, id "zero" ]
-           []
+         [ div [ class_ main, id "zero" ] []
          , div [ class_ main, id "zero" ] []
          ]
        , div
          [ class_ main, id "zero" ]
-         [ div
-           [ class_ main, id "zero" ]
-           []
+         [ div [ class_ main, id "zero" ] []
          , div [ class_ main, id "zero" ] []
          ]
        ]

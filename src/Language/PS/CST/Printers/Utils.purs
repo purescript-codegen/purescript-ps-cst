@@ -1,15 +1,15 @@
 module Language.PS.CST.Printers.Utils where
 
-import Language.PS.CST.Types.Declaration (Declaration(..), Expr(..), InstanceBinding(..), LetBinding(..))
-import Language.PS.CST.Types.Leafs (ModuleName(..), ProperName, ProperNameType_ConstructorName)
 import Prelude
-import Dodo (Doc, break, enclose, foldWithSeparator, softBreak, text)
 
 import Data.Foldable (class Foldable)
 import Data.List (List(..), (:))
 import Data.List (fromFoldable) as List
 import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
+import Dodo (Doc, break, enclose, encloseEmptyAlt, flexAlt, foldWithSeparator, softBreak, text)
+import Language.PS.CST.Types.Declaration (Declaration(..), Expr(..), InstanceBinding(..), LetBinding(..))
+import Language.PS.CST.Types.Leafs (ModuleName(..), ProperName, ProperNameType_ConstructorName)
 
 -- | >>> dquotes "·"
 -- "·"
@@ -36,6 +36,12 @@ rparen = text ")"
 
 dot :: forall a. Doc a
 dot = text "."
+
+pursParensWithoutGroup :: forall a. Doc a -> Doc a
+pursParensWithoutGroup = encloseEmptyAlt open close (text "()")
+  where
+  open = flexAlt (text "(") (text "( ")
+  close = flexAlt (text ")") (break <> text ")")
 
 printModuleName :: ModuleName -> Doc Void
 printModuleName (ModuleName nonEmptyArray) = foldWithSeparator dot $ map (unwrap >>> text) nonEmptyArray

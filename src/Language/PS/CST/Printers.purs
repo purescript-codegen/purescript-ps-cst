@@ -11,15 +11,15 @@ import Data.Maybe (Maybe, maybe)
 import Data.Newtype (unwrap)
 import Dodo (Doc, alignCurrentColumn, break, flexAlt, flexGroup, foldWithSeparator, indent, isEmpty, lines, paragraph, softBreak, space, spaceBreak, text, (<%>), (<+>))
 import Dodo.Common (leadingComma, pursCurlies, pursParens, pursSquares)
+import Effect.Exception.Unsafe as Effect.Exception.Unsafe
 import Language.PS.CST.Printers.PrintImports (printImports)
 import Language.PS.CST.Printers.PrintModuleModuleNameAndExports (printModuleModuleNameAndExports)
 import Language.PS.CST.Printers.TypeLevel (printConstraint, printDataCtor, printDataHead, printFixity, printFundep, printKind, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printTypeVarBinding)
-import Language.PS.CST.Printers.Utils (dot, exprShouldBeOnNextLine, maybeWrapInParentheses, parens, printAndConditionallyAddNewlinesBetween, shouldBeNoNewlineBetweenDeclarations, shouldBeNoNewlineBetweenInstanceBindings, shouldBeNoNewlineBetweenLetBindings)
+import Language.PS.CST.Printers.Utils (dot, exprShouldBeOnNextLine, maybeWrapInParentheses, parens, printAndConditionallyAddNewlinesBetween, pursParensWithoutGroup, shouldBeNoNewlineBetweenDeclarations, shouldBeNoNewlineBetweenInstanceBindings, shouldBeNoNewlineBetweenLetBindings)
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
 import Language.PS.CST.Types.Declaration (Binder(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), RecordUpdate(..), Type(..), ValueBindingFields)
 import Language.PS.CST.Types.Leafs (Comments(..), DeclDeriveType(..), RecordLabeled(..))
 import Language.PS.CST.Types.Module (Module(..))
-import Effect.Exception.Unsafe as Effect.Exception.Unsafe
 
 -- | This is an entry point
 printModule :: Module -> Doc Void
@@ -112,7 +112,7 @@ printDeclaration (DeclDerive { comments, deriveType, head: { instName, instConst
       case instConstraints of
         [] -> mempty
         [constraint] -> printConstraint constraint <+> text "=>"
-        constrainsts -> (alignCurrentColumn $ pursParens $ foldWithSeparator leadingComma $ map printConstraint constrainsts) <+> text "=>"
+        constrainsts -> (alignCurrentColumn $ pursParensWithoutGroup $ foldWithSeparator leadingComma $ map printConstraint constrainsts) <+> text "=>"
 
     types' = foldWithSeparator space $ map (\type_ -> maybeWrapInParentheses (doWrap type_) $ printType type_) instTypes
    in
