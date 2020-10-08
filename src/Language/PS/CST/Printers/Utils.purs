@@ -16,6 +16,10 @@ import Language.PS.CST.Types.Leafs (ModuleName(..), ProperName, ProperNameType_C
 dquotes :: forall a. Doc a -> Doc a
 dquotes = enclose dquote dquote
 
+dquotesIf :: forall a. Boolean -> Doc a -> Doc a
+dquotesIf true = dquotes
+dquotesIf false = identity
+
 dquote :: forall a. Doc a
 dquote = text "\""
 
