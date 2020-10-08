@@ -81,6 +81,10 @@ actualModule = Module
                                 )
       }
     , declFooType $ TypeRow
+      { rowLabels: mkRowLabels [ "RowField" /\ numberType ]
+      , rowTail: Nothing
+      }
+    , declFooType $ TypeRow
       { rowLabels: mkRowLabels
         [ "rowField" /\ (typeRecord
           [ "foo" /\ numberType

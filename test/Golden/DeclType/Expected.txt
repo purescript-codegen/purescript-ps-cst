@@ -64,6 +64,8 @@ type Foo = ( rowField :: Number
                            { someField :: Number }
            )
 
+type Foo = ( "RowField" :: Number )
+
 type Foo = ( rowField :: { foo :: Number
                          , bar :: Data.Map.Map
                                   (Data.Map.Map
