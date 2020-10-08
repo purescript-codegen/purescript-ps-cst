@@ -2,14 +2,20 @@ module Language.PS.CST.Printers.Utils where
 
 import Prelude
 
+import Data.Either (fromRight)
 import Data.Foldable (class Foldable)
 import Data.List (List(..), (:))
 import Data.List (fromFoldable) as List
 import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
+import Data.String.Regex (Regex, regex)
+import Data.String.Regex as Regex
+import Data.String.Regex.Flags as RegexFlags
 import Dodo (Doc, break, enclose, encloseEmptyAlt, flexAlt, foldWithSeparator, softBreak, text)
+import Language.PS.CST.ReservedNames (isReservedName)
 import Language.PS.CST.Types.Declaration (Declaration(..), Expr(..), InstanceBinding(..), LetBinding(..))
-import Language.PS.CST.Types.Leafs (ModuleName(..), ProperName, ProperNameType_ConstructorName)
+import Language.PS.CST.Types.Leafs (Label(..), ModuleName(..), ProperName, ProperNameType_ConstructorName)
+import Partial.Unsafe (unsafePartial)
 
 -- | >>> dquotes "·"
 -- "·"
@@ -93,3 +99,11 @@ exprShouldBeOnNextLine (ExprLet _) = true
 exprShouldBeOnNextLine (ExprCase _) = true
 exprShouldBeOnNextLine (ExprIf _) = true
 exprShouldBeOnNextLine _ = false
+
+labelNeedsQuotes :: Label -> Boolean
+labelNeedsQuotes (Label name) =
+  isReservedName name || not (Regex.test unquotedLabelRegex name)
+
+unquotedLabelRegex :: Regex
+unquotedLabelRegex =
+  unsafePartial $ fromRight $ regex "^[a-z][A-Za-z0-9_]*$" RegexFlags.noFlags
