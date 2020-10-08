@@ -274,7 +274,7 @@ printExpr =
     printExprImplementation (ExprOp exprLeft operator exprRight) = printExprImplementation exprLeft <+> printQualifiedName_AnyOpNameType operator <+> printExprImplementation exprRight
     printExprImplementation (ExprOpName opName) = printQualifiedName_AnyOpNameType opName
     printExprImplementation (ExprNegate expr) = text "-" <> printExprImplementation expr
-    printExprImplementation (ExprRecordAccessor { recExpr, recPath }) = printExprImplementation recExpr <> text "." <> (foldWithSeparator dot $ map (text <<< appendUnderscoreIfReserved <<< unwrap) recPath)
+    printExprImplementation (ExprRecordAccessor { recExpr, recPath }) = printExprImplementation recExpr <> text "." <> (foldWithSeparator dot $ map (\l -> dquotesIf (labelNeedsQuotes l) $ text $ appendUnderscoreIfReserved $ unwrap l) recPath)
     printExprImplementation (ExprRecordUpdate expr recordUpdates) = parens $ printExprImplementation expr <+> printRecordUpdates recordUpdates
     printExprImplementation (ExprApp exprLeft exprRight) =
       let
