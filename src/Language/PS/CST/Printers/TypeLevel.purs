@@ -1,14 +1,14 @@
 module Language.PS.CST.Printers.TypeLevel where
 
-import Dodo (Doc, alignCurrentColumn, flexGroup, foldWithSeparator, isEmpty, paragraph, softBreak, space, spaceBreak, text, (<+>))
 import Prelude
 
 import Data.Array as Array
 import Data.Foldable (null)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
-import Language.PS.CST.Printers.Utils (dquotes, maybeWrapInParentheses, parens, printModuleName)
-import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
+import Dodo (Doc, alignCurrentColumn, flexGroup, foldWithSeparator, isEmpty, paragraph, softBreak, space, spaceBreak, text, (<+>))
+import Language.PS.CST.Printers.Utils (dquotes, dquotesIf, labelNeedsQuotes, maybeWrapInParentheses, parens, printModuleName)
+import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
 import Language.PS.CST.Types.Declaration (Constraint(..), DataCtor(..), DataHead(..), Kind(..), Row, Type(..), TypeVarBinding(..))
 import Language.PS.CST.Types.Leafs (ClassFundep(..), Fixity(..), Ident, Label, OpName, ProperName)
 import Language.PS.CST.Types.QualifiedName (QualifiedName(..))
@@ -154,4 +154,4 @@ printRowLikeType leftWrapper rightWrapper row =
                 ]
 
 printRowLabel :: { label :: Label, type_ :: Type } -> Doc Void
-printRowLabel { label, type_ } = (text <<< quoteIfReserved <<< unwrap) label <+> text "::" <+> printType type_
+printRowLabel { label, type_ } = (dquotesIf (labelNeedsQuotes label) <<< text <<< unwrap) label <+> text "::" <+> printType type_
