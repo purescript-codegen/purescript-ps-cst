@@ -32,14 +32,17 @@ reservedNames = Set.fromFoldable
   , "where"
   ]
 
+isReservedName :: String -> Boolean
+isReservedName str = Set.member str reservedNames
+
 appendUnderscoreIfReserved :: String -> String
 appendUnderscoreIfReserved str =
-  if Set.member str reservedNames
+  if isReservedName str
     then str <> "_"
     else str
 
 quoteIfReserved :: String -> String
 quoteIfReserved str =
-  if Set.member str reservedNames
+  if isReservedName str
     then "\"" <> str <> "\""
     else str
