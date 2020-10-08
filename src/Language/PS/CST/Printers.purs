@@ -15,7 +15,7 @@ import Effect.Exception.Unsafe as Effect.Exception.Unsafe
 import Language.PS.CST.Printers.PrintImports (printImports)
 import Language.PS.CST.Printers.PrintModuleModuleNameAndExports (printModuleModuleNameAndExports)
 import Language.PS.CST.Printers.TypeLevel (printConstraint, printDataCtor, printDataHead, printFixity, printFundep, printKind, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printTypeVarBinding)
-import Language.PS.CST.Printers.Utils (dot, exprShouldBeOnNextLine, maybeWrapInParentheses, parens, printAndConditionallyAddNewlinesBetween, pursParensWithoutGroup, shouldBeNoNewlineBetweenDeclarations, shouldBeNoNewlineBetweenInstanceBindings, shouldBeNoNewlineBetweenLetBindings)
+import Language.PS.CST.Printers.Utils (dot, dquotesIf, exprShouldBeOnNextLine, labelNeedsQuotes, maybeWrapInParentheses, parens, printAndConditionallyAddNewlinesBetween, pursParensWithoutGroup, shouldBeNoNewlineBetweenDeclarations, shouldBeNoNewlineBetweenInstanceBindings, shouldBeNoNewlineBetweenLetBindings)
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
 import Language.PS.CST.Types.Declaration (Binder(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), RecordUpdate(..), Type(..), ValueBindingFields)
 import Language.PS.CST.Types.Leafs (Comments(..), DeclDeriveType(..), RecordLabeled(..))
@@ -245,7 +245,8 @@ printBinder (BinderOp binderLeft operator binderRight) = printBinder binderLeft 
 
 printRecordLabeled :: ∀ a . (a -> Doc Void) -> RecordLabeled a -> Doc Void
 printRecordLabeled _ (RecordPun ident) = (text <<< quoteIfReserved <<< unwrap) ident
-printRecordLabeled print (RecordField label a) = (text <<< quoteIfReserved <<< unwrap) label <> text ":" <+> print a
+printRecordLabeled print (RecordField label a) =
+  (dquotesIf (labelNeedsQuotes label) <<< text <<< unwrap) label <> text ":" <+> print a
 
 printExpr :: Expr -> Doc Void
 printExpr =
