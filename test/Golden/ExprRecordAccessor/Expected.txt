@@ -1,0 +1,7 @@
+module ExprRecordAccessor where
+
+foo = rec.a
+
+bar = rec."A"
+
+baz = rec.a."B".c
