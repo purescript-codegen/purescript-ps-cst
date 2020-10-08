@@ -1,3 +1,9 @@
 module ExprRecord where
 
-maybeFragments = { onHuman: pure Nothing, onDroid: pure Nothing }
+maybeFragments = { onHuman: pure
+                            Nothing
+                 , onDroid: pure
+                            Nothing
+                 , "Cyborg": pure
+                             Nothing
+                 }

@@ -7,7 +7,7 @@ import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
 
 names :: Array String
-names = ["Human", "Droid"]
+names = ["onHuman", "onDroid", "Cyborg"]
 
 actualModule :: Module
 actualModule = Module
@@ -23,7 +23,7 @@ actualModule = Module
         , guarded: Unconditional
             { expr:
               ExprRecord $ names <#> \name -> RecordField
-                (Label $ "on" <> name)
+                (Label name)
                 ( (ExprIdent $ nonQualifiedName $ Ident "pure")
                   `ExprApp`
                   (ExprConstructor $ nonQualifiedName $ ProperName "Nothing")
@@ -34,4 +34,3 @@ actualModule = Module
       }
     ]
   }
-
