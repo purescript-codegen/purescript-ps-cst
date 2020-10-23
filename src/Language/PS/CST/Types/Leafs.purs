@@ -28,6 +28,7 @@ data Comments
 derive instance genericComments :: Generic Comments _
 derive instance eqComments :: Eq Comments
 derive instance ordComments :: Ord Comments
+instance showComments :: Show Comments where show = genericShow
 
 newtype ModuleName = ModuleName (NonEmptyArray (ProperName ProperNameType_Namespace))
 derive instance newtypeModuleName :: Newtype ModuleName _
@@ -70,7 +71,7 @@ derive instance genericProperName :: Generic (ProperName proxy) _
 derive instance eqProperName :: Eq (ProperName proxy)
 derive instance ordProperName :: Ord (ProperName proxy)
 instance showProperName :: Show (ProperName proxy) where
-  show (ProperName string) = "(ProperName" <> show string <> ")"
+  show (ProperName string) = "(ProperName " <> show string <> ")"
 
 data DeclDeriveType
   = DeclDeriveType_Newtype
@@ -78,6 +79,7 @@ data DeclDeriveType
 derive instance genericDeclDeriveType :: Generic DeclDeriveType _
 derive instance eqDeclDeriveType :: Eq DeclDeriveType
 derive instance ordDeclDeriveType :: Ord DeclDeriveType
+instance showDeclDeriveType :: Show DeclDeriveType where show = genericShow
 
 data Fixity
   = Infix
@@ -86,6 +88,7 @@ data Fixity
 derive instance genericFixity :: Generic Fixity _
 derive instance eqFixity :: Eq Fixity
 derive instance ordFixity :: Ord Fixity
+instance showFixity :: Show Fixity where show = genericShow
 
 newtype Label = Label String
 derive instance newtypeLabel :: Newtype Label _
@@ -97,10 +100,11 @@ instance showLabel :: Show Label where show = genericShow
 data ClassFundep
   = FundepDetermines (NonEmptyArray Ident) (NonEmptyArray Ident)
   -- | FundepDetermined (NonEmptyArray Ident) -- parser is not allowing it (i.e. `class Foo a | a`)?
--- | derive instance genericClassFundep :: Generic ClassFundep _
--- | derive instance eqClassFundep :: Eq ClassFundep
--- | derive instance ordClassFundep :: Ord ClassFundep
--- | instance showClassFundep :: Show ClassFundep where show = genericShow
+
+derive instance genericClassFundep :: Generic ClassFundep _
+derive instance eqClassFundep :: Eq ClassFundep
+derive instance ordClassFundep :: Ord ClassFundep
+instance showClassFundep :: Show ClassFundep where show = genericShow
 
 data RecordLabeled a
   = RecordPun Ident
