@@ -1,5 +1,9 @@
 module Language.PS.SmartCST.Types.SmartQualifiedNameConstructor where
 
+import Prelude
+
+import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show (genericShow)
 import Language.PS.CST.Types.Leafs (ProperName, ProperNameType_ConstructorName, ProperNameType_TypeName, ModuleName)
 
 -- used to replace `QualifiedName (ProperName ProperNameType_ClassName)`
@@ -30,3 +34,9 @@ data SmartQualifiedNameConstructor
     ModuleName -- custom
     (ProperName ProperNameType_ConstructorName) -- name
     (ProperName ProperNameType_TypeName)
+
+
+derive instance genericSmartQualifiedNameConstructor :: Generic SmartQualifiedNameConstructor _
+derive instance eqQualifiedNameConstructor :: Eq SmartQualifiedNameConstructor
+derive instance ordQualifiedNameConstructor :: Ord SmartQualifiedNameConstructor
+instance showQualifiedNameConstructor :: Show SmartQualifiedNameConstructor where show = genericShow
