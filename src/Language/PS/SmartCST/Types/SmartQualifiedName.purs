@@ -2,6 +2,8 @@ module Language.PS.SmartCST.Types.SmartQualifiedName where
 
 import Prelude
 
+import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show (genericShow)
 import Language.PS.CST.Types.Leafs (ModuleName)
 
 data SmartQualifiedName a
@@ -26,9 +28,8 @@ data SmartQualifiedName a
     ModuleName -- custom
     a -- name
 
+derive instance genericSmartQualifiedName :: Generic (SmartQualifiedName a) _
 derive instance functorSmartQualifiedName :: Functor SmartQualifiedName
--- | derive instance newtypeQualifiedName :: Newtype (SmartQualifiedName a) _
--- | derive instance eqQualifiedName :: Eq a => Eq (SmartQualifiedName a)
--- | derive instance ordQualifiedName :: Ord a => Ord (SmartQualifiedName a)
--- | instance showQualifiedName :: Show a => Show (SmartQualifiedName a) where
--- |   show (SmartQualifiedName { qualModule, qualName }) = "(SmartQualifiedName { qualModule = " <> show qualModule <> ", qualName = " <> show qualName <> " })"
+derive instance eqQualifiedName :: Eq a => Eq (SmartQualifiedName a)
+derive instance ordQualifiedName :: Ord a => Ord (SmartQualifiedName a)
+instance showQualifiedName :: Show a => Show (SmartQualifiedName a) where show = genericShow
