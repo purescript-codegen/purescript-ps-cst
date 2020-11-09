@@ -15,7 +15,7 @@ actualModule = Module
   , declarations:
     [ DeclDerive
       { comments: Nothing
-      , deriveType: DeclDeriveType_Odrinary
+      , deriveType: DeclDeriveType_Ordinary
       , head:
         { instName: Ident "eqBaz"
         , instConstraints: []
@@ -35,7 +35,7 @@ actualModule = Module
       }
     , DeclDerive
       { comments: Nothing
-      , deriveType: DeclDeriveType_Odrinary
+      , deriveType: DeclDeriveType_Ordinary
       , head:
         { instName: Ident "foo"
         , instConstraints: []
@@ -51,7 +51,7 @@ actualModule = Module
       }
     , DeclDerive
       { comments: Nothing
-      , deriveType: DeclDeriveType_Odrinary
+      , deriveType: DeclDeriveType_Ordinary
       , head:
         { instName: Ident "foo"
         , instConstraints:
@@ -66,7 +66,7 @@ actualModule = Module
       }
     , DeclDerive
       { comments: Nothing
-      , deriveType: DeclDeriveType_Odrinary
+      , deriveType: DeclDeriveType_Ordinary
       , head:
         { instName: Ident "foo"
         , instConstraints:
@@ -80,7 +80,7 @@ actualModule = Module
       }
     , DeclDerive
       { comments: Nothing
-      , deriveType: DeclDeriveType_Odrinary
+      , deriveType: DeclDeriveType_Ordinary
       , head:
         { instName: Ident "foo"
         , instConstraints:

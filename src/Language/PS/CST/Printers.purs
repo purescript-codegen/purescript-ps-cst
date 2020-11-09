@@ -106,7 +106,7 @@ printDeclaration (DeclDerive { comments, deriveType, head: { instName, instConst
     deriveType' =
       case deriveType of
         DeclDeriveType_Newtype -> text "newtype"
-        DeclDeriveType_Odrinary -> mempty
+        DeclDeriveType_Ordinary -> mempty
 
     constraints' =
       case instConstraints of
