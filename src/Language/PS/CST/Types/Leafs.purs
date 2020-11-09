@@ -75,7 +75,7 @@ instance showProperName :: Show (ProperName proxy) where
 
 data DeclDeriveType
   = DeclDeriveType_Newtype
-  | DeclDeriveType_Odrinary
+  | DeclDeriveType_Ordinary
 derive instance genericDeclDeriveType :: Generic DeclDeriveType _
 derive instance eqDeclDeriveType :: Eq DeclDeriveType
 derive instance ordDeclDeriveType :: Ord DeclDeriveType
