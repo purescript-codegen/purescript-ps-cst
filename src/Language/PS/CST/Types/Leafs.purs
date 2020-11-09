@@ -55,7 +55,7 @@ derive instance genericOpName :: Generic (OpName proxy) _
 derive instance eqOpName :: Eq (OpName proxy)
 derive instance ordOpName :: Ord (OpName proxy)
 instance showOpName :: Show (OpName proxy) where
-  show (OpName string) = "(OpName" <> show string <> ")"
+  show (OpName string) = "(OpName " <> show string <> ")"
 
 foreign import kind ProperNameType
 foreign import data ProperNameType_TypeName :: ProperNameType
