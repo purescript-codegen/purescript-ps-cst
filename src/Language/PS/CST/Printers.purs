@@ -199,15 +199,19 @@ printInstanceBinding (InstanceBindingSignature { ident, type_ }) = (text <<< app
 printInstanceBinding (InstanceBindingName valueBindingFields) = printValueBindingFields valueBindingFields
 
 printValueBindingFields :: ValueBindingFields -> Doc Void
-printValueBindingFields { name, binders, guarded } =
+printValueBindingFields = \{ name, binders, guarded } ->
   let
     printedBinders =
       if null binders
         then mempty
-        else (paragraph $ map printBinder binders) <> space
+        else (paragraph $ map printBinderWithMaybeParens binders) <> space
 
     printedHead = (text <<< appendUnderscoreIfReserved <<< unwrap) name <+> printedBinders <> text "="
    in printGuarded printedHead guarded
+  where
+        printBinderWithMaybeParens x@(BinderConstructor { args: [] }) = printBinder x
+        printBinderWithMaybeParens x@(BinderConstructor { args }) = parens $ printBinder x
+        printBinderWithMaybeParens x = printBinder x
 
 printGuarded :: Doc Void -> Guarded -> Doc Void
 printGuarded printedHead guarded =

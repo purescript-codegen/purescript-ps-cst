@@ -40,6 +40,7 @@ import Test.Golden.MultilinePatternMatchingInLet2.Actual as Test.Golden.Multilin
 import Test.Golden.MultilinePatternMatchingInWhere.Actual as Test.Golden.MultilinePatternMatchingInWhere.Actual
 import Test.Golden.MultilinePatternMatchingInWhere2.Actual as Test.Golden.MultilinePatternMatchingInWhere2.Actual
 import Test.Golden.MultilinePatternMatchingInWhereAndLet2.Actual as Test.Golden.MultilinePatternMatchingInWhereAndLet2.Actual
+import Test.Golden.BoundValue.Actual as Test.Golden.BoundValue.Actual
 import Test.Spec as Test.Spec
 import Test.Spec.Reporter as Test.Spec.Reporter
 import Test.Spec.Runner as Test.Spec.Runner
@@ -82,6 +83,7 @@ goldenTests =
   , { name: "ExprRecordAccessor", actualModule: Test.Golden.ExprRecordAccessor.Actual.actualModule }
   , { name: "ExprArray", actualModule: Test.Golden.ExprArray.Actual.actualModule }
   , { name: "Html", actualModule: Test.Golden.Html.Actual.actualModule }
+  , { name: "BoundValue", actualModule: Test.Golden.BoundValue.Actual.actualModule }
   ]
 
 addText :: GoldenTest -> Aff GoldenTestWithExpected
