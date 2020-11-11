@@ -16,6 +16,11 @@ newtype Module = Module
   , exports :: Array Export
   , declarations :: Array Declaration
   }
+derive instance newtypeModule :: Newtype Module _
+derive instance genericModule :: Generic Module _
+derive instance eqModule :: Eq Module
+derive instance ordModule :: Ord Module
+instance showModule :: Show Module where show = genericShow
 
 newtype ImportDecl = ImportDecl
   { moduleName :: ModuleName
