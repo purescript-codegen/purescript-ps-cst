@@ -87,6 +87,8 @@ type Foo = (Array a -> Maybe a)
 
 type Foo = (Array ~> Maybe)
 
+type Foo = (Foo A <+> Foo B)
+
 type Foo = (forall f . Functor f => f ~> Maybe)
 
 type Foo = (MyClass f g k => MyClass2 { foo :: Number } => f)
