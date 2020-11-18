@@ -90,6 +90,7 @@ printType = \type_ -> case type_ of
                            (TypeForall _ _) -> flexGroup $ printTypeImplementation type_
                            (TypeConstrained _ _) -> flexGroup $ printTypeImplementation type_
                            (TypeArr _ _) -> flexGroup $ printTypeImplementation type_
+                           (TypeOp _ _ _) -> flexGroup $ printTypeImplementation type_
                            _ -> printTypeImplementation type_
   where
     printTypeImplementation (TypeVar ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident

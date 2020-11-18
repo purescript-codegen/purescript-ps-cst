@@ -140,6 +140,18 @@ actualModule = Module
       (arrayType $ TypeVar $ Ident "a")
     , declFooType $ (arrayType $ TypeVar $ Ident "a") ====>> (maybeType $ TypeVar $ Ident "a")
     , declFooType $ TypeOp (TypeConstructor $ nonQualifiedName $ ProperName "Array") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe")
+    , declFooType $
+      (TypeOp
+       ((TypeConstructor $ nonQualifiedName (ProperName "Foo"))
+        `TypeApp`
+        (TypeConstructor $ nonQualifiedName (ProperName "A"))
+       )
+       (nonQualifiedName (OpName "<+>"))
+       ((TypeConstructor $ nonQualifiedName (ProperName "Foo"))
+        `TypeApp`
+        (TypeConstructor $ nonQualifiedName (ProperName "B"))
+       )
+      )
     , declFooType $ TypeForall
       (NonEmpty.cons' (TypeVarName $ Ident "f") [])
       ( TypeConstrained
