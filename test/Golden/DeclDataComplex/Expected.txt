@@ -44,8 +44,7 @@ data Foo
     ( rowField :: Number, rowField2 :: Number | MyExtension + MyOtherExtension )
     ( rowField :: Number
     , rowField2 :: Number
-    | MyExtension + MyOtherExtension
-                    { someField :: Number }
+    | MyExtension + MyOtherExtension { someField :: Number }
     )
     ( rowField :: { foo :: Number
                   , bar :: Data.Map.Map
