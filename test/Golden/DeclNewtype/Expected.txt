@@ -60,8 +60,7 @@ newtype Foo = Foo ( rowField :: Number
 
 newtype Foo = Foo ( rowField :: Number
                   , rowField2 :: Number
-                  | MyExtension + MyOtherExtension
-                                  { someField :: Number }
+                  | MyExtension + MyOtherExtension { someField :: Number }
                   )
 
 newtype Foo = Foo ( rowField :: { foo :: Number
