@@ -169,5 +169,21 @@ actualModule = Module
     , declFooType $ TypeKinded
       (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
       ((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "Type") ====>>> (KindName $ nonQualifiedName $ ProperName "Type"))
+    , declFooType $
+      (TypeConstructor $ nonQualifiedName (ProperName "FooBarBaz"))
+      `TypeApp`
+      (TypeConstructor $ nonQualifiedName (ProperName "QuxQuuxQuz"))
+      ====>>
+      (TypeConstructor $ nonQualifiedName (ProperName "FooBarBaz"))
+      `TypeApp`
+      (TypeConstructor $ nonQualifiedName (ProperName "QuxQuuxQuz"))
+      ====>>
+      (TypeConstructor $ nonQualifiedName (ProperName "FooBarBaz"))
+      `TypeApp`
+      (TypeConstructor $ nonQualifiedName (ProperName "QuxQuuxQuz"))
+      ====>>
+      (TypeConstructor $ nonQualifiedName (ProperName "FooBarBaz"))
+      `TypeApp`
+      (TypeConstructor $ nonQualifiedName (ProperName "QuxQuuxQuz"))
     ]
   }
