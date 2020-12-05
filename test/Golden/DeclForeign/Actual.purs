@@ -32,6 +32,10 @@ actualModule = Module
               { rowLabels: mkRowLabels
                 [ "console" /\ (TypeConstructor $ nonQualifiedName $ ProperName "CONSOLE")
                 , "foo" /\ (TypeConstructor $ nonQualifiedName $ ProperName "FOO")
+                , "bar" /\ (TypeConstructor $ nonQualifiedName $ ProperName "BAR")
+                , "baz" /\ (TypeConstructor $ nonQualifiedName $ ProperName "BAZ")
+                , "qux" /\ (TypeConstructor $ nonQualifiedName $ ProperName "QUX")
+                , "quux" /\ (TypeConstructor $ nonQualifiedName $ ProperName "QUUX")
                 ]
               , rowTail: Just $ TypeVar $ Ident "e"
               }

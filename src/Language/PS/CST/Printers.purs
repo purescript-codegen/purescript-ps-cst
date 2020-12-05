@@ -6,19 +6,20 @@ import Data.Array as Array
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Either (Either(..))
-import Data.Foldable (any, null)
+import Data.Foldable (any, fold, foldMap, foldl, null)
 import Data.Maybe (Maybe, maybe)
+import Data.Monoid (guard)
 import Data.Newtype (unwrap)
-import Dodo (Doc, alignCurrentColumn, break, flexAlt, flexGroup, foldWithSeparator, indent, isEmpty, lines, paragraph, softBreak, space, spaceBreak, text, (<%>), (<+>))
+import Dodo (Doc, alignCurrentColumn, break, flexGroup, foldWithSeparator, indent, lines, paragraph, softBreak, space, spaceBreak, text, words, (<%>), (<+>))
 import Dodo.Common (leadingComma, pursCurlies, pursParens, pursSquares)
-import Effect.Exception.Unsafe as Effect.Exception.Unsafe
 import Language.PS.CST.Printers.PrintImports (printImports)
 import Language.PS.CST.Printers.PrintModuleModuleNameAndExports (printModuleModuleNameAndExports)
-import Language.PS.CST.Printers.TypeLevel (printConstraint, printDataCtor, printDataHead, printFixity, printFundep, printKind, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printTypeVarBinding)
-import Language.PS.CST.Printers.Utils (dot, dquotesIf, exprShouldBeOnNextLine, labelNeedsQuotes, maybeWrapInParentheses, parens, printAndConditionallyAddNewlinesBetween, pursParensWithoutGroup, shouldBeNoNewlineBetweenDeclarations, shouldBeNoNewlineBetweenInstanceBindings, shouldBeNoNewlineBetweenLetBindings)
+import Language.PS.CST.Printers.TypeLevel (printConstraint, printConstraintList, printFixity, printFundep, printKind, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printType', printTypeVarBinding)
+import Language.PS.CST.Printers.Utils (dot, dquotesIf, exprShouldBeOnNextLine, labelNeedsQuotes, maybeWrapInParentheses, parens, printAndConditionallyAddNewlinesBetween, printLabelledGroup, shouldBeNoNewlineBetweenDeclarations, shouldBeNoNewlineBetweenInstanceBindings, shouldBeNoNewlineBetweenLetBindings, unwrapText, (<%%>))
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
-import Language.PS.CST.Types.Declaration (Binder(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), LetBinding(..), RecordUpdate(..), Type(..), ValueBindingFields)
-import Language.PS.CST.Types.Leafs (Comments(..), DeclDeriveType(..), RecordLabeled(..))
+import Language.PS.CST.Sugar.QualifiedName (nonQualifiedName)
+import Language.PS.CST.Types.Declaration (Binder(..), Constraint(..), DataCtor(..), DataHead(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), InstanceHead, LetBinding(..), RecordUpdate(..), Type(..), ValueBindingFields)
+import Language.PS.CST.Types.Leafs (Comments(..), DeclDeriveType(..), ProperName(..), RecordLabeled(..))
 import Language.PS.CST.Types.Module (Module(..))
 
 -- | This is an entry point
@@ -45,39 +46,21 @@ printMaybeComments comments doc =
     ]
 
 printDeclaration :: Declaration -> Doc Void
-printDeclaration (DeclData { comments, head, constructors: [] }) = printMaybeComments comments (printDataHead (text "data") head)
 printDeclaration (DeclData { comments, head, constructors }) =
-  let
-    printedCtorsArray = map (indent <<< printDataCtor) constructors
-
-    printedCtors = alignCurrentColumn $ flexGroup $ foldWithSeparator spaceBreak $ Array.zipWith (<+>) ([text "="] <> Array.replicate (Array.length constructors - 1) (text "|")) printedCtorsArray
-  in printMaybeComments comments $
-    flexGroup $ paragraph [ printDataHead (text "data") head, flexAlt mempty (text "  ") <> printedCtors ]
+  printMaybeComments comments
+  $ printAssignmentDecl "data" head (dataCtorToType <$> constructors)
 printDeclaration (DeclType { comments, head, type_ }) =
-  let
-    doWrap :: Type -> Boolean
-    doWrap (TypeForall _ _) = true
-    doWrap (TypeArr _ _) = true
-    doWrap (TypeOp _ _ _) = true
-    doWrap (TypeConstrained _ _) = true
-    doWrap _ = false
+  printMaybeComments comments
+  $ printAssignmentDecl "type" head [ type_ ]
 
-    printedType :: Doc Void
-    printedType = maybeWrapInParentheses (doWrap type_) $ printType $ type_
-  in printMaybeComments comments (printDataHead (text "type") head <+> text "=" <+> printedType)
 printDeclaration (DeclNewtype { comments, head, name, type_ }) =
-  let
-    doWrap :: Type -> Boolean
-    doWrap (TypeApp _ _) = true
-    doWrap (TypeForall _ _) = true
-    doWrap (TypeArr _ _) = true
-    doWrap (TypeOp _ _ _) = true
-    doWrap (TypeConstrained _ _) = true
-    doWrap _ = false
+  printMaybeComments comments
+  $ printAssignmentDecl "newtype" head [ dataCtorToType dataCtor ]
+  where
+    dataCtor = DataCtor { dataCtorName: name
+                        , dataCtorFields: [ type_ ]
+                        }
 
-    printedType :: Doc Void
-    printedType = maybeWrapInParentheses (doWrap type_) $ printType $ type_
-  in printMaybeComments comments (printDataHead (text "newtype") head <+> text "=" <+> ((text <<< appendUnderscoreIfReserved <<< unwrap) name <+> printedType))
 printDeclaration (DeclFixity { comments, fixityFields: { keyword, precedence, operator } }) =
   let
     printFixityOp :: FixityOp -> Doc Void
@@ -87,21 +70,36 @@ printDeclaration (DeclFixity { comments, fixityFields: { keyword, precedence, op
   in printMaybeComments comments (printFixity keyword <+> text (show precedence) <+> printFixityOp operator)
 printDeclaration (DeclForeign { comments, foreign_ }) =
   printMaybeComments comments
-    ( text "foreign" <+> text "import" <+>
-        case foreign_ of
-           (ForeignValue { ident, type_ }) -> (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_
-           (ForeignData { name, kind_ }) -> text "data" <+> (text <<< appendUnderscoreIfReserved <<< unwrap) name <+> text "::" <+> printKind kind_
-           (ForeignKind { name }) -> text "kind" <+> (text <<< appendUnderscoreIfReserved <<< unwrap) name
-    )
+  case foreign_ of
+    ForeignValue { ident, type_ } ->
+      printLabelledGroup
+      (text "foreign import" <+> unwrapText ident)
+      (flexGroup $ printType type_)
+    ForeignData { name, kind_ } ->
+      printLabelledGroup
+      (text "foreign import data" <+> unwrapText name)
+      (flexGroup $ printKind kind_)
+    ForeignKind { name } ->
+      text "foreign import kind" <+> unwrapText name
+
 printDeclaration (DeclDerive { comments, deriveType, head: { instName, instConstraints, instClass, instTypes } }) =
-  let
-    doWrap :: Type -> Boolean
-    doWrap (TypeApp _ _) = true
-    doWrap (TypeForall _ _) = true
-    doWrap (TypeArr _ _) = true
-    doWrap (TypeOp _ _ _) = true
-    doWrap (TypeConstrained _ _) = true
-    doWrap _ = false
+  printMaybeComments comments $
+  flexGroup $
+  label
+  <%%> indent (text "::" <+> flexGroup constraints')
+  <%%> indent (arrow <+> flexGroup (alignCurrentColumn (printConstraint instConstraint)))
+
+  where
+    label = words
+      [ text "derive"
+      , deriveType'
+      , text "instance"
+      , unwrapText instName
+      ]
+
+    instConstraint = Constraint { className: instClass
+                                , args: NonEmptyArray.toArray instTypes
+                                }
 
     deriveType' =
       case deriveType of
@@ -109,32 +107,21 @@ printDeclaration (DeclDerive { comments, deriveType, head: { instName, instConst
         DeclDeriveType_Ordinary -> mempty
 
     constraints' =
-      case instConstraints of
-        [] -> mempty
-        [constraint] -> printConstraint constraint <+> text "=>"
-        constrainsts -> (alignCurrentColumn $ pursParensWithoutGroup $ foldWithSeparator leadingComma $ map printConstraint constrainsts) <+> text "=>"
+      fold
+      $ printConstraintList
+      <$> NonEmptyArray.fromArray instConstraints
 
-    types' = foldWithSeparator space $ map (\type_ -> maybeWrapInParentheses (doWrap type_) $ printType type_) instTypes
-   in
-    printMaybeComments comments $ flexGroup $ foldWithSeparator space
-      [ text "derive"
-      , deriveType'
-      , text "instance"
-      , text $ appendUnderscoreIfReserved $ unwrap instName
-      , text "::"
-      , constraints'
-      , printQualifiedName_AnyProperNameType instClass
-      , types'
-      ]
+    arrow = guard (not $ null instConstraints) (text "=>")
+
 printDeclaration (DeclClass { comments, head: { name, vars, super, fundeps }, methods }) =
   let
-    printedHeader = foldWithSeparator space
+    printedHeader = flexGroup $ foldWithSeparator space
       [ text "class"
       , case super of
              [] -> mempty
              [constraint] -> printConstraint constraint <+> text "<="
-             constraints -> (alignCurrentColumn $ pursParens $ foldWithSeparator leadingComma $ map printConstraint constraints) <+> text "<="
-      , (text <<< appendUnderscoreIfReserved <<< unwrap) name
+             constraints -> (alignCurrentColumn $ pursParens $ foldWithSeparator leadingComma $ map (flexGroup <<< printConstraint) constraints) <+> text "<="
+      , unwrapText name
       , case vars of
              [] -> mempty
              _ -> alignCurrentColumn $ flexGroup $ foldWithSeparator spaceBreak $ map printTypeVarBinding vars
@@ -150,53 +137,31 @@ printDeclaration (DeclClass { comments, head: { name, vars, super, fundeps }, me
           ( printedHeader <+> (text "where") <> break <>
               ( indent
               $ paragraph
-              $ map (\({ ident, type_ }) -> (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_) $ methods
+              $ map (\({ ident, type_ }) -> printLabelledGroup (unwrapText ident) (printType type_)) $ methods
               )
           )
 printDeclaration (DeclInstanceChain { comments, instances }) = printMaybeComments comments (foldWithSeparator (break <> break <> text "else" <> break <> break) (map printInstance instances))
-printDeclaration (DeclSignature { comments, ident, type_ }) = printMaybeComments comments ((text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_)
-printDeclaration (DeclValue { comments, valueBindingFields }) = printMaybeComments comments (printValueBindingFields valueBindingFields)
+printDeclaration (DeclSignature { comments, ident, type_ }) =
+  printMaybeComments comments (printLabelledGroup (unwrapText ident) (printType type_))
+printDeclaration (DeclValue { comments, valueBindingFields }) =
+  printMaybeComments comments (printValueBindingFields valueBindingFields)
 
 printInstance :: Instance -> Doc Void
 printInstance instance_ =
-  let
-    head = text "instance" <+> (text <<< appendUnderscoreIfReserved <<< unwrap) instance_.head.instName <+> text "::"
-
-    doWrap :: Type -> Boolean
-    doWrap (TypeApp _ _) = true
-    doWrap (TypeForall _ _) = true
-    doWrap (TypeArr _ _) = true
-    doWrap (TypeOp _ _ _) = true
-    doWrap (TypeConstrained _ _) = true
-    doWrap _ = false
-
-    printedBody = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenInstanceBindings printInstanceBinding instance_.body
-
-    printedBodyAssert =
-      if
-        ( if null instance_.body
-          then isEmpty printedBody
-          else not (isEmpty printedBody)
-        )
-        then true
-        else Effect.Exception.Unsafe.unsafeThrow "should be consistent"
-
+  printLabelledGroup
+  (text "instance" <+> unwrapText instance_.head.instName)
+  (flexGroup $ printType (instanceHeadToType instance_.head) <+> where_)
+  <%> printedBody
+  where
     where_ = if null instance_.body then mempty else text "where"
-   in
-    ( flexGroup $ foldWithSeparator space
-      [ head
-      , alignCurrentColumn $ foldWithSeparator spaceBreak $
-        [ printQualifiedName_AnyProperNameType instance_.head.instClass
-        ]
-        <> NonEmptyArray.toArray (map (\type_ -> maybeWrapInParentheses (doWrap type_) (printType type_)) instance_.head.instTypes)
-      ]
-    )
-    <+> where_
-    <%> indent printedBody
+
+    printedBody = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenInstanceBindings (indent <<< printInstanceBinding) instance_.body
 
 printInstanceBinding :: InstanceBinding -> Doc Void
-printInstanceBinding (InstanceBindingSignature { ident, type_ }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_
-printInstanceBinding (InstanceBindingName valueBindingFields) = printValueBindingFields valueBindingFields
+printInstanceBinding (InstanceBindingSignature { ident, type_ }) =
+  printLabelledGroup (unwrapText ident) (printType type_)
+printInstanceBinding (InstanceBindingName valueBindingFields) =
+  printValueBindingFields valueBindingFields
 
 printValueBindingFields :: ValueBindingFields -> Doc Void
 printValueBindingFields = \{ name, binders, guarded } ->
@@ -349,8 +314,10 @@ printBranch { binders, body } =
    in printGuarded printedHead body
 
 printLetBinding :: LetBinding -> Doc Void
-printLetBinding (LetBindingSignature { ident, type_ }) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType type_
-printLetBinding (LetBindingName valueBindingFields) = printValueBindingFields valueBindingFields
+printLetBinding (LetBindingSignature { ident, type_ }) =
+  printLabelledGroup (unwrapText ident) (printType type_)
+printLetBinding (LetBindingName valueBindingFields) =
+  printValueBindingFields valueBindingFields
 printLetBinding (LetBindingPattern { binder, where_: { expr, whereBindings } }) = printBinder binder <> break <> printExpr expr <> spaceBreak <>text "where" <> spaceBreak <>(paragraph $ map printLetBinding whereBindings)
 
 printRecordUpdates :: NonEmptyArray RecordUpdate -> Doc Void
@@ -359,3 +326,36 @@ printRecordUpdates recordUpdates = text "{" <+> (foldWithSeparator (text ",") $ 
 printRecordUpdate :: RecordUpdate -> Doc Void
 printRecordUpdate (RecordUpdateLeaf label expr) = (text <<< appendUnderscoreIfReserved <<< unwrap) label <+> text "=" <+> printExpr expr
 printRecordUpdate (RecordUpdateBranch label recordUpdates) = (text <<< appendUnderscoreIfReserved <<< unwrap) label <+> text "=" <+> printRecordUpdates recordUpdates
+
+printAssignmentDecl
+  :: String
+  -> DataHead
+  -> Array Type
+  -> Doc Void
+printAssignmentDecl reservedWord (DataHead { dataHdName, dataHdVars }) types =
+  (flexGroup $
+   text reservedWord <+> (unwrapText dataHdName <+> words (printTypeVarBinding <$> dataHdVars))
+   <> foldMap printCtors (NonEmptyArray.fromArray types)
+  )
+
+  where
+    printCtors types' =
+      spaceBreak <>
+      indent (text "= " <> foldWithSeparator sep (flexGroup <<< printType' true <$> types'))
+
+    sep = spaceBreak <> text "| "
+
+dataCtorToType :: DataCtor -> Type
+dataCtorToType (DataCtor ctor) = foldl TypeApp initType ctor.dataCtorFields
+  where
+    initType =
+      TypeConstructor (nonQualifiedName (coerceProperName ctor.dataCtorName))
+
+-- TODO add printing of constraints
+instanceHeadToType :: InstanceHead -> Type
+instanceHeadToType inst = foldl TypeApp initType inst.instTypes
+  where
+    initType = TypeConstructor (coerceProperName <$> inst.instClass)
+
+coerceProperName :: forall p1 p2. ProperName p1 -> ProperName p2
+coerceProperName (ProperName p) = ProperName p

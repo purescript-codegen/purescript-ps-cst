@@ -4,15 +4,44 @@ derive instance eqBaz :: Eq Baz
 
 derive newtype instance eqBaz :: Eq Baz
 
-derive instance foo :: Foo Bar { foo :: Number }
+derive instance foo :: Foo Bar {foo :: Number}
 
 derive instance foo :: Foo a => Foo (Array a)
 
 derive instance foo :: (Foo a, Bar b c, Partial) => Foo (Tuple a b)
 
-derive instance foo :: ( Foo a
-                       , Bar b c
-                       , Partial
-                       , Partial1
-                       , Partial2
-                       ) => Foo (Tuple a b)
+derive instance foo
+  :: (Foo a, Bar b c, Partial, Partial1, Partial2)
+  => Foo (Tuple a b)
+
+derive instance foo
+  :: ( Foo a
+     , Bar b c
+     , Partial
+     , Partial1
+     , Partial2
+     , Partial3
+     , Partial4
+     , Partial5
+     , Partial6
+     , Partial7
+     )
+  => Foo
+     ( Foo
+       abcde
+       fghij
+       abcde
+       fghij
+       abcde
+       fghij
+       abcde
+       fghij
+       abcde
+       fghij
+       abcde
+       fghij
+       abcde
+       fghij
+       abcde
+       fghij
+     )

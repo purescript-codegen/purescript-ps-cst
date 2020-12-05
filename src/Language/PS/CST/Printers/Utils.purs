@@ -2,17 +2,18 @@ module Language.PS.CST.Printers.Utils where
 
 import Prelude
 
+import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Either (fromRight)
 import Data.Foldable (class Foldable)
 import Data.List (List(..), (:))
 import Data.List (fromFoldable) as List
 import Data.Maybe (Maybe(..))
-import Data.Newtype (unwrap)
+import Data.Newtype (class Newtype, unwrap)
 import Data.String.Regex (Regex, regex)
 import Data.String.Regex as Regex
 import Data.String.Regex.Flags as RegexFlags
-import Dodo (Doc, break, enclose, encloseEmptyAlt, flexAlt, foldWithSeparator, softBreak, text)
-import Language.PS.CST.ReservedNames (isReservedName)
+import Dodo (Doc, bothNotEmpty, break, enclose, encloseEmptyAlt, flexAlt, flexGroup, foldWithSeparator, indent, softBreak, space, spaceBreak, text, (<+>))
+import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, isReservedName)
 import Language.PS.CST.Types.Declaration (Declaration(..), Expr(..), InstanceBinding(..), LetBinding(..))
 import Language.PS.CST.Types.Leafs (Label(..), ModuleName(..), ProperName, ProperNameType_ConstructorName)
 import Partial.Unsafe (unsafePartial)
@@ -107,3 +108,31 @@ labelNeedsQuotes (Label name) =
 unquotedLabelRegex :: Regex
 unquotedLabelRegex =
   unsafePartial $ fromRight $ regex "^[a-z][A-Za-z0-9_]*$" RegexFlags.noFlags
+
+unwrapText :: forall a. Newtype a String => a -> Doc Void
+unwrapText = text <<< appendUnderscoreIfReserved <<< unwrap
+
+softSpace :: forall a. Doc a
+softSpace =
+  flexAlt mempty space
+
+printSpaceSeparated :: NonEmptyArray (Doc Void) -> Doc Void
+printSpaceSeparated apps =
+  foldWithSeparator sep apps
+
+  where
+    sep = flexAlt space (break <> text "   ")
+
+printLabelled :: Doc Void -> Doc Void -> Doc Void
+printLabelled lbl ann =
+  lbl <> spaceBreak <> indent (text "::" <+> ann)
+
+printLabelledGroup :: Doc Void -> Doc Void -> Doc Void
+printLabelledGroup lbl ann =
+  flexGroup $ printLabelled lbl ann
+
+appendSpaceBreakNoGroup :: forall a. Doc a -> Doc a -> Doc a
+appendSpaceBreakNoGroup =
+  bothNotEmpty \a b -> a <> spaceBreak <> b
+
+infixr 2 appendSpaceBreakNoGroup as <%%>
