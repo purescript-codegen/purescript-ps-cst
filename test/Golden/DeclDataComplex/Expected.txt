@@ -4,69 +4,66 @@ data Foo
   = Bar
     Boolean
     { foo :: Number
-    , bar :: { baz :: Data.Map.Map String Number }
-    , qwe :: { rty :: Data.Map.Map
-                      { asd :: Number }
-                      { foo :: Number
-                      , bar :: Data.Map.Map
-                               (Data.Map.Map
-                                (Data.Map.Map
-                                 Number
-                                 Boolean)
-                                (Data.Map.Map
-                                 Number
-                                 Boolean))
-                               Boolean
-                      }
-             , uio :: Data.Map.Map
-                      (Data.Map.Map
-                       (Data.Map.Map
-                        Number
-                        Boolean)
-                       (Data.Map.Map
-                        Number
-                        Boolean))
-                      Boolean
-             }
+    , bar :: {baz :: Data.Map.Map String Number}
+    , qwe
+      :: { rty
+           :: Data.Map.Map
+              {asd :: Number}
+              { foo :: Number
+              , bar
+                :: Data.Map.Map
+                   ( Data.Map.Map
+                     (Data.Map.Map Number Boolean)
+                     (Data.Map.Map Number Boolean)
+                   )
+                   Boolean
+              }
+         , uio
+           :: Data.Map.Map
+              ( Data.Map.Map
+                (Data.Map.Map Number Boolean)
+                (Data.Map.Map Number Boolean)
+              )
+              Boolean
+         }
     }
     a
     (Array a)
-    (Array { foo :: Number })
+    (Array {foo :: Number})
     _
     ?myhole
     "PsString"
     ()
-    ( | MyExtension )
-    ( rowField :: Number )
-    ( rowField :: Number | MyExtension )
-    ( rowField :: Number, rowField2 :: Number )
-    ( rowField :: Number, rowField2 :: Number | MyExtension )
-    ( rowField :: Number, rowField2 :: Number | MyExtension + MyOtherExtension )
+    (| MyExtension)
+    (rowField :: Number)
+    (rowField :: Number | MyExtension)
+    (rowField :: Number, rowField2 :: Number)
+    (rowField :: Number, rowField2 :: Number | MyExtension)
+    (rowField :: Number, rowField2 :: Number | MyExtension + MyOtherExtension)
     ( rowField :: Number
     , rowField2 :: Number
-    | MyExtension + MyOtherExtension { someField :: Number }
+    | MyExtension + MyOtherExtension {someField :: Number}
     )
-    ( rowField :: { foo :: Number
-                  , bar :: Data.Map.Map
-                           (Data.Map.Map
-                            (Data.Map.Map
-                             Number
-                             Boolean)
-                            (Data.Map.Map
-                             Number
-                             Boolean))
-                           Boolean
-                  , baz :: Complex A B C D E F G H
-                  , qux :: Complex (A B C) D E (F G H)
-                  , asd :: Complex A B (C (D E) F G) H
-                  , qwe :: Complex (A B C) D E (F (G H))
-                  }
+    ( rowField
+      :: { foo :: Number
+         , bar
+           :: Data.Map.Map
+              ( Data.Map.Map
+                (Data.Map.Map Number Boolean)
+                (Data.Map.Map Number Boolean)
+              )
+              Boolean
+         , baz :: Complex A B C D E F G H
+         , qux :: Complex (A B C) D E (F G H)
+         , asd :: Complex A B (C (D E) F G) H
+         , qwe :: Complex (A B C) D E (F (G H))
+         }
     )
-    (forall a (b :: # Type) . Array a)
+    (forall a (b :: # Type). Array a)
     (Array a -> Maybe a)
     (Array ~> Maybe)
-    (forall f . Functor f => f ~> Maybe)
-    (MyClass f g k => MyClass2 { foo :: Number } => f)
+    (forall f. Functor f => f ~> Maybe)
+    (MyClass f g k => MyClass2 {foo :: Number} => f)
     (MyKindedType :: (CustomKind -> # Type) -> Type)
     (MyKindedType :: CustomKind -> # Type -> Type)
   | Baz Prelude.Boolean

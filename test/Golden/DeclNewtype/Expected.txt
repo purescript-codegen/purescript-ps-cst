@@ -2,38 +2,38 @@ module DeclNewtype where
 
 newtype Foo = Foo Boolean
 
-newtype Foo = Foo { foo :: Number
-                  , bar :: { baz :: Data.Map.Map String Number }
-                  , qwe :: { rty :: Data.Map.Map
-                                    { asd :: Number }
-                                    { foo :: Number
-                                    , bar :: Data.Map.Map
-                                             (Data.Map.Map
-                                              (Data.Map.Map
-                                               Number
-                                               Boolean)
-                                              (Data.Map.Map
-                                               Number
-                                               Boolean))
-                                             Boolean
-                                    }
-                           , uio :: Data.Map.Map
-                                    (Data.Map.Map
-                                     (Data.Map.Map
-                                      Number
-                                      Boolean)
-                                     (Data.Map.Map
-                                      Number
-                                      Boolean))
-                                    Boolean
-                           }
-                  }
+newtype Foo
+  = Foo
+    { foo :: Number
+    , bar :: {baz :: Data.Map.Map String Number}
+    , qwe
+      :: { rty
+           :: Data.Map.Map
+              {asd :: Number}
+              { foo :: Number
+              , bar
+                :: Data.Map.Map
+                   ( Data.Map.Map
+                     (Data.Map.Map Number Boolean)
+                     (Data.Map.Map Number Boolean)
+                   )
+                   Boolean
+              }
+         , uio
+           :: Data.Map.Map
+              ( Data.Map.Map
+                (Data.Map.Map Number Boolean)
+                (Data.Map.Map Number Boolean)
+              )
+              Boolean
+         }
+    }
 
 newtype Foo = Foo a
 
 newtype Foo = Foo (Array a)
 
-newtype Foo = Foo (Array { foo :: Number })
+newtype Foo = Foo (Array {foo :: Number})
 
 newtype Foo = Foo _
 
@@ -43,50 +43,52 @@ newtype Foo = Foo "PsString"
 
 newtype Foo = Foo ()
 
-newtype Foo = Foo ( | MyExtension )
+newtype Foo = Foo (| MyExtension)
 
-newtype Foo = Foo ( rowField :: Number )
+newtype Foo = Foo (rowField :: Number)
 
-newtype Foo = Foo ( rowField :: Number | MyExtension )
+newtype Foo = Foo (rowField :: Number | MyExtension)
 
-newtype Foo = Foo ( rowField :: Number, rowField2 :: Number )
+newtype Foo = Foo (rowField :: Number, rowField2 :: Number)
 
-newtype Foo = Foo ( rowField :: Number, rowField2 :: Number | MyExtension )
+newtype Foo = Foo (rowField :: Number, rowField2 :: Number | MyExtension)
 
-newtype Foo = Foo ( rowField :: Number
-                  , rowField2 :: Number
-                  | MyExtension + MyOtherExtension
-                  )
+newtype Foo
+  = Foo
+    (rowField :: Number, rowField2 :: Number | MyExtension + MyOtherExtension)
 
-newtype Foo = Foo ( rowField :: Number
-                  , rowField2 :: Number
-                  | MyExtension + MyOtherExtension { someField :: Number }
-                  )
+newtype Foo
+  = Foo
+    ( rowField :: Number
+    , rowField2 :: Number
+    | MyExtension + MyOtherExtension {someField :: Number}
+    )
 
-newtype Foo = Foo ( rowField :: { foo :: Number
-                                , bar :: Data.Map.Map
-                                         (Data.Map.Map
-                                          (Data.Map.Map
-                                           Number
-                                           Boolean)
-                                          (Data.Map.Map
-                                           Number
-                                           Boolean))
-                                         Boolean
-                                , baz :: Complex A B C D F G H
-                                , qux :: Complex (A B C) D (F G H)
-                                }
-                  )
+newtype Foo
+  = Foo
+    ( rowField
+      :: { foo :: Number
+         , bar
+           :: Data.Map.Map
+              ( Data.Map.Map
+                (Data.Map.Map Number Boolean)
+                (Data.Map.Map Number Boolean)
+              )
+              Boolean
+         , baz :: Complex A B C D F G H
+         , qux :: Complex (A B C) D (F G H)
+         }
+    )
 
-newtype Foo = Foo (forall a (b :: # Type) . Array a)
+newtype Foo = Foo (forall a (b :: # Type). Array a)
 
 newtype Foo = Foo (Array a -> Maybe a)
 
 newtype Foo = Foo (Array ~> Maybe)
 
-newtype Foo = Foo (forall f . Functor f => f ~> Maybe)
+newtype Foo = Foo (forall f. Functor f => f ~> Maybe)
 
-newtype Foo = Foo (MyClass f g k => MyClass2 { foo :: Number } => f)
+newtype Foo = Foo (MyClass f g k => MyClass2 {foo :: Number} => f)
 
 newtype Foo = Foo (MyKindedType :: (CustomKind -> # Type) -> Type)
 

@@ -119,6 +119,10 @@ actualModule = Module
                 (TypeConstructor $ nonQualifiedName $ ProperName "IntLongLongLong")
                 `TypeApp`
                 (TypeConstructor $ nonQualifiedName $ ProperName "BooleanLongLongLong")
+                `TypeApp`
+                (TypeConstructor $ nonQualifiedName $ ProperName "BooleanLongLongLong")
+                `TypeApp`
+                (TypeConstructor $ nonQualifiedName $ ProperName "BooleanLongLongLong")
               ]
             }
           , body:

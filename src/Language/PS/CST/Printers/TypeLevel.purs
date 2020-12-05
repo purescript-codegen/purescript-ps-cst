@@ -3,52 +3,27 @@ module Language.PS.CST.Printers.TypeLevel where
 import Prelude
 
 import Data.Array as Array
-import Data.Foldable (null)
-import Data.Maybe (Maybe(..), maybe)
+import Data.Array.NonEmpty (NonEmptyArray)
+import Data.Array.NonEmpty as NonEmptyArray
+import Data.Foldable (fold)
+import Data.Maybe (Maybe(..))
+import Data.Monoid (guard)
 import Data.Newtype (unwrap)
-import Dodo (Doc, alignCurrentColumn, flexGroup, foldWithSeparator, isEmpty, paragraph, softBreak, space, spaceBreak, text, (<+>))
-import Language.PS.CST.Printers.Utils (dquotes, dquotesIf, labelNeedsQuotes, maybeWrapInParentheses, parens, printModuleName)
+import Dodo (Doc, alignCurrentColumn, bothNotEmpty, break, flexAlt, flexGroup, foldWithSeparator, indent, paragraph, softBreak, space, spaceBreak, text, (<+>))
+import Dodo.Common (leadingComma)
+import Language.PS.CST.Printers.Utils (dquotesIf, labelNeedsQuotes, parens, printLabelledGroup, printModuleName, softSpace, unwrapText, (<%%>))
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
-import Language.PS.CST.Types.Declaration (Constraint(..), DataCtor(..), DataHead(..), Kind(..), Row, Type(..), TypeVarBinding(..))
-import Language.PS.CST.Types.Leafs (ClassFundep(..), Fixity(..), Ident, Label, OpName, ProperName)
+import Language.PS.CST.Types.Declaration (Constraint(..), Kind(..), Row, Type(..), TypeVarBinding(..))
+import Language.PS.CST.Types.Leafs (ClassFundep(..), Fixity(..), Ident, Label(..), OpName, ProperName)
 import Language.PS.CST.Types.QualifiedName (QualifiedName(..))
 
 printFundep :: ClassFundep -> Doc Void
-printFundep (FundepDetermines lefts rights) = (paragraph $ map (text <<< appendUnderscoreIfReserved <<< unwrap) lefts) <+> text "->" <+> (paragraph $ map (text <<< appendUnderscoreIfReserved <<< unwrap) rights)
+printFundep (FundepDetermines lefts rights) = (paragraph $ map (text <<< appendUnderscoreIfReserved <<< unwrap) lefts) <+> text "->" <+> (paragraph $ unwrapText <$> rights)
 
 printFixity :: Fixity -> Doc Void
 printFixity Infix  = text "infix"
 printFixity Infixl = text "infixl"
 printFixity Infixr = text "infixr"
-
-printDataCtor :: DataCtor -> Doc Void
-printDataCtor (DataCtor dataCtor) =
-  let
-    doWrap :: Type -> Boolean
-    doWrap (TypeApp _ _) = true
-    doWrap (TypeForall _ _) = true
-    doWrap (TypeArr _ _) = true
-    doWrap (TypeOp _ _ _) = true
-    doWrap (TypeConstrained _ _) = true
-    doWrap _ = false
-
-    printType' :: Type -> Doc Void
-    printType' type_ = maybeWrapInParentheses (doWrap type_) $ printType type_
-
-    name = (text <<< appendUnderscoreIfReserved <<< unwrap) dataCtor.dataCtorName
-
-    fields = dataCtor.dataCtorFields <#> printType'
-  in
-    flexGroup $ foldWithSeparator spaceBreak $ [name, foldWithSeparator softBreak $ fields]
-
-printDataHead :: Doc Void -> DataHead -> Doc Void
-printDataHead reservedWord (DataHead dataHead) =
-  let
-    head = reservedWord <+> (text <<< appendUnderscoreIfReserved <<< unwrap) dataHead.dataHdName
-
-    vars = map printTypeVarBinding dataHead.dataHdVars
-  in
-    if null vars then head else head <+> paragraph vars
 
 printTypeVarBinding :: TypeVarBinding -> Doc Void
 printTypeVarBinding (TypeVarName ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
@@ -85,74 +60,168 @@ printQualifiedName_AnyOpNameType (QualifiedName qualifiedName) = case qualifiedN
   (Just moduleName) -> printModuleName moduleName <> text "." <> parens ((text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName)
 
 printType :: Type -> Doc Void
-printType = \type_ -> case type_ of
-                           (TypeApp _ _) -> flexGroup $ printTypeImplementation type_
-                           (TypeForall _ _) -> flexGroup $ printTypeImplementation type_
-                           (TypeConstrained _ _) -> flexGroup $ printTypeImplementation type_
-                           (TypeArr _ _) -> flexGroup $ printTypeImplementation type_
-                           (TypeOp _ _ _) -> flexGroup $ printTypeImplementation type_
-                           _ -> printTypeImplementation type_
+printType = printType' false
+
+printType' :: Boolean -> Type -> Doc Void
+printType' _ (TypeVar a) =  unwrapText a
+printType' _ TypeWildcard = text "_"
+printType' _ (TypeConstructor c) = printQualifiedName_AnyProperNameType c
+printType' _ (TypeHole a) = text "?" <> unwrapText a
+printType' _ (TypeString a) = text "\"" <> text a <> text "\""
+
+printType' _ (TypeForall bs t) =
+  ( text "forall" <+> (flexGroup (alignCurrentColumn (paragraph (printTypeVarBinding <$> bs))
+                            )
+                 )
+  ) <> softBreak <> softSpace <> text ". " <> printType' false t
+printType' _ (TypeKinded t k) =
+  printLabelledGroup (printType' false t) (printKind k)
+
+printType' _ (TypeRow r) =
+  printRow paren r
+printType' _ (TypeRecord r) =
+  printRow curlyBraces r
+
+printType' isWrapped (TypeApp a b) =
+  foldWithSeparator sep apps
+
   where
-    printTypeImplementation (TypeVar ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
-    printTypeImplementation (TypeConstructor qualifiedTypeName) = printQualifiedName_AnyProperNameType qualifiedTypeName
-    printTypeImplementation TypeWildcard = text "_"
-    printTypeImplementation (TypeHole ident) = text "?" <> (text <<< appendUnderscoreIfReserved <<< unwrap) ident
-    printTypeImplementation (TypeString string) = dquotes $ text string
-    printTypeImplementation (TypeRow row) = printRowLikeType (text "(") (text ")") row
-    printTypeImplementation (TypeRecord row) = printRowLikeType (text "{") (text "}") row
-    printTypeImplementation (TypeApp leftType rightType) =
-      let
-        doWrapRight =
-          case rightType of
-            (TypeApp _ _) -> true -- always wrap right side application
-            (TypeForall _ _) -> true
-            (TypeArr _ _) -> true
-            (TypeOp _ _ _) -> true
-            (TypeConstrained _ _) -> true
-            _ -> false
+    apps = collectApp a (NonEmptyArray.singleton (pp b))
 
-        printedLeft :: Doc Void
-        printedLeft = printTypeImplementation leftType
+    collectApp (TypeApp a' b') acc =
+      collectApp a'
+      (NonEmptyArray.cons (pp b') acc)
+    collectApp t acc =
+      NonEmptyArray.cons (pp t) acc
 
-        printedRight :: Doc Void
-        printedRight = printTypeImplementation rightType
-      in alignCurrentColumn $ foldWithSeparator spaceBreak [ printedLeft, maybeWrapInParentheses doWrapRight printedRight ]
-    printTypeImplementation (TypeForall typeVarBindings type_) = text "forall" <+> foldWithSeparator spaceBreak (map printTypeVarBinding typeVarBindings) <+> text "." <+> printTypeImplementation type_
-    printTypeImplementation (TypeArr leftType rightType) = printTypeImplementation leftType <+> text "->" <+> printTypeImplementation rightType
-    printTypeImplementation (TypeKinded type_ kind_) = parens $ printTypeImplementation type_ <+> text "::" <+> printKind kind_
-    printTypeImplementation (TypeOp leftType qualifiedOpName rightType) = printTypeImplementation leftType <+> printQualifiedName_AnyOpNameType qualifiedOpName <+> printTypeImplementation rightType
-    printTypeImplementation (TypeConstrained constraint type_) = printConstraint constraint <+> text "=>" <+> printTypeImplementation type_
+    pp t =
+      let isWrapped' = needsParen t
+      in parenIf isWrapped' (printType' isWrapped' t)
+
+    needsParen (TypeKinded _ _) = true
+    needsParen (TypeConstrained _ _) = true
+    needsParen (TypeArr _ _) = true
+    needsParen (TypeOp _ _ _) = true
+    needsParen (TypeForall _ _) = true
+    needsParen (TypeApp _ _) = true
+    needsParen _ = false
+
+    sep = flexAlt
+      space
+      ( break
+        <> text "  "
+        <> guard (not isWrapped) space
+      )
+
+printType' _ (TypeArr a b) =
+  foldWithSeparator sep arrs
+
+  where
+    arrs = collectArr b (NonEmptyArray.singleton (pp a))
+
+    collectArr (TypeArr a' b') acc =
+      collectArr b'
+      (NonEmptyArray.snoc acc (pp a'))
+    collectArr t acc =
+      NonEmptyArray.snoc acc (pp t)
+
+    pp t =
+      let isWrapped = needsParen t
+      in parenIf isWrapped (printType' isWrapped t)
+
+    needsParen (TypeKinded _ _) = true
+    needsParen (TypeConstrained _ _) = true
+    needsParen (TypeArr _ _) = true
+    needsParen _ = false
+
+    sep = spaceBreak <> text "-> "
+
+printType' _ (TypeOp a op b) =
+  flexGroup $ foldWithSeparator sep arrs
+
+  where
+    arrs = collectArr b (NonEmptyArray.singleton (pp a))
+
+    collectArr (TypeOp a' op' b') acc | op == op' =
+      collectArr b'
+      (NonEmptyArray.snoc acc (pp a'))
+    collectArr t acc =
+      NonEmptyArray.snoc acc (pp t)
+
+    pp t =
+      let isWrapped = needsParen t
+      in parenIf isWrapped (printType' isWrapped t)
+
+    needsParen (TypeKinded _ _) = true
+    needsParen (TypeConstrained _ _) = true
+    needsParen (TypeArr _ _) = true
+    needsParen (TypeOp _ op' _) = op' /= op
+    needsParen _ = false
+
+    opDoc = printQualifiedName_AnyOpNameType op
+    sep = spaceBreak <> indent (opDoc <> space)
+
+printType' _ (TypeConstrained c t) =
+  printConstraint c <> spaceBreak <> text "=> " <> printType' false t
+
+printRow :: (Doc Void -> Doc Void) -> Row -> Doc Void
+printRow wrap' { rowLabels, rowTail } =
+  wrap' $
+  (foldWithSeparator leadingComma (printE <$> rowLabels))
+  <%%> (fold $ printTl <$> rowTail)
+  where
+    printE { label: label@(Label name), type_ } =
+      printLabelledGroup
+      (dquotesIf (labelNeedsQuotes label) (text name))
+      (printType' false type_)
+
+    printTl t = text "| " <> printType' false t
 
 printConstraint :: Constraint -> Doc Void
 printConstraint (Constraint { className, args }) =
-  if null args
-    then printQualifiedName_AnyProperNameType className
-    else printQualifiedName_AnyProperNameType className <+> (alignCurrentColumn $ flexGroup $ foldWithSeparator spaceBreak $ map printType args)
+  foldWithSeparator sep apps
 
-printRowLikeType :: Doc Void -> Doc Void -> Row -> Doc Void
-printRowLikeType leftWrapper rightWrapper row =
-  let
-      rowTail :: Doc Void
-      rowTail =
-        maybe
-        mempty
-        (\(rowTail' :: Type) -> text "|" <+> printType rowTail')
-        row.rowTail
+  where
+    apps = Array.cons
+           (printQualifiedName_AnyProperNameType className)
+           (pp <$> args)
 
-   in case row.rowLabels of
-           [] ->
-             if isEmpty rowTail
-               then leftWrapper <> rightWrapper
-               else flexGroup $ foldWithSeparator spaceBreak [leftWrapper, rowTail, rightWrapper]
-           _ ->
-             let
-                 rowLabelDocs :: Array (Doc Void)
-                 rowLabelDocs = row.rowLabels <#> printRowLabel
-              in alignCurrentColumn $ flexGroup $ foldWithSeparator spaceBreak
-                [ foldWithSeparator softBreak $ Array.zipWith (<>) ([leftWrapper <> space] <> Array.replicate (Array.length rowLabelDocs - 1) (text ", ")) rowLabelDocs
-                , rowTail
-                , rightWrapper
-                ]
+    pp t = parenIf (needsParen t) (printType' true t)
 
-printRowLabel :: { label :: Label, type_ :: Type } -> Doc Void
-printRowLabel { label, type_ } = (dquotesIf (labelNeedsQuotes label) <<< text <<< unwrap) label <+> text "::" <+> printType type_
+    needsParen (TypeKinded _ _) = true
+    needsParen (TypeConstrained _ _) = true
+    needsParen (TypeArr _ _) = true
+    needsParen (TypeForall _ _) = true
+    needsParen (TypeApp _ _) = true
+    needsParen _ = false
+
+    sep = spaceBreak
+
+printConstraintList :: NonEmptyArray Constraint -> Doc Void
+printConstraintList cs =
+  parenIf (NonEmptyArray.length cs > 1)
+  $ foldWithSeparator leadingComma (flexGroup <<< printConstraint <$> cs)
+
+parenIf :: Boolean -> Doc Void -> Doc Void
+parenIf true = paren
+parenIf false = wrapEmpty
+
+wrapEmpty :: Doc Void -> Doc Void
+wrapEmpty = wrap mempty mempty
+
+paren :: Doc Void -> Doc Void
+paren = wrap "(" ")"
+
+curlyBraces :: Doc Void -> Doc Void
+curlyBraces = wrap "{" "}"
+
+wrap :: String -> String -> Doc Void -> Doc Void
+wrap open close d =
+  flexGroup $ alignCurrentColumn $
+  appendSoftBreak (appendSoftSpace (text open) d) (text close)
+  where
+    appendSoftSpace =
+      bothNotEmpty \a b -> a <> (softSpace <> b)
+
+    appendSoftBreak =
+      bothNotEmpty \a b -> a <> (softBreak <> b)

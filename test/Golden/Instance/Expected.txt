@@ -12,9 +12,13 @@ instance fooBaz :: Foo Baz where
 instance fooBaz :: Foo (Cor Int) (Gar Int Boolean) where
   foo = append
 
-instance fooBazLongLongLong :: FooLongLongLong
-                               (CorLongLongLong IntLongLongLong)
-                               (GarLongLongLong
-                                IntLongLongLong
-                                BooleanLongLongLong) where
+instance fooBazLongLongLong
+  :: FooLongLongLong
+     (CorLongLongLong IntLongLongLong)
+     ( GarLongLongLong
+       IntLongLongLong
+       BooleanLongLongLong
+       BooleanLongLongLong
+       BooleanLongLongLong
+     ) where
   foo = append
