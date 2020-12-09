@@ -4,7 +4,7 @@ derive instance eqBaz :: Eq Baz
 
 derive newtype instance eqBaz :: Eq Baz
 
-derive instance foo :: Foo Bar {foo :: Number}
+derive instance foo :: Foo Bar { foo :: Number }
 
 derive instance foo :: Foo a => Foo (Array a)
 
