@@ -9,7 +9,7 @@ import Data.Foldable (fold)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Newtype (unwrap)
-import Dodo (Doc, alignCurrentColumn, bothNotEmpty, break, flexAlt, flexGroup, foldWithSeparator, indent, paragraph, softBreak, space, spaceBreak, text, (<+>))
+import Dodo (Doc, alignCurrentColumn, bothNotEmpty, break, encloseEmptyAlt, flexAlt, flexGroup, foldWithSeparator, indent, paragraph, softBreak, space, spaceBreak, text, (<+>))
 import Dodo.Common (leadingComma)
 import Language.PS.CST.Printers.Utils (dquotesIf, labelNeedsQuotes, parens, printLabelledGroup, printModuleName, softSpace, unwrapText, (<%%>))
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
@@ -78,9 +78,9 @@ printType' _ (TypeKinded t k) =
   printLabelledGroup (printType' false t) (printKind k)
 
 printType' _ (TypeRow r) =
-  printRow paren r
+  printRow "(" ")" r
 printType' _ (TypeRecord r) =
-  printRow curlyBraces r
+  printRow "{" "}" r
 
 printType' isWrapped (TypeApp a b) =
   foldWithSeparator sep apps
@@ -164,11 +164,13 @@ printType' _ (TypeOp a op b) =
 printType' _ (TypeConstrained c t) =
   printConstraint c <> spaceBreak <> text "=> " <> printType' false t
 
-printRow :: (Doc Void -> Doc Void) -> Row -> Doc Void
-printRow wrap' { rowLabels, rowTail } =
-  wrap' $
+printRow :: String -> String -> Row -> Doc Void
+printRow open close { rowLabels, rowTail } =
+  alignCurrentColumn $
+  encloseEmptyAlt (text open <> space) (spaceBreak <> text close) (text (open <> close)) $
   (foldWithSeparator leadingComma (printE <$> rowLabels))
   <%%> (fold $ printTl <$> rowTail)
+
   where
     printE { label: label@(Label name), type_ } =
       printLabelledGroup
