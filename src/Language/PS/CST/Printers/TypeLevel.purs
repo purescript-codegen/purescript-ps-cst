@@ -13,7 +13,7 @@ import Dodo (Doc, alignCurrentColumn, bothNotEmpty, break, encloseEmptyAlt, flex
 import Dodo.Common (leadingComma)
 import Language.PS.CST.Printers.Utils (dquotesIf, labelNeedsQuotes, parens, printLabelledGroup, printModuleName, softSpace, unwrapText, (<%%>))
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
-import Language.PS.CST.Types.Declaration (Constraint(..), Kind(..), Row, Type(..), TypeVarBinding(..))
+import Language.PS.CST.Types.Declaration (PSConstraint(..), Kind(..), PSRow, PSType(..), TypeVarBinding(..))
 import Language.PS.CST.Types.Leafs (ClassFundep(..), Fixity(..), Ident, Label(..), OpName, ProperName)
 import Language.PS.CST.Types.QualifiedName (QualifiedName(..))
 
@@ -59,10 +59,10 @@ printQualifiedName_AnyOpNameType (QualifiedName qualifiedName) = case qualifiedN
   Nothing -> (text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName
   (Just moduleName) -> printModuleName moduleName <> text "." <> parens ((text <<< appendUnderscoreIfReserved <<< unwrap) qualifiedName.qualName)
 
-printType :: Type -> Doc Void
+printType :: PSType -> Doc Void
 printType = printType' false
 
-printType' :: Boolean -> Type -> Doc Void
+printType' :: Boolean -> PSType -> Doc Void
 printType' _ (TypeVar a) =  unwrapText a
 printType' _ TypeWildcard = text "_"
 printType' _ (TypeConstructor c) = printQualifiedName_AnyProperNameType c
@@ -164,7 +164,7 @@ printType' _ (TypeOp a op b) =
 printType' _ (TypeConstrained c t) =
   printConstraint c <> spaceBreak <> text "=> " <> printType' false t
 
-printRow :: String -> String -> Row -> Doc Void
+printRow :: String -> String -> PSRow -> Doc Void
 printRow open close { rowLabels, rowTail } =
   alignCurrentColumn $
   encloseEmptyAlt (text open <> space) (spaceBreak <> text close) (text (open <> close)) $
@@ -179,8 +179,8 @@ printRow open close { rowLabels, rowTail } =
 
     printTl t = text "| " <> printType' false t
 
-printConstraint :: Constraint -> Doc Void
-printConstraint (Constraint { className, args }) =
+printConstraint :: PSConstraint -> Doc Void
+printConstraint (PSConstraint { className, args }) =
   foldWithSeparator sep apps
 
   where
@@ -199,7 +199,7 @@ printConstraint (Constraint { className, args }) =
 
     sep = spaceBreak
 
-printConstraintList :: NonEmptyArray Constraint -> Doc Void
+printConstraintList :: NonEmptyArray PSConstraint -> Doc Void
 printConstraintList cs =
   parenIf (NonEmptyArray.length cs > 1)
   $ foldWithSeparator leadingComma (flexGroup <<< printConstraint <$> cs)

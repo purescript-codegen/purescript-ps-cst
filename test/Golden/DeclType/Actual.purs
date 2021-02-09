@@ -1,6 +1,6 @@
 module Test.Golden.DeclType.Actual where
 
-import Language.PS.CST (Constraint(..), DataHead(..), Declaration(..), Ident(..), Kind(..), Module(..), OpName(..), ProperName(..), Type(..), TypeVarBinding(..), arrayType, booleanType, maybeType, mkModuleName, mkRowLabels, nonQualifiedName, numberType, qualifiedName, stringType, typeRecord, (====>>), (====>>>))
+import Language.PS.CST (PSConstraint(..), DataHead(..), Declaration(..), Ident(..), Kind(..), Module(..), OpName(..), ProperName(..), PSType(..), TypeVarBinding(..), arrayType, booleanType, maybeType, mkModuleName, mkRowLabels, nonQualifiedName, numberType, qualifiedName, stringType, typeRecord, (====>>), (====>>>))
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
@@ -14,7 +14,7 @@ head =
   , dataHdVars: []
   }
 
-dataMapMap :: Type -> Type -> Type
+dataMapMap :: PSType -> PSType -> PSType
 dataMapMap x y =
   (TypeConstructor $ qualifiedName (mkModuleName $ NonEmpty.cons' "Data" ["Map"]) (ProperName "Map"))
   `TypeApp`
@@ -22,10 +22,10 @@ dataMapMap x y =
   `TypeApp`
   y
 
-myExtension :: Type
+myExtension :: PSType
 myExtension = TypeConstructor $ nonQualifiedName $ ProperName "MyExtension"
 
-declFooType :: Type -> Declaration
+declFooType :: PSType -> Declaration
 declFooType type_ = DeclType { comments: Nothing, head, type_ }
 
 actualModule :: Module
@@ -134,7 +134,7 @@ actualModule = Module
     , declFooType $ TypeForall
       ( NonEmpty.cons'
         (TypeVarName $ Ident "a")
-        [ (TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )
+        [ (TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "PSType"))) )
         ]
       )
       (arrayType $ TypeVar $ Ident "a")
@@ -155,20 +155,20 @@ actualModule = Module
     , declFooType $ TypeForall
       (NonEmpty.cons' (TypeVarName $ Ident "f") [])
       ( TypeConstrained
-        (Constraint { className: nonQualifiedName $ ProperName "Functor", args: [TypeVar $ Ident "f"] })
+        (PSConstraint { className: nonQualifiedName $ ProperName "Functor", args: [TypeVar $ Ident "f"] })
         (TypeOp (TypeVar $ Ident "f") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe"))
       )
     , declFooType $ TypeConstrained
-      (Constraint { className: nonQualifiedName $ ProperName "MyClass", args: [TypeVar $ Ident "f", TypeVar $ Ident "g", TypeVar $ Ident "k"] })
+      (PSConstraint { className: nonQualifiedName $ ProperName "MyClass", args: [TypeVar $ Ident "f", TypeVar $ Ident "g", TypeVar $ Ident "k"] })
       (TypeConstrained
-        (Constraint { className: nonQualifiedName $ ProperName "MyClass2", args: [typeRecord $ [ "foo" /\ numberType ]] })
+        (PSConstraint { className: nonQualifiedName $ ProperName "MyClass2", args: [typeRecord $ [ "foo" /\ numberType ]] })
         (TypeVar $ Ident "f"))
     , declFooType $ TypeKinded
       (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
-      (((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "Type")) ====>>> (KindName $ nonQualifiedName $ ProperName "Type"))
+      (((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "PSType")) ====>>> (KindName $ nonQualifiedName $ ProperName "PSType"))
     , declFooType $ TypeKinded
       (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
-      ((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "Type") ====>>> (KindName $ nonQualifiedName $ ProperName "Type"))
+      ((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "PSType") ====>>> (KindName $ nonQualifiedName $ ProperName "PSType"))
     , declFooType $
       (TypeConstructor $ nonQualifiedName (ProperName "FooBarBaz"))
       `TypeApp`

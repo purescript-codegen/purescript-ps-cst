@@ -303,15 +303,15 @@ processDeclaration (SmartCST.Declaration.DeclData { comments, head, constructors
   pure $ CST.Declaration.DeclData { comments, head: head', constructors: constructors' }
 processDeclaration (SmartCST.Declaration.DeclType { comments, head, type_ }) = do
   (head' :: CST.Declaration.DataHead) <- processDataHead head
-  (type_' :: CST.Declaration.Type) <- processType type_
+  (type_' :: CST.Declaration.PSType) <- processType type_
   pure $ CST.Declaration.DeclType { comments, head: head', type_: type_' }
 processDeclaration (SmartCST.Declaration.DeclNewtype { comments, head, name, type_ }) = do
   (head' :: CST.Declaration.DataHead) <- processDataHead head
-  (type_' :: CST.Declaration.Type) <- processType type_
+  (type_' :: CST.Declaration.PSType) <- processType type_
   pure $ CST.Declaration.DeclNewtype { comments, head: head', name, type_: type_' }
 processDeclaration (SmartCST.Declaration.DeclClass { comments, head, methods }) = do
   (head' :: CST.Declaration.ClassHead) <- processClassHead head
-  (methods' :: Array { ident :: Ident, type_ :: CST.Declaration.Type }) <- traverse (\{ ident, type_ } -> { ident, type_: _ } <$> processType type_) methods
+  (methods' :: Array { ident :: Ident, type_ :: CST.Declaration.PSType }) <- traverse (\{ ident, type_ } -> { ident, type_: _ } <$> processType type_) methods
   pure $ CST.Declaration.DeclClass { comments, head: head', methods: methods' }
 processDeclaration (SmartCST.Declaration.DeclInstanceChain { comments, instances }) = do
   (instances' :: NonEmptyArray (CST.Declaration.Instance)) <- traverse processInstance instances
@@ -320,7 +320,7 @@ processDeclaration (SmartCST.Declaration.DeclDerive { comments, deriveType, head
   (head' :: CST.Declaration.InstanceHead) <- processInstanceHead head
   pure $ CST.Declaration.DeclDerive { comments, deriveType, head: head' }
 processDeclaration (SmartCST.Declaration.DeclSignature { comments, ident, type_ }) = do
-  (type_' :: CST.Declaration.Type) <- processType type_
+  (type_' :: CST.Declaration.PSType) <- processType type_
   pure $ CST.Declaration.DeclSignature { comments, ident, type_: type_' }
 processDeclaration (SmartCST.Declaration.DeclValue { comments, valueBindingFields }) = do
   (valueBindingFields' :: CST.Declaration.ValueBindingFields) <- processValueBindingFields valueBindingFields
@@ -351,7 +351,7 @@ processDataCtor (SmartCST.Declaration.DataCtor { dataCtorName, dataCtorFields })
   dataCtorFields' <- traverse processType dataCtorFields
   pure $ CST.Declaration.DataCtor { dataCtorName, dataCtorFields: dataCtorFields' }
 
-processType :: SmartCST.Declaration.Type -> App CST.Declaration.Type
+processType :: SmartCST.Declaration.PSType -> App CST.Declaration.PSType
 processType (SmartCST.Declaration.TypeVar ident) = pure $ CST.Declaration.TypeVar ident
 processType (SmartCST.Declaration.TypeConstructor x) = CST.Declaration.TypeConstructor <$> processSmartQualifiedNameType x
 processType (SmartCST.Declaration.TypeWildcard) = pure CST.Declaration.TypeWildcard
@@ -380,7 +380,7 @@ processInstanceHead instanceHead = do
 
 processForeign :: SmartCST.Declaration.Foreign -> App CST.Declaration.Foreign
 processForeign (SmartCST.Declaration.ForeignValue { ident, type_ }) = do
-  (type_' :: CST.Declaration.Type) <- processType type_
+  (type_' :: CST.Declaration.PSType) <- processType type_
   pure $ CST.Declaration.ForeignValue { ident, type_: type_' }
 processForeign (SmartCST.Declaration.ForeignData { name, kind_ }) = do
   (kind_' :: CST.Declaration.Kind) <- processKind kind_
@@ -407,17 +407,17 @@ processFixityOp (SmartCST.Declaration.FixityType properName opName) = do
   properName' <- processSmartQualifiedNameType properName
   pure $ CST.Declaration.FixityType properName' opName
 
-processRow :: SmartCST.Declaration.Row -> App CST.Declaration.Row
+processRow :: SmartCST.Declaration.PSRow -> App CST.Declaration.PSRow
 processRow row = do
-  (rowLabels :: Array { label :: Label, type_ :: CST.Declaration.Type }) <- traverse (\rowItem -> { label: rowItem.label, type_: _ } <$> processType rowItem.type_) row.rowLabels
+  (rowLabels :: Array { label :: Label, type_ :: CST.Declaration.PSType }) <- traverse (\rowItem -> { label: rowItem.label, type_: _ } <$> processType rowItem.type_) row.rowLabels
   rowTail <- traverse processType row.rowTail
   pure { rowLabels, rowTail }
 
-processConstraint :: SmartCST.Declaration.Constraint -> App CST.Declaration.Constraint
-processConstraint (SmartCST.Declaration.Constraint constraint) = do
+processConstraint :: SmartCST.Declaration.PSConstraint -> App CST.Declaration.PSConstraint
+processConstraint (SmartCST.Declaration.PSConstraint constraint) = do
   className <- processSmartQualifiedNameClass constraint.className
   args <- traverse processType constraint.args
-  pure $ CST.Declaration.Constraint { className, args }
+  pure $ CST.Declaration.PSConstraint { className, args }
 
 processClassHead :: SmartCST.Declaration.ClassHead -> App CST.Declaration.ClassHead
 processClassHead classHead = do

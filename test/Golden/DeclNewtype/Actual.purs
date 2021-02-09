@@ -1,6 +1,6 @@
 module Test.Golden.DeclNewtype.Actual where
 
-import Language.PS.CST (Constraint(..), DataHead(..), Declaration(..), Ident(..), Kind(..), Module(..), OpName(..), ProperName(..), Type(..), TypeVarBinding(..), arrayType, booleanType, maybeType, mkModuleName, mkRowLabels, nonQualifiedName, numberType, qualifiedName, stringType, typeRecord, (====>>), (====>>>))
+import Language.PS.CST (PSConstraint(..), DataHead(..), Declaration(..), Ident(..), Kind(..), Module(..), OpName(..), ProperName(..), PSType(..), TypeVarBinding(..), arrayType, booleanType, maybeType, mkModuleName, mkRowLabels, nonQualifiedName, numberType, qualifiedName, stringType, typeRecord, (====>>), (====>>>))
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
@@ -14,7 +14,7 @@ head =
   , dataHdVars: []
   }
 
-dataMapMap :: Type -> Type -> Type
+dataMapMap :: PSType -> PSType -> PSType
 dataMapMap x y =
   (TypeConstructor $ qualifiedName (mkModuleName $ NonEmpty.cons' "Data" ["Map"]) (ProperName "Map"))
   `TypeApp`
@@ -22,10 +22,10 @@ dataMapMap x y =
   `TypeApp`
   y
 
-myExtension :: Type
+myExtension :: PSType
 myExtension = TypeConstructor $ nonQualifiedName $ ProperName "MyExtension"
 
-declFooNewtype :: Type -> Declaration
+declFooNewtype :: PSType -> Declaration
 declFooNewtype type_ = DeclNewtype { comments: Nothing, head, name: ProperName "Foo", type_ }
 
 actualModule :: Module
@@ -114,26 +114,26 @@ actualModule = Module
       , rowTail: Nothing
       }
     , declFooNewtype $ TypeForall
-      (NonEmpty.cons' (TypeVarName $ Ident "a") [(TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )])
+      (NonEmpty.cons' (TypeVarName $ Ident "a") [(TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "PSType"))) )])
       (arrayType $ TypeVar $ Ident "a")
     , declFooNewtype $ (arrayType $ TypeVar $ Ident "a") ====>> (maybeType $ TypeVar $ Ident "a")
     , declFooNewtype $ TypeOp (TypeConstructor $ nonQualifiedName $ ProperName "Array") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe")
     , declFooNewtype $ TypeForall
       (NonEmpty.cons' (TypeVarName $ Ident "f") [])
       ( TypeConstrained
-        (Constraint { className: nonQualifiedName $ ProperName "Functor", args: [TypeVar $ Ident "f"] })
+        (PSConstraint { className: nonQualifiedName $ ProperName "Functor", args: [TypeVar $ Ident "f"] })
         (TypeOp (TypeVar $ Ident "f") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe"))
       )
     , declFooNewtype $ TypeConstrained
-      (Constraint { className: nonQualifiedName $ ProperName "MyClass", args: [TypeVar $ Ident "f", TypeVar $ Ident "g", TypeVar $ Ident "k"] })
+      (PSConstraint { className: nonQualifiedName $ ProperName "MyClass", args: [TypeVar $ Ident "f", TypeVar $ Ident "g", TypeVar $ Ident "k"] })
       (TypeConstrained
-        (Constraint { className: nonQualifiedName $ ProperName "MyClass2", args: [typeRecord $ [ "foo" /\ numberType ]] })
+        (PSConstraint { className: nonQualifiedName $ ProperName "MyClass2", args: [typeRecord $ [ "foo" /\ numberType ]] })
         (TypeVar $ Ident "f"))
     , declFooNewtype $ TypeKinded
       (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
-      (((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "Type")) ====>>> (KindName $ nonQualifiedName $ ProperName "Type"))
+      (((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "PSType")) ====>>> (KindName $ nonQualifiedName $ ProperName "PSType"))
     , declFooNewtype $ TypeKinded
       (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
-      ((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "Type") ====>>> (KindName $ nonQualifiedName $ ProperName "Type"))
+      ((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "PSType") ====>>> (KindName $ nonQualifiedName $ ProperName "PSType"))
     ]
   }

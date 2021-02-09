@@ -1,6 +1,6 @@
 module Language.PS.CST.Sugar.Declaration where
 
-import Language.PS.CST.Types.Declaration (Type(..))
+import Language.PS.CST.Types.Declaration (PSType(..))
 import Language.PS.CST.Types.Leafs (ProperName(..))
 import Language.PS.CST.Sugar.QualifiedName (nonQualifiedName)
 import Language.PS.CST.Sugar.Leafs (mkRowLabels)
@@ -9,23 +9,23 @@ import Prelude
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested (type (/\))
 
-typeRecord :: Array (String /\ Type) -> Type
+typeRecord :: Array (String /\ PSType) -> PSType
 typeRecord labels = TypeRecord { rowLabels: mkRowLabels labels, rowTail: Nothing }
 
-typeRow :: Array (String /\ Type) -> Type
+typeRow :: Array (String /\ PSType) -> PSType
 typeRow labels = TypeRow { rowLabels: mkRowLabels labels, rowTail: Nothing }
 
-booleanType :: Type
+booleanType :: PSType
 booleanType = TypeConstructor $ nonQualifiedName $ ProperName "Boolean"
 
-numberType :: Type
+numberType :: PSType
 numberType = TypeConstructor $ nonQualifiedName $ ProperName "Number"
 
-stringType :: Type
+stringType :: PSType
 stringType = TypeConstructor $ nonQualifiedName $ ProperName "String"
 
-arrayType :: Type -> Type
+arrayType :: PSType -> PSType
 arrayType = TypeApp (TypeConstructor $ nonQualifiedName $ ProperName "Array")
 
-maybeType :: Type -> Type
+maybeType :: PSType -> PSType
 maybeType = TypeApp (TypeConstructor $ nonQualifiedName $ ProperName "Maybe")

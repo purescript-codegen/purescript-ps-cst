@@ -21,18 +21,18 @@ data Declaration
   | DeclType
     { comments :: Maybe Comments
     , head :: DataHead
-    , type_ :: Type
+    , type_ :: PSType
     }
   | DeclNewtype
     { comments :: Maybe Comments
     , head :: DataHead
     , name :: ProperName ProperNameType_ConstructorName
-    , type_ :: Type
+    , type_ :: PSType
     }
   | DeclClass
     { comments :: Maybe Comments
     , head :: ClassHead
-    , methods :: Array { ident :: Ident, type_ :: Type }
+    , methods :: Array { ident :: Ident, type_ :: PSType }
     }
   | DeclInstanceChain
     { comments :: Maybe Comments
@@ -46,7 +46,7 @@ data Declaration
   | DeclSignature
     { comments :: Maybe Comments
     , ident :: Ident
-    , type_ :: Type
+    , type_ :: PSType
     }
   | DeclValue
     { comments :: Maybe Comments
@@ -68,13 +68,13 @@ instance showDeclaration :: Show Declaration where show = genericShow
 
 type InstanceHead =
   { instName :: Ident
-  , instConstraints :: Array Constraint
+  , instConstraints :: Array PSConstraint
   , instClass :: QualifiedName (ProperName ProperNameType_ClassName)
-  , instTypes :: NonEmptyArray Type
+  , instTypes :: NonEmptyArray PSType
   }
 
 data Foreign
-  = ForeignValue { ident :: Ident, type_ :: Type }
+  = ForeignValue { ident :: Ident, type_ :: PSType }
   | ForeignData { name :: ProperName ProperNameType_TypeName, kind_ :: Kind }
   | ForeignKind { name :: ProperName ProperNameType_KindName }
 
@@ -98,31 +98,31 @@ derive instance eqFixityOp :: Eq FixityOp
 derive instance ordFixityOp :: Ord FixityOp
 instance showFixityOp :: Show FixityOp where show = genericShow
 
-data Type
+data PSType
   = TypeVar Ident
   | TypeConstructor (QualifiedName (ProperName ProperNameType_TypeName))
   | TypeWildcard
   | TypeHole Ident
   | TypeString String
-  | TypeRow Row
-  | TypeRecord Row
-  | TypeApp Type Type
-  | TypeForall (NonEmptyArray TypeVarBinding) Type
-  | TypeArr Type Type
-  | TypeKinded Type Kind
-  | TypeOp Type (QualifiedName (OpName OpNameType_TypeOpName)) Type -- like TypeArr, but with custom type alias
-  | TypeConstrained Constraint Type
+  | TypeRow PSRow
+  | TypeRecord PSRow
+  | TypeApp PSType PSType
+  | TypeForall (NonEmptyArray TypeVarBinding) PSType
+  | TypeArr PSType PSType
+  | TypeKinded PSType Kind
+  | TypeOp PSType (QualifiedName (OpName OpNameType_TypeOpName)) PSType -- like TypeArr, but with custom type alias
+  | TypeConstrained PSConstraint PSType
   --
   -- no need to implement
   --
   -- | TypeOpName (QualifiedName (OpName OpNameType_TypeOpName))
   -- | TypeArrName
-  -- | TypeParens Type
+  -- | TypeParens PSType
 
-derive instance genericType :: Generic Type _
-derive instance eqType :: Eq Type
-derive instance ordType :: Ord Type
-instance showType :: Show Type where show x = genericShow x
+derive instance genericType :: Generic PSType _
+derive instance eqType :: Eq PSType
+derive instance ordType :: Ord PSType
+instance showType :: Show PSType where show x = genericShow x
 
 data Kind
   = KindName (QualifiedName (ProperName ProperNameType_KindName))
@@ -157,7 +157,7 @@ instance showDataHead :: Show DataHead where show = genericShow
 
 newtype DataCtor = DataCtor
   { dataCtorName :: ProperName ProperNameType_ConstructorName
-  , dataCtorFields :: Array Type
+  , dataCtorFields :: Array PSType
   }
 
 derive instance newtypeDataCtor :: Newtype DataCtor _
@@ -166,28 +166,28 @@ derive instance eqDataCtor :: Eq DataCtor
 derive instance ordDataCtor :: Ord DataCtor
 instance showDataCtor :: Show DataCtor where show = genericShow
 
-type Row =
-  { rowLabels :: Array { label :: Label, type_ :: Type }
-  , rowTail :: Maybe Type
+type PSRow =
+  { rowLabels :: Array { label :: Label, type_ :: PSType }
+  , rowTail :: Maybe PSType
   }
 
-newtype Constraint
-  = Constraint
+newtype PSConstraint
+  = PSConstraint
     { className :: QualifiedName (ProperName ProperNameType_ClassName)
-    , args :: Array Type
+    , args :: Array PSType
     }
-  -- | ConstraintParens Constraint
+  -- | ConstraintParens PSConstraint
 
-derive instance genericConstraint :: Generic Constraint _
-derive instance eqConstraint :: Eq Constraint
-derive instance ordConstraint :: Ord Constraint
-instance showConstraint :: Show Constraint where show = genericShow
+derive instance genericConstraint :: Generic PSConstraint _
+derive instance eqConstraint :: Eq PSConstraint
+derive instance ordConstraint :: Ord PSConstraint
+instance showConstraint :: Show PSConstraint where show = genericShow
 
 -- Delimeted or separated
 type ClassHead =
   { name :: ProperName ProperNameType_ClassName
   , vars :: Array TypeVarBinding
-  , super :: Array Constraint
+  , super :: Array PSConstraint
   , fundeps :: Array ClassFundep
   }
 
@@ -208,7 +208,7 @@ data Binder
   | BinderNumber (Either Int Number)
   | BinderArray (Array Binder)
   | BinderRecord (Array (RecordLabeled Binder))
-  | BinderTyped Binder Type
+  | BinderTyped Binder PSType
   | BinderOp Binder (QualifiedName (OpName OpNameType_ValueOpName)) Binder
   -- | BinderParens Binder -- no need
 
@@ -232,7 +232,7 @@ type Where =
   }
 
 data LetBinding
-  = LetBindingSignature { ident :: Ident, type_ :: Type }
+  = LetBindingSignature { ident :: Ident, type_ :: PSType }
   | LetBindingName ValueBindingFields
   | LetBindingPattern { binder :: Binder, where_ :: Where }
 
@@ -262,7 +262,7 @@ data Expr
   | ExprNumber (Either Int Number)
   | ExprArray (Array Expr)
   | ExprRecord (Array (RecordLabeled Expr))
-  | ExprTyped Expr Type
+  | ExprTyped Expr PSType
   | ExprInfix Expr Expr Expr -- e.g. `1 : 2 : Nil`
   | ExprOp Expr (QualifiedName (OpName OpNameType_ValueOpName)) Expr
   | ExprOpName (QualifiedName (OpName OpNameType_ValueOpName))
@@ -334,7 +334,7 @@ type AdoBlock =
   }
 
 data InstanceBinding
-  = InstanceBindingSignature { ident :: Ident, type_ :: Type }
+  = InstanceBindingSignature { ident :: Ident, type_ :: PSType }
   | InstanceBindingName ValueBindingFields
 
 derive instance genericInstanceBinding :: Generic InstanceBinding _
