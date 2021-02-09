@@ -5,7 +5,7 @@ import Prelude
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Foldable (class Foldable, foldlDefault, foldrDefault)
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
+import Data.Show.Generic (genericShow)
 import Data.Newtype (class Newtype)
 import Data.Traversable (class Traversable)
 
