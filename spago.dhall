@@ -2,7 +2,6 @@
 , dependencies =
     [ "console"
     , "effect"
-    , "generics-rep"
     , "psci-support"
     , "record"
     , "strings"
