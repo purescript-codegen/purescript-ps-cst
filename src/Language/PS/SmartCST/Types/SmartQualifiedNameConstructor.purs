@@ -3,7 +3,7 @@ module Language.PS.SmartCST.Types.SmartQualifiedNameConstructor where
 import Prelude
 
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
+import Data.Show.Generic (genericShow)
 import Language.PS.CST.Types.Leafs (ProperName, ProperNameType_ConstructorName, ProperNameType_TypeName, ModuleName)
 
 -- used to replace `QualifiedName (ProperName ProperNameType_ClassName)`
