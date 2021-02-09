@@ -9,8 +9,8 @@ import Data.List (fromFoldable) as List
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap)
 import Data.String.Regex (Regex)
-import Data.String.Regex as Regex
-import Data.String.Regex.Unsafe as Regex
+import Data.String.Regex (test) as Regex
+import Data.String.Regex.Unsafe (unsafeRegex) as Regex
 import Data.String.Regex.Flags as RegexFlags
 import Dodo (Doc, bothNotEmpty, break, enclose, encloseEmptyAlt, flexAlt, flexGroup, foldWithSeparator, indent, softBreak, space, spaceBreak, text, (<+>))
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, isReservedName)
