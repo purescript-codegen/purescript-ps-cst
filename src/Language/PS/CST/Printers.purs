@@ -31,7 +31,7 @@ printModule (Module { moduleName, imports, exports, declarations }) =
     , printDeclarations declarations
     ] <> break
 
-printDeclarations :: Array (Declaration) -> Doc Void
+printDeclarations :: Array Declaration -> Doc Void
 printDeclarations declarations = printAndConditionallyAddNewlinesBetween shouldBeNoNewlineBetweenDeclarations printDeclaration declarations
 
 printComments :: Comments -> Doc Void
