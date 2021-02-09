@@ -18,7 +18,7 @@ import Language.PS.CST.Printers.TypeLevel (printConstraint, printConstraintList,
 import Language.PS.CST.Printers.Utils (dot, dquotesIf, exprShouldBeOnNextLine, labelNeedsQuotes, maybeWrapInParentheses, parens, printAndConditionallyAddNewlinesBetween, printLabelledGroup, shouldBeNoNewlineBetweenDeclarations, shouldBeNoNewlineBetweenInstanceBindings, shouldBeNoNewlineBetweenLetBindings, unwrapText, (<%%>))
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
 import Language.PS.CST.Sugar.QualifiedName (nonQualifiedName)
-import Language.PS.CST.Types.Declaration (Binder(..), Constraint(..), DataCtor(..), DataHead(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), InstanceHead, LetBinding(..), RecordUpdate(..), Type(..), ValueBindingFields)
+import Language.PS.CST.Types.Declaration (Binder(..), PSConstraint(..), DataCtor(..), DataHead(..), Declaration(..), Expr(..), FixityOp(..), Foreign(..), Guarded(..), Instance, InstanceBinding(..), InstanceHead, LetBinding(..), RecordUpdate(..), PSType(..), ValueBindingFields)
 import Language.PS.CST.Types.Leafs (Comments(..), DeclDeriveType(..), ProperName(..), RecordLabeled(..))
 import Language.PS.CST.Types.Module (Module(..))
 
@@ -97,7 +97,7 @@ printDeclaration (DeclDerive { comments, deriveType, head: { instName, instConst
       , unwrapText instName
       ]
 
-    instConstraint = Constraint { className: instClass
+    instConstraint = PSConstraint { className: instClass
                                 , args: NonEmptyArray.toArray instTypes
                                 }
 
@@ -330,7 +330,7 @@ printRecordUpdate (RecordUpdateBranch label recordUpdates) = (text <<< appendUnd
 printAssignmentDecl
   :: String
   -> DataHead
-  -> Array Type
+  -> Array PSType
   -> Doc Void
 printAssignmentDecl reservedWord (DataHead { dataHdName, dataHdVars }) types =
   (flexGroup $
@@ -345,14 +345,14 @@ printAssignmentDecl reservedWord (DataHead { dataHdName, dataHdVars }) types =
 
     sep = spaceBreak <> text "| "
 
-dataCtorToType :: DataCtor -> Type
+dataCtorToType :: DataCtor -> PSType
 dataCtorToType (DataCtor ctor) = foldl TypeApp initType ctor.dataCtorFields
   where
     initType =
       TypeConstructor (nonQualifiedName (coerceProperName ctor.dataCtorName))
 
 -- TODO add printing of constraints
-instanceHeadToType :: InstanceHead -> Type
+instanceHeadToType :: InstanceHead -> PSType
 instanceHeadToType inst = foldl TypeApp initType inst.instTypes
   where
     initType = TypeConstructor (coerceProperName <$> inst.instClass)

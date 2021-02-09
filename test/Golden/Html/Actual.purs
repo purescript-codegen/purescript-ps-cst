@@ -1,12 +1,12 @@
 module Test.Golden.Html.Actual where
 
-import Language.PS.CST (Declaration(..), Expr(..), Guarded(..), Ident(..), Module(..), ProperName(..), Type(..), mkModuleName, nonQualifiedName)
+import Language.PS.CST (Declaration(..), Expr(..), Guarded(..), Ident(..), Module(..), ProperName(..), PSType(..), mkModuleName, nonQualifiedName)
 import Prelude
 
 import Data.Array.NonEmpty as NonEmpty
 import Data.Maybe (Maybe(..))
 
-declValue :: String -> Type -> Expr -> Array Declaration
+declValue :: String -> PSType -> Expr -> Array Declaration
 declValue name type_ expr =
   [ DeclSignature
     { comments: Nothing

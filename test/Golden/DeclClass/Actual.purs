@@ -1,6 +1,6 @@
 module Test.Golden.DeclClass.Actual where
 
-import Language.PS.CST (ClassFundep(..), Comments(..), Constraint(..), Declaration(..), Ident(..), Module(..), ProperName(..), Type(..), TypeVarBinding(..), mkModuleName, nonQualifiedName, (====>>))
+import Language.PS.CST (ClassFundep(..), Comments(..), PSConstraint(..), Declaration(..), Ident(..), Module(..), ProperName(..), PSType(..), TypeVarBinding(..), mkModuleName, nonQualifiedName, (====>>))
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
@@ -65,7 +65,7 @@ actualModule = Module
         { name: ProperName "Foo"
         , vars: [TypeVarName $ Ident "m"]
         , super:
-          [ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [TypeVar $ Ident "m"] }
+          [ PSConstraint { className: nonQualifiedName (ProperName "Bar"), args: [TypeVar $ Ident "m"] }
           ]
         , fundeps: []
         }
@@ -77,8 +77,8 @@ actualModule = Module
         { name: ProperName "Foo"
         , vars: [TypeVarName $ Ident "m"]
         , super:
-          [ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [TypeVar $ Ident "m"] }
-          , Constraint { className: nonQualifiedName (ProperName "Baz"), args: [TypeVar $ Ident "m"] }
+          [ PSConstraint { className: nonQualifiedName (ProperName "Bar"), args: [TypeVar $ Ident "m"] }
+          , PSConstraint { className: nonQualifiedName (ProperName "Baz"), args: [TypeVar $ Ident "m"] }
           ]
         , fundeps: []
         }
@@ -90,7 +90,7 @@ actualModule = Module
         { name: ProperName "Foo"
         , vars: [TypeVarName $ Ident "m", TypeVarName $ Ident "c"]
         , super:
-          [ Constraint { className: nonQualifiedName (ProperName "Bar"), args: [TypeVar $ Ident "m", TypeVar $ Ident "c"] }
+          [ PSConstraint { className: nonQualifiedName (ProperName "Bar"), args: [TypeVar $ Ident "m", TypeVar $ Ident "c"] }
           ]
         , fundeps: [(NonEmpty.singleton (Ident "m")) `FundepDetermines` (NonEmpty.singleton (Ident "c"))]
         }

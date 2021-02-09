@@ -1,6 +1,6 @@
 module Test.Golden.DeclForeign.Actual where
 
-import Language.PS.CST (Declaration(..), Foreign(..), Ident(..), Kind(..), Module(..), ProperName(..), Type(..), TypeVarBinding(..), mkModuleName, mkRowLabels, nonQualifiedName, (====>>>))
+import Language.PS.CST (Declaration(..), Foreign(..), Ident(..), Kind(..), Module(..), ProperName(..), PSType(..), TypeVarBinding(..), mkModuleName, mkRowLabels, nonQualifiedName, (====>>>))
 import Prelude
 
 import Data.Maybe (Maybe(..))
@@ -19,7 +19,7 @@ actualModule = Module
       }
     , DeclForeign
       { comments: Nothing
-      , foreign_: ForeignData { name: ProperName "Foo", kind_: KindRow (KindName $ nonQualifiedName (ProperName "Type")) ====>>> (KindName $ nonQualifiedName (ProperName "Type")) }
+      , foreign_: ForeignData { name: ProperName "Foo", kind_: KindRow (KindName $ nonQualifiedName (ProperName "PSType")) ====>>> (KindName $ nonQualifiedName (ProperName "PSType")) }
       }
     , DeclForeign
       { comments: Nothing

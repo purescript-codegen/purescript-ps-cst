@@ -1,6 +1,6 @@
 module Test.Golden.ExprArray.Actual where
 
-import Language.PS.CST (Declaration(..), Expr(..), Guarded(..), Ident(..), Label(..), Module(..), ProperName(..), RecordLabeled(..), Type(..), mkModuleName, mkRowLabels, nonQualifiedName)
+import Language.PS.CST (Declaration(..), Expr(..), Guarded(..), Ident(..), Label(..), Module(..), ProperName(..), RecordLabeled(..), PSType(..), mkModuleName, mkRowLabels, nonQualifiedName)
 import Prelude
 
 import Data.Array.NonEmpty as NonEmpty
@@ -8,7 +8,7 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 
-declValue :: String -> Type -> Expr -> Array Declaration
+declValue :: String -> PSType -> Expr -> Array Declaration
 declValue name type_ expr =
   [ DeclSignature
     { comments: Nothing

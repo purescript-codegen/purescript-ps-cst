@@ -1,6 +1,6 @@
 module Test.Golden.DeclDerive.Actual where
 
-import Language.PS.CST (Constraint(..), DeclDeriveType(..), Declaration(..), Ident(..), Module(..), ProperName(..), Type(..), mkModuleName, mkRowLabels, nonQualifiedName, numberType)
+import Language.PS.CST (PSConstraint(..), DeclDeriveType(..), Declaration(..), Ident(..), Module(..), ProperName(..), PSType(..), mkModuleName, mkRowLabels, nonQualifiedName, numberType)
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
@@ -55,7 +55,7 @@ actualModule = Module
       , head:
         { instName: Ident "foo"
         , instConstraints:
-          [ Constraint { className: nonQualifiedName (ProperName "Foo"), args: [TypeVar $ Ident "a"] }
+          [ PSConstraint { className: nonQualifiedName (ProperName "Foo"), args: [TypeVar $ Ident "a"] }
           ]
         , instClass: nonQualifiedName $ ProperName "Foo"
         , instTypes: NonEmpty.singleton $
@@ -70,9 +70,9 @@ actualModule = Module
       , head:
         { instName: Ident "foo"
         , instConstraints:
-          [ Constraint { className: nonQualifiedName (ProperName "Foo"), args: [TypeVar $ Ident "a"] }
-          , Constraint { className: nonQualifiedName (ProperName "Bar"), args: [TypeVar $ Ident "b", TypeVar $ Ident "c"] }
-          , Constraint { className: nonQualifiedName (ProperName "Partial"), args: [] }
+          [ PSConstraint { className: nonQualifiedName (ProperName "Foo"), args: [TypeVar $ Ident "a"] }
+          , PSConstraint { className: nonQualifiedName (ProperName "Bar"), args: [TypeVar $ Ident "b", TypeVar $ Ident "c"] }
+          , PSConstraint { className: nonQualifiedName (ProperName "Partial"), args: [] }
           ]
         , instClass: nonQualifiedName $ ProperName "Foo"
         , instTypes: NonEmpty.singleton $ (TypeConstructor $ nonQualifiedName $ ProperName "Tuple") `TypeApp` (TypeVar $ Ident "a") `TypeApp` (TypeVar $ Ident "b")
@@ -84,11 +84,11 @@ actualModule = Module
       , head:
         { instName: Ident "foo"
         , instConstraints:
-          [ Constraint { className: nonQualifiedName (ProperName "Foo"), args: [TypeVar $ Ident "a"] }
-          , Constraint { className: nonQualifiedName (ProperName "Bar"), args: [TypeVar $ Ident "b", TypeVar $ Ident "c"] }
-          , Constraint { className: nonQualifiedName (ProperName "Partial"), args: [] }
-          , Constraint { className: nonQualifiedName (ProperName "Partial1"), args: [] }
-          , Constraint { className: nonQualifiedName (ProperName "Partial2"), args: [] }
+          [ PSConstraint { className: nonQualifiedName (ProperName "Foo"), args: [TypeVar $ Ident "a"] }
+          , PSConstraint { className: nonQualifiedName (ProperName "Bar"), args: [TypeVar $ Ident "b", TypeVar $ Ident "c"] }
+          , PSConstraint { className: nonQualifiedName (ProperName "Partial"), args: [] }
+          , PSConstraint { className: nonQualifiedName (ProperName "Partial1"), args: [] }
+          , PSConstraint { className: nonQualifiedName (ProperName "Partial2"), args: [] }
           ]
         , instClass: nonQualifiedName $ ProperName "Foo"
         , instTypes: NonEmpty.singleton $ (TypeConstructor $ nonQualifiedName $ ProperName "Tuple") `TypeApp` (TypeVar $ Ident "a") `TypeApp` (TypeVar $ Ident "b")
@@ -100,16 +100,16 @@ actualModule = Module
       , head:
         { instName: Ident "foo"
         , instConstraints:
-          [ Constraint { className: nonQualifiedName (ProperName "Foo"), args: [TypeVar $ Ident "a"] }
-          , Constraint { className: nonQualifiedName (ProperName "Bar"), args: [TypeVar $ Ident "b", TypeVar $ Ident "c"] }
-          , Constraint { className: nonQualifiedName (ProperName "Partial"), args: [] }
-          , Constraint { className: nonQualifiedName (ProperName "Partial1"), args: [] }
-          , Constraint { className: nonQualifiedName (ProperName "Partial2"), args: [] }
-          , Constraint { className: nonQualifiedName (ProperName "Partial3"), args: [] }
-          , Constraint { className: nonQualifiedName (ProperName "Partial4"), args: [] }
-          , Constraint { className: nonQualifiedName (ProperName "Partial5"), args: [] }
-          , Constraint { className: nonQualifiedName (ProperName "Partial6"), args: [] }
-          , Constraint { className: nonQualifiedName (ProperName "Partial7"), args: [] }
+          [ PSConstraint { className: nonQualifiedName (ProperName "Foo"), args: [TypeVar $ Ident "a"] }
+          , PSConstraint { className: nonQualifiedName (ProperName "Bar"), args: [TypeVar $ Ident "b", TypeVar $ Ident "c"] }
+          , PSConstraint { className: nonQualifiedName (ProperName "Partial"), args: [] }
+          , PSConstraint { className: nonQualifiedName (ProperName "Partial1"), args: [] }
+          , PSConstraint { className: nonQualifiedName (ProperName "Partial2"), args: [] }
+          , PSConstraint { className: nonQualifiedName (ProperName "Partial3"), args: [] }
+          , PSConstraint { className: nonQualifiedName (ProperName "Partial4"), args: [] }
+          , PSConstraint { className: nonQualifiedName (ProperName "Partial5"), args: [] }
+          , PSConstraint { className: nonQualifiedName (ProperName "Partial6"), args: [] }
+          , PSConstraint { className: nonQualifiedName (ProperName "Partial7"), args: [] }
           ]
         , instClass: nonQualifiedName $ ProperName "Foo"
         , instTypes: NonEmpty.singleton $ (TypeConstructor $ nonQualifiedName $ ProperName "Foo")
