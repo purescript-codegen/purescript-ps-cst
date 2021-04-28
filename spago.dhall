@@ -25,4 +25,6 @@
     ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]
+, license = "Apache-2.0"
+, repository = "https://github.com/purescript-codegen/purescript-ps-cst"
 }
