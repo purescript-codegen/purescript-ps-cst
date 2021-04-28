@@ -80,7 +80,7 @@ newtype Foo
          }
     )
 
-newtype Foo = Foo (forall a (b :: # Type). Array a)
+newtype Foo = Foo (forall a (b :: Row Type). Array a)
 
 newtype Foo = Foo (Array a -> Maybe a)
 
@@ -90,6 +90,6 @@ newtype Foo = Foo (forall f. Functor f => f ~> Maybe)
 
 newtype Foo = Foo (MyClass f g k => MyClass2 { foo :: Number } => f)
 
-newtype Foo = Foo (MyKindedType :: (CustomKind -> # Type) -> Type)
+newtype Foo = Foo (MyKindedType :: (CustomKind -> Row Type) -> Type)
 
-newtype Foo = Foo (MyKindedType :: CustomKind -> # Type -> Type)
+newtype Foo = Foo (MyKindedType :: CustomKind -> Row Type -> Type)

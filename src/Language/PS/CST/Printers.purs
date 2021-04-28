@@ -80,7 +80,7 @@ printDeclaration (DeclForeign { comments, foreign_ }) =
       (text "foreign import data" <+> unwrapText name)
       (flexGroup $ printKind kind_)
     ForeignKind { name } ->
-      text "foreign import kind" <+> unwrapText name
+      text "data" <+> unwrapText name
 
 printDeclaration (DeclDerive { comments, deriveType, head: { instName, instConstraints, instClass, instTypes } }) =
   printMaybeComments comments $

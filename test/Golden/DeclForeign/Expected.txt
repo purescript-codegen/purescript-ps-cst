@@ -1,8 +1,8 @@
 module DeclForeign where
 
-foreign import kind Foo
+data Foo
 
-foreign import data Foo :: # Type -> Type
+foreign import data Foo :: Row Type -> Type
 
 foreign import main_
   :: forall e

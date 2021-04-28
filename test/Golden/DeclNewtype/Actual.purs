@@ -114,7 +114,7 @@ actualModule = Module
       , rowTail: Nothing
       }
     , declFooNewtype $ TypeForall
-      (NonEmpty.cons' (TypeVarName $ Ident "a") [(TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "PSType"))) )])
+      (NonEmpty.cons' (TypeVarName $ Ident "a") [(TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )])
       (arrayType $ TypeVar $ Ident "a")
     , declFooNewtype $ (arrayType $ TypeVar $ Ident "a") ====>> (maybeType $ TypeVar $ Ident "a")
     , declFooNewtype $ TypeOp (TypeConstructor $ nonQualifiedName $ ProperName "Array") (nonQualifiedName $ OpName "~>") (TypeConstructor $ nonQualifiedName $ ProperName "Maybe")
@@ -131,9 +131,9 @@ actualModule = Module
         (TypeVar $ Ident "f"))
     , declFooNewtype $ TypeKinded
       (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
-      (((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "PSType")) ====>>> (KindName $ nonQualifiedName $ ProperName "PSType"))
+      (((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "Type")) ====>>> (KindName $ nonQualifiedName $ ProperName "Type"))
     , declFooNewtype $ TypeKinded
       (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
-      ((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "PSType") ====>>> (KindName $ nonQualifiedName $ ProperName "PSType"))
+      ((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "Type") ====>>> (KindName $ nonQualifiedName $ ProperName "Type"))
     ]
   }

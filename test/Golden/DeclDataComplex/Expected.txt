@@ -59,11 +59,11 @@ data Foo
          , qwe :: Complex (A B C) D E (F (G H))
          }
     )
-    (forall a (b :: # Type). Array a)
+    (forall a (b :: Row Type). Array a)
     (Array a -> Maybe a)
     (Array ~> Maybe)
     (forall f. Functor f => f ~> Maybe)
     (MyClass f g k => MyClass2 { foo :: Number } => f)
-    (MyKindedType :: (CustomKind -> # Type) -> Type)
-    (MyKindedType :: CustomKind -> # Type -> Type)
+    (MyKindedType :: (CustomKind -> Row Type) -> Type)
+    (MyKindedType :: CustomKind -> Row Type -> Type)
   | Baz Prelude.Boolean

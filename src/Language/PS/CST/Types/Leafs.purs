@@ -9,6 +9,8 @@ import Data.Show.Generic (genericShow)
 import Data.Newtype (class Newtype)
 import Data.Traversable (class Traversable)
 
+-- This type does not appear in https://github.com/purescript/purescript/blob/ee0b3d391151bcd5f56de4563208dcf657cccc8c/lib/purescript-cst/src/Language/PureScript/CST/Types.hs
+-- This type is a temporary solution to implement comments without adding the SourceToken type
 data Comments
   -- | Rendered as
   -- | ```purs
@@ -44,7 +46,7 @@ derive instance eqIdent :: Eq Ident
 derive instance ordIdent :: Ord Ident
 instance showIdent :: Show Ident where show = genericShow
 
-foreign import kind OpNameType
+data OpNameType
 foreign import data OpNameType_ValueOpName :: OpNameType
 foreign import data OpNameType_TypeOpName :: OpNameType
 
@@ -57,7 +59,7 @@ derive instance ordOpName :: Ord (OpName proxy)
 instance showOpName :: Show (OpName proxy) where
   show (OpName string) = "(OpName " <> show string <> ")"
 
-foreign import kind ProperNameType
+data ProperNameType
 foreign import data ProperNameType_TypeName :: ProperNameType
 foreign import data ProperNameType_ConstructorName :: ProperNameType
 foreign import data ProperNameType_ClassName :: ProperNameType

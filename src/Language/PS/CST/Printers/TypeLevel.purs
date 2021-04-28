@@ -42,7 +42,7 @@ printKind (KindArr kindLeft_ kindRight_) =
     printedLeft' = if isComplex kindLeft_ then parens printedLeft else printedLeft
   in
     printedLeft' <+> text "->" <+> printKind kindRight_
-printKind (KindRow kind_) = text "#" <+> printKind kind_
+printKind (KindRow kind_) = text "Row" <+> printKind kind_ -- TODO: should we add imports?
 
 printQualifiedName_Ident :: QualifiedName Ident -> Doc Void
 printQualifiedName_Ident (QualifiedName qualifiedName) = case qualifiedName.qualModule of

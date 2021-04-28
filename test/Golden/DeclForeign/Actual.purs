@@ -19,7 +19,7 @@ actualModule = Module
       }
     , DeclForeign
       { comments: Nothing
-      , foreign_: ForeignData { name: ProperName "Foo", kind_: KindRow (KindName $ nonQualifiedName (ProperName "PSType")) ====>>> (KindName $ nonQualifiedName (ProperName "PSType")) }
+      , foreign_: ForeignData { name: ProperName "Foo", kind_: KindRow (KindName $ nonQualifiedName (ProperName "Type")) ====>>> (KindName $ nonQualifiedName (ProperName "Type")) }
       }
     , DeclForeign
       { comments: Nothing

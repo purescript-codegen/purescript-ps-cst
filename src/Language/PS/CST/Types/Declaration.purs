@@ -4,7 +4,6 @@ import Prelude
 
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Either (Either)
-import Data.Either.Nested (type (\/))
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
 import Data.Maybe (Maybe)
@@ -60,6 +59,11 @@ data Declaration
     { comments :: Maybe Comments
     , foreign_ :: Foreign
     }
+  -- TODO:
+  -- DeclRole
+  -- https://github.com/purescript/purescript/blob/ee0b3d391151bcd5f56de4563208dcf657cccc8c/lib/purescript-cst/src/Language/PureScript/CST/Types.hs#L207
+  -- vs
+  -- https://github.com/purescript/purescript/blob/9cad73ed8ea7df3011032ddbd2f3de5a0c08629c/src/Language/PureScript/CST/Types.hs#L200
 
 derive instance genericDeclaration :: Generic Declaration _
 derive instance eqDeclaration :: Eq Declaration
@@ -90,7 +94,7 @@ type FixityFields =
   }
 
 data FixityOp
-  = FixityValue (QualifiedName Ident \/ QualifiedName (ProperName ProperNameType_ConstructorName)) (OpName OpNameType_ValueOpName)
+  = FixityValue (Either (QualifiedName Ident) (QualifiedName (ProperName ProperNameType_ConstructorName))) (OpName OpNameType_ValueOpName)
   | FixityType (QualifiedName (ProperName ProperNameType_TypeName)) (OpName OpNameType_TypeOpName)
 
 derive instance genericFixityOp :: Generic FixityOp _
@@ -117,7 +121,7 @@ data PSType
   --
   -- | TypeOpName (QualifiedName (OpName OpNameType_TypeOpName))
   -- | TypeArrName
-  -- | TypeParens PSType
+  -- | TypeParens PSType -- generated automatically
 
 derive instance genericType :: Generic PSType _
 derive instance eqType :: Eq PSType

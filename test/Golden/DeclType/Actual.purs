@@ -134,7 +134,7 @@ actualModule = Module
     , declFooType $ TypeForall
       ( NonEmpty.cons'
         (TypeVarName $ Ident "a")
-        [ (TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "PSType"))) )
+        [ (TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )
         ]
       )
       (arrayType $ TypeVar $ Ident "a")
@@ -165,10 +165,10 @@ actualModule = Module
         (TypeVar $ Ident "f"))
     , declFooType $ TypeKinded
       (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
-      (((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "PSType")) ====>>> (KindName $ nonQualifiedName $ ProperName "PSType"))
+      (((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "Type")) ====>>> (KindName $ nonQualifiedName $ ProperName "Type"))
     , declFooType $ TypeKinded
       (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
-      ((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "PSType") ====>>> (KindName $ nonQualifiedName $ ProperName "PSType"))
+      ((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "Type") ====>>> (KindName $ nonQualifiedName $ ProperName "Type"))
     , declFooType $
       (TypeConstructor $ nonQualifiedName (ProperName "FooBarBaz"))
       `TypeApp`

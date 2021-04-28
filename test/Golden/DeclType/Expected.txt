@@ -78,7 +78,7 @@ type Foo
          }
     )
 
-type Foo = forall a (b :: # Type). Array a
+type Foo = forall a (b :: Row Type). Array a
 
 type Foo = Array a -> Maybe a
 
@@ -90,9 +90,9 @@ type Foo = forall f. Functor f => f ~> Maybe
 
 type Foo = MyClass f g k => MyClass2 { foo :: Number } => f
 
-type Foo = MyKindedType :: (CustomKind -> # Type) -> Type
+type Foo = MyKindedType :: (CustomKind -> Row Type) -> Type
 
-type Foo = MyKindedType :: CustomKind -> # Type -> Type
+type Foo = MyKindedType :: CustomKind -> Row Type -> Type
 
 type Foo
   = FooBarBaz QuxQuuxQuz
