@@ -13,7 +13,7 @@ import Dodo (Doc, alignCurrentColumn, bothNotEmpty, break, encloseEmptyAlt, flex
 import Dodo.Common (leadingComma)
 import Language.PS.CST.Printers.Utils (dquotesIf, labelNeedsQuotes, parens, printLabelledGroup, printModuleName, softSpace, unwrapText, (<%%>))
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved)
-import Language.PS.CST.Types.Declaration (PSConstraint(..), Kind(..), PSRow, PSType(..), TypeVarBinding(..))
+import Language.PS.CST.Types.Declaration (PSConstraint(..), PSRow, PSType(..), TypeVarBinding(..))
 import Language.PS.CST.Types.Leafs (ClassFundep(..), Fixity(..), Ident, Label(..), OpName, ProperName)
 import Language.PS.CST.Types.QualifiedName (QualifiedName(..))
 
@@ -27,22 +27,7 @@ printFixity Infixr = text "infixr"
 
 printTypeVarBinding :: TypeVarBinding -> Doc Void
 printTypeVarBinding (TypeVarName ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
-printTypeVarBinding (TypeVarKinded ident kind_) = parens $ (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printKind kind_
-
-printKind :: Kind -> Doc Void
-printKind (KindName qualifiedKindName) = printQualifiedName_AnyProperNameType qualifiedKindName
-printKind (KindArr kindLeft_ kindRight_) =
-  let
-    isComplex :: Kind -> Boolean
-    isComplex (KindArr _ _) = true
-    isComplex _ = false
-
-    printedLeft = printKind kindLeft_
-
-    printedLeft' = if isComplex kindLeft_ then parens printedLeft else printedLeft
-  in
-    printedLeft' <+> text "->" <+> printKind kindRight_
-printKind (KindRow kind_) = text "Row" <+> printKind kind_ -- TODO: should we add imports?
+printTypeVarBinding (TypeVarKinded ident kind_) = parens $ (text <<< appendUnderscoreIfReserved <<< unwrap) ident <+> text "::" <+> printType' false kind_
 
 printQualifiedName_Ident :: QualifiedName Ident -> Doc Void
 printQualifiedName_Ident (QualifiedName qualifiedName) = case qualifiedName.qualModule of
@@ -75,7 +60,7 @@ printType' _ (TypeForall bs t) =
                  )
   ) <> softBreak <> softSpace <> text ". " <> printType' false t
 printType' _ (TypeKinded t k) =
-  printLabelledGroup (printType' false t) (printKind k)
+  printLabelledGroup (printType' false t) (printType' false k)
 
 printType' _ (TypeRow r) =
   printRow "(" ")" r

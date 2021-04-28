@@ -49,6 +49,7 @@ instance showIdent :: Show Ident where show = genericShow
 data OpNameType
 foreign import data OpNameType_ValueOpName :: OpNameType
 foreign import data OpNameType_TypeOpName :: OpNameType
+-- AnyOpName ??? https://github.com/purescript/purescript/blob/master/lib/purescript-ast/src/Language/PureScript/Names.hs
 
 -- Operator alias names
 newtype OpName (proxy :: OpNameType) = OpName String
@@ -60,10 +61,9 @@ instance showOpName :: Show (OpName proxy) where
   show (OpName string) = "(OpName " <> show string <> ")"
 
 data ProperNameType
-foreign import data ProperNameType_TypeName :: ProperNameType
+foreign import data ProperNameType_TypeConstructor :: ProperNameType
 foreign import data ProperNameType_ConstructorName :: ProperNameType
 foreign import data ProperNameType_ClassName :: ProperNameType
-foreign import data ProperNameType_KindName :: ProperNameType
 foreign import data ProperNameType_Namespace :: ProperNameType
 
 -- Proper names, i.e. capitalized names for e.g. module names, type/data constructors

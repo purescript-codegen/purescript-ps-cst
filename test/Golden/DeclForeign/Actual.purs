@@ -1,11 +1,14 @@
 module Test.Golden.DeclForeign.Actual where
 
-import Language.PS.CST (Declaration(..), Foreign(..), Ident(..), Kind(..), Module(..), ProperName(..), PSType(..), TypeVarBinding(..), mkModuleName, mkRowLabels, nonQualifiedName, (====>>>))
+import Language.PS.CST (Declaration(..), Foreign(..), Ident(..), Module(..), ProperName(..), PSType(..), TypeVarBinding(..), mkModuleName, mkRowLabels, nonQualifiedName, (====>>))
 import Prelude
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
 import Data.Tuple.Nested ((/\))
+
+typeRow :: PSType
+typeRow = (TypeConstructor $ nonQualifiedName $ ProperName "Row") `TypeApp` (TypeConstructor $ nonQualifiedName $ ProperName "Type")
 
 actualModule :: Module
 actualModule = Module
@@ -19,7 +22,7 @@ actualModule = Module
       }
     , DeclForeign
       { comments: Nothing
-      , foreign_: ForeignData { name: ProperName "Foo", kind_: KindRow (KindName $ nonQualifiedName (ProperName "Type")) ====>>> (KindName $ nonQualifiedName (ProperName "Type")) }
+      , foreign_: ForeignData { name: ProperName "Foo", kind_: typeRow ====>> (TypeConstructor $ nonQualifiedName (ProperName "Type")) }
       }
     , DeclForeign
       { comments: Nothing

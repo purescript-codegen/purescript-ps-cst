@@ -14,7 +14,7 @@ import Dodo (Doc, alignCurrentColumn, break, flexGroup, foldWithSeparator, inden
 import Dodo.Common (leadingComma, pursCurlies, pursParens, pursSquares)
 import Language.PS.CST.Printers.PrintImports (printImports)
 import Language.PS.CST.Printers.PrintModuleModuleNameAndExports (printModuleModuleNameAndExports)
-import Language.PS.CST.Printers.TypeLevel (printConstraint, printConstraintList, printFixity, printFundep, printKind, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printType', printTypeVarBinding)
+import Language.PS.CST.Printers.TypeLevel (printConstraint, printConstraintList, printFixity, printFundep, printQualifiedName_AnyOpNameType, printQualifiedName_AnyProperNameType, printQualifiedName_Ident, printType, printType', printTypeVarBinding)
 import Language.PS.CST.Printers.Utils (dot, dquotesIf, exprShouldBeOnNextLine, labelNeedsQuotes, maybeWrapInParentheses, parens, printAndConditionallyAddNewlinesBetween, printLabelledGroup, shouldBeNoNewlineBetweenDeclarations, shouldBeNoNewlineBetweenInstanceBindings, shouldBeNoNewlineBetweenLetBindings, unwrapText, (<%%>))
 import Language.PS.CST.ReservedNames (appendUnderscoreIfReserved, quoteIfReserved)
 import Language.PS.CST.Sugar.QualifiedName (nonQualifiedName)
@@ -78,7 +78,7 @@ printDeclaration (DeclForeign { comments, foreign_ }) =
     ForeignData { name, kind_ } ->
       printLabelledGroup
       (text "foreign import data" <+> unwrapText name)
-      (flexGroup $ printKind kind_)
+      (flexGroup $ printType' false kind_)
     ForeignKind { name } ->
       text "data" <+> unwrapText name
 

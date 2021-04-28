@@ -42,10 +42,10 @@ printImport (ImportDecl { moduleName, names, qualification }) =
 printImportName :: Import -> Doc Void
 printImportName (ImportValue ident) = (text <<< appendUnderscoreIfReserved <<< unwrap) ident
 printImportName (ImportOp valueOpName) = parens $ (text <<< appendUnderscoreIfReserved <<< unwrap) valueOpName
-printImportName (ImportType properNameTypeName maybeDataMembers) =
+printImportName (ImportType properNameTypeConstructor maybeDataMembers) =
   let
-    printedProperNameTypeName :: Doc Void
-    printedProperNameTypeName = (text <<< appendUnderscoreIfReserved <<< unwrap) properNameTypeName
+    printedProperNameTypeConstructor :: Doc Void
+    printedProperNameTypeConstructor = (text <<< appendUnderscoreIfReserved <<< unwrap) properNameTypeConstructor
 
     printedMaybeDataMembers :: Doc Void
     printedMaybeDataMembers = case maybeDataMembers of
@@ -53,7 +53,7 @@ printImportName (ImportType properNameTypeName maybeDataMembers) =
       (Just DataAll) -> text "(..)"
       (Just (DataEnumerated constructors)) -> parens $ printConstructors constructors
   in
-    printedProperNameTypeName <> printedMaybeDataMembers
+    printedProperNameTypeConstructor <> printedMaybeDataMembers
 printImportName (ImportTypeOp opName) = text "type" <+> (parens $ (text <<< appendUnderscoreIfReserved <<< unwrap) $ opName)
 printImportName (ImportClass properName) = text "class" <+> ((text <<< appendUnderscoreIfReserved <<< unwrap) $ properName)
 printImportName (ImportKind properName) = text "kind" <+> ((text <<< appendUnderscoreIfReserved <<< unwrap) $ properName)

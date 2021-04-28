@@ -4,11 +4,11 @@ import Prelude
 
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
-import Language.PS.CST.Types.Leafs (ProperName, ProperNameType_ConstructorName, ProperNameType_TypeName, ModuleName)
+import Language.PS.CST.Types.Leafs (ProperName, ProperNameType_ConstructorName, ProperNameType_TypeConstructor, ModuleName)
 
 -- used to replace `QualifiedName (ProperName ProperNameType_ClassName)`
 --
--- because we need `ProperName ProperNameType_TypeName` everywhere except `SmartQualifiedNameConstructor__Ignore`
+-- because we need `ProperName ProperNameType_TypeConstructor` everywhere except `SmartQualifiedNameConstructor__Ignore`
 -- in order to generate `import Module.Name (FooType(..))`
 data SmartQualifiedNameConstructor
   -- not imported at all
@@ -20,20 +20,20 @@ data SmartQualifiedNameConstructor
   | SmartQualifiedNameConstructor__Full
     ModuleName -- original
     (ProperName ProperNameType_ConstructorName)
-    (ProperName ProperNameType_TypeName)
+    (ProperName ProperNameType_TypeConstructor)
   -- imported as `import Module.Name (FooType(..))`
   -- used in code as `FooConst`
   | SmartQualifiedNameConstructor__Simple
     ModuleName -- original
     (ProperName ProperNameType_ConstructorName)
-    (ProperName ProperNameType_TypeName)
+    (ProperName ProperNameType_TypeConstructor)
   -- imported as `import Module.Name (FooType(..)) as Custom.Custom`
   -- used in code as `Custom.Custom.FooConst`
   | SmartQualifiedNameConstructor__Custom
     ModuleName -- original
     ModuleName -- custom
     (ProperName ProperNameType_ConstructorName) -- name
-    (ProperName ProperNameType_TypeName)
+    (ProperName ProperNameType_TypeConstructor)
 
 
 derive instance genericSmartQualifiedNameConstructor :: Generic SmartQualifiedNameConstructor _

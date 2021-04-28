@@ -7,7 +7,7 @@ import Data.Show.Generic (genericShow)
 import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
 
-import Language.PS.CST.Types.Leafs (Ident, ModuleName, OpName, OpNameType_TypeOpName, OpNameType_ValueOpName, ProperName, ProperNameType_ClassName, ProperNameType_ConstructorName, ProperNameType_KindName, ProperNameType_TypeName)
+import Language.PS.CST.Types.Leafs (Ident, ModuleName, OpName, OpNameType_TypeOpName, OpNameType_ValueOpName, ProperName, ProperNameType_ClassName, ProperNameType_ConstructorName, ProperNameType_TypeConstructor)
 import Language.PS.CST.Types.Declaration (Declaration)
 
 newtype Module = Module
@@ -44,10 +44,10 @@ instance showDataMembers :: Show DataMembers where show = genericShow
 data Import
   = ImportValue Ident
   | ImportOp (OpName OpNameType_ValueOpName) -- e.g. "&&" function/value, rendered in parentheses
-  | ImportType (ProperName ProperNameType_TypeName) (Maybe DataMembers) -- e.g. "CONSOLE", "Maybe"
+  | ImportType (ProperName ProperNameType_TypeConstructor) (Maybe DataMembers) -- e.g. "CONSOLE", "Maybe"
   | ImportTypeOp (OpName OpNameType_TypeOpName) -- e.g. "<<<" type alias, rendered in parentheses as `type (<<<)`
   | ImportClass (ProperName ProperNameType_ClassName)
-  | ImportKind (ProperName ProperNameType_KindName)
+  | ImportKind (ProperName ProperNameType_TypeConstructor)
 derive instance genericImport :: Generic Import _
 derive instance eqImport :: Eq Import
 derive instance ordImport :: Ord Import
@@ -56,10 +56,10 @@ instance showImport :: Show Import where show = genericShow
 data Export
   = ExportValue Ident
   | ExportOp (OpName OpNameType_ValueOpName) -- e.g. "&&" function/value, rendered in parentheses
-  | ExportType (ProperName ProperNameType_TypeName) (Maybe DataMembers) -- e.g. "CONSOLE", "Maybe"
+  | ExportType (ProperName ProperNameType_TypeConstructor) (Maybe DataMembers) -- e.g. "CONSOLE", "Maybe"
   | ExportTypeOp (OpName OpNameType_TypeOpName) -- e.g. "<<<" type alias, rendered in parentheses as `type (<<<)`
   | ExportClass (ProperName ProperNameType_ClassName)
-  | ExportKind (ProperName ProperNameType_KindName)
+  | ExportKind (ProperName ProperNameType_TypeConstructor)
   | ExportModule ModuleName
 derive instance genericExport :: Generic Export _
 derive instance eqExport :: Eq Export

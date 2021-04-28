@@ -2,7 +2,7 @@ module Language.PS.SmartCST.ProcessSmartDeclaration where
 
 import Data.Tuple.Nested (type (/\))
 import Language.PS.CST.Sugar.QualifiedName (nonQualifiedName)
-import Language.PS.CST.Types.Leafs (Ident, Label, ModuleName, OpName, OpNameType_TypeOpName, OpNameType_ValueOpName, ProperName, ProperNameType_ClassName, ProperNameType_ConstructorName, ProperNameType_KindName, ProperNameType_TypeName, RecordLabeled)
+import Language.PS.CST.Types.Leafs (Ident, Label, ModuleName, OpName, OpNameType_TypeOpName, OpNameType_ValueOpName, ProperName, ProperNameType_ClassName, ProperNameType_ConstructorName, ProperNameType_TypeConstructor, RecordLabeled)
 import Language.PS.CST.Types.Module (DataMembers(..), Import(..), ImportDecl(..))
 import Language.PS.CST.Types.QualifiedName (QualifiedName(..))
 import Language.PS.SmartCST.ProcessSmartDeclaration.Utils (findAndModifyOrNew)
@@ -146,7 +146,7 @@ processSmartQualifiedNameOp = processSmartQualifiedName
   ImportOp
 
 -- adds `import Module.Name (Foo)`
-processSmartQualifiedNameType :: SmartQualifiedName (ProperName ProperNameType_TypeName) -> App (QualifiedName (ProperName ProperNameType_TypeName))
+processSmartQualifiedNameType :: SmartQualifiedName (ProperName ProperNameType_TypeConstructor) -> App (QualifiedName (ProperName ProperNameType_TypeConstructor))
 processSmartQualifiedNameType = processSmartQualifiedName
   (\expectedName ->
     case _ of
@@ -176,7 +176,7 @@ processSmartQualifiedNameClass = processSmartQualifiedName
   (\name currentImport -> currentImport)
   ImportClass
 
-processSmartQualifiedNameKind :: SmartQualifiedName (ProperName ProperNameType_KindName) -> App (QualifiedName (ProperName ProperNameType_KindName))
+processSmartQualifiedNameKind :: SmartQualifiedName (ProperName ProperNameType_TypeConstructor) -> App (QualifiedName (ProperName ProperNameType_TypeConstructor))
 processSmartQualifiedNameKind = processSmartQualifiedName
   (\expectedName ->
     case _ of
@@ -337,13 +337,8 @@ processDataHead (SmartCST.Declaration.DataHead { dataHdName, dataHdVars }) = do
   (dataHdVars' :: Array (CST.Declaration.TypeVarBinding)) <- traverse processTypeVarBinding dataHdVars
   pure $ CST.Declaration.DataHead { dataHdName, dataHdVars: dataHdVars' }
 
-processKind :: SmartCST.Declaration.Kind -> App CST.Declaration.Kind
-processKind (SmartCST.Declaration.KindName prop) = CST.Declaration.KindName <$> processSmartQualifiedNameKind prop
-processKind (SmartCST.Declaration.KindArr kindA kindB) = CST.Declaration.KindArr <$> (processKind kindA) <*> (processKind kindB)
-processKind (SmartCST.Declaration.KindRow kindA) = CST.Declaration.KindRow <$> (processKind kindA)
-
 processTypeVarBinding :: SmartCST.Declaration.TypeVarBinding -> App CST.Declaration.TypeVarBinding
-processTypeVarBinding (SmartCST.Declaration.TypeVarKinded ident kind_) = CST.Declaration.TypeVarKinded ident <$> (processKind kind_)
+processTypeVarBinding (SmartCST.Declaration.TypeVarKinded ident kind_) = CST.Declaration.TypeVarKinded ident <$> (processType kind_)
 processTypeVarBinding (SmartCST.Declaration.TypeVarName ident) = pure $ CST.Declaration.TypeVarName ident
 
 processDataCtor :: SmartCST.Declaration.DataCtor -> App CST.Declaration.DataCtor
@@ -362,7 +357,7 @@ processType (SmartCST.Declaration.TypeRecord row) = CST.Declaration.TypeRecord <
 processType (SmartCST.Declaration.TypeApp typeA typeB) = CST.Declaration.TypeApp <$> processType typeA <*> processType typeB
 processType (SmartCST.Declaration.TypeForall bindings type_) = CST.Declaration.TypeForall <$> traverse processTypeVarBinding bindings <*> processType type_
 processType (SmartCST.Declaration.TypeArr typeA typeB) = CST.Declaration.TypeArr <$> processType typeA <*> processType typeB
-processType (SmartCST.Declaration.TypeKinded type_ kind_) = CST.Declaration.TypeKinded <$> processType type_ <*> processKind kind_
+processType (SmartCST.Declaration.TypeKinded type_ kind_) = CST.Declaration.TypeKinded <$> processType type_ <*> processType kind_
 processType (SmartCST.Declaration.TypeOp typeA opName typeB) = CST.Declaration.TypeOp <$> processType typeA <*> processSmartQualifiedNameTypeOp opName <*> processType typeB
 processType (SmartCST.Declaration.TypeConstrained constant type_) = CST.Declaration.TypeConstrained <$> processConstraint constant <*> processType type_
 
@@ -383,7 +378,7 @@ processForeign (SmartCST.Declaration.ForeignValue { ident, type_ }) = do
   (type_' :: CST.Declaration.PSType) <- processType type_
   pure $ CST.Declaration.ForeignValue { ident, type_: type_' }
 processForeign (SmartCST.Declaration.ForeignData { name, kind_ }) = do
-  (kind_' :: CST.Declaration.Kind) <- processKind kind_
+  (kind_' :: CST.Declaration.PSType) <- processType kind_
   pure $ CST.Declaration.ForeignData { name, kind_: kind_' }
 processForeign (SmartCST.Declaration.ForeignKind x) = pure $ CST.Declaration.ForeignKind x
 

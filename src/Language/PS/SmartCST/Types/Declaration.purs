@@ -4,12 +4,11 @@ import Prelude
 
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Either (Either)
-import Data.Either.Nested (type (\/))
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
 import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
-import Language.PS.CST.Types.Leafs (ClassFundep, Comments, DeclDeriveType, Fixity, Ident, Label, OpName, OpNameType_TypeOpName, OpNameType_ValueOpName, ProperName, ProperNameType_ClassName, ProperNameType_ConstructorName, ProperNameType_KindName, ProperNameType_TypeName, RecordLabeled)
+import Language.PS.CST.Types.Leafs (ClassFundep, Comments, DeclDeriveType, Fixity, Ident, Label, OpName, OpNameType_TypeOpName, OpNameType_ValueOpName, ProperName, ProperNameType_ClassName, ProperNameType_ConstructorName, ProperNameType_TypeConstructor, RecordLabeled)
 import Language.PS.SmartCST.Types.SmartQualifiedName (SmartQualifiedName)
 import Language.PS.SmartCST.Types.SmartQualifiedNameConstructor (SmartQualifiedNameConstructor)
 
@@ -61,6 +60,11 @@ data Declaration
     { comments :: Maybe Comments
     , foreign_ :: Foreign
     }
+  -- TODO:
+  -- DeclRole
+  -- https://github.com/purescript/purescript/blob/ee0b3d391151bcd5f56de4563208dcf657cccc8c/lib/purescript-cst/src/Language/PureScript/CST/Types.hs#L207
+  -- vs
+  -- https://github.com/purescript/purescript/blob/9cad73ed8ea7df3011032ddbd2f3de5a0c08629c/src/Language/PureScript/CST/Types.hs#L200
 
 derive instance genericDeclaration :: Generic Declaration _
 derive instance eqDeclaration :: Eq Declaration
@@ -76,8 +80,8 @@ type InstanceHead =
 
 data Foreign
   = ForeignValue { ident :: Ident, type_ :: PSType }
-  | ForeignData { name :: ProperName ProperNameType_TypeName, kind_ :: Kind }
-  | ForeignKind { name :: ProperName ProperNameType_KindName }
+  | ForeignData { name :: ProperName ProperNameType_TypeConstructor, kind_ :: PSType }
+  | ForeignKind { name :: ProperName ProperNameType_TypeConstructor }
 
 derive instance genericForeign :: Generic Foreign _
 derive instance eqForeign :: Eq Foreign
@@ -91,8 +95,8 @@ type FixityFields =
   }
 
 data FixityOp
-  = FixityValue (SmartQualifiedName Ident \/ SmartQualifiedNameConstructor) (OpName OpNameType_ValueOpName)
-  | FixityType (SmartQualifiedName (ProperName ProperNameType_TypeName)) (OpName OpNameType_TypeOpName)
+  = FixityValue (Either (SmartQualifiedName Ident) (SmartQualifiedNameConstructor)) (OpName OpNameType_ValueOpName)
+  | FixityType (SmartQualifiedName (ProperName ProperNameType_TypeConstructor)) (OpName OpNameType_TypeOpName)
 
 derive instance genericFixityOp :: Generic FixityOp _
 derive instance eqFixityOp :: Eq FixityOp
@@ -101,7 +105,7 @@ instance showFixityOp :: Show FixityOp where show = genericShow
 
 data PSType
   = TypeVar Ident
-  | TypeConstructor (SmartQualifiedName (ProperName ProperNameType_TypeName))
+  | TypeConstructor (SmartQualifiedName (ProperName ProperNameType_TypeConstructor))
   | TypeWildcard
   | TypeHole Ident
   | TypeString String
@@ -110,7 +114,7 @@ data PSType
   | TypeApp PSType PSType
   | TypeForall (NonEmptyArray TypeVarBinding) PSType
   | TypeArr PSType PSType
-  | TypeKinded PSType Kind
+  | TypeKinded PSType PSType
   | TypeOp PSType (SmartQualifiedName (OpName OpNameType_TypeOpName)) PSType -- like TypeArr, but with custom type alias
   | TypeConstrained PSConstraint PSType
   --
@@ -118,26 +122,15 @@ data PSType
   --
   -- | TypeOpName (SmartQualifiedName (OpName OpNameType_TypeOpName))
   -- | TypeArrName
-  -- | TypeParens PSType
+  -- | TypeParens PSType -- generated automatically
 
 derive instance genericType :: Generic PSType _
 derive instance eqType :: Eq PSType
 derive instance ordType :: Ord PSType
 instance showType :: Show PSType where show x = genericShow x
 
-data Kind
-  = KindName (SmartQualifiedName (ProperName ProperNameType_KindName))
-  | KindArr Kind Kind
-  | KindRow Kind
-  -- | KindParens Kind -- no need
-
-derive instance genericKind :: Generic Kind _
-derive instance eqKind :: Eq Kind
-derive instance ordKind :: Ord Kind
-instance showKind :: Show Kind where show x = genericShow x
-
 data TypeVarBinding
-  = TypeVarKinded Ident Kind
+  = TypeVarKinded Ident PSType
   | TypeVarName Ident
 
 derive instance genericTypeVarBinding :: Generic TypeVarBinding _
@@ -146,7 +139,7 @@ derive instance ordTypeVarBinding :: Ord TypeVarBinding
 instance showTypeVarBinding :: Show TypeVarBinding where show = genericShow
 
 newtype DataHead = DataHead
-  { dataHdName :: ProperName ProperNameType_TypeName
+  { dataHdName :: ProperName ProperNameType_TypeConstructor
   , dataHdVars :: Array TypeVarBinding
   }
 
@@ -351,4 +344,3 @@ type Instance =
 
 infixl 5 ExprLambda as ====>
 infixr 5 TypeArr as ====>>
-infixr 5 KindArr as ====>>>

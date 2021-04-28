@@ -8,7 +8,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
 import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
-import Language.PS.CST.Types.Leafs (ClassFundep, Comments, DeclDeriveType, Fixity, Ident, Label, OpName, OpNameType_TypeOpName, OpNameType_ValueOpName, ProperName, ProperNameType_ClassName, ProperNameType_ConstructorName, ProperNameType_KindName, ProperNameType_TypeName, RecordLabeled)
+import Language.PS.CST.Types.Leafs (ClassFundep, Comments, DeclDeriveType, Fixity, Ident, Label, OpName, OpNameType_TypeOpName, OpNameType_ValueOpName, ProperName, ProperNameType_ClassName, ProperNameType_ConstructorName, ProperNameType_TypeConstructor, RecordLabeled)
 import Language.PS.CST.Types.QualifiedName (QualifiedName)
 
 data Declaration
@@ -79,8 +79,8 @@ type InstanceHead =
 
 data Foreign
   = ForeignValue { ident :: Ident, type_ :: PSType }
-  | ForeignData { name :: ProperName ProperNameType_TypeName, kind_ :: Kind }
-  | ForeignKind { name :: ProperName ProperNameType_KindName }
+  | ForeignData { name :: ProperName ProperNameType_TypeConstructor, kind_ :: PSType }
+  | ForeignKind { name :: ProperName ProperNameType_TypeConstructor }
 
 derive instance genericForeign :: Generic Foreign _
 derive instance eqForeign :: Eq Foreign
@@ -95,7 +95,7 @@ type FixityFields =
 
 data FixityOp
   = FixityValue (Either (QualifiedName Ident) (QualifiedName (ProperName ProperNameType_ConstructorName))) (OpName OpNameType_ValueOpName)
-  | FixityType (QualifiedName (ProperName ProperNameType_TypeName)) (OpName OpNameType_TypeOpName)
+  | FixityType (QualifiedName (ProperName ProperNameType_TypeConstructor)) (OpName OpNameType_TypeOpName)
 
 derive instance genericFixityOp :: Generic FixityOp _
 derive instance eqFixityOp :: Eq FixityOp
@@ -104,7 +104,7 @@ instance showFixityOp :: Show FixityOp where show = genericShow
 
 data PSType
   = TypeVar Ident
-  | TypeConstructor (QualifiedName (ProperName ProperNameType_TypeName))
+  | TypeConstructor (QualifiedName (ProperName ProperNameType_TypeConstructor))
   | TypeWildcard
   | TypeHole Ident
   | TypeString String
@@ -113,7 +113,7 @@ data PSType
   | TypeApp PSType PSType
   | TypeForall (NonEmptyArray TypeVarBinding) PSType
   | TypeArr PSType PSType
-  | TypeKinded PSType Kind
+  | TypeKinded PSType PSType
   | TypeOp PSType (QualifiedName (OpName OpNameType_TypeOpName)) PSType -- like TypeArr, but with custom type alias
   | TypeConstrained PSConstraint PSType
   --
@@ -128,19 +128,8 @@ derive instance eqType :: Eq PSType
 derive instance ordType :: Ord PSType
 instance showType :: Show PSType where show x = genericShow x
 
-data Kind
-  = KindName (QualifiedName (ProperName ProperNameType_KindName))
-  | KindArr Kind Kind
-  | KindRow Kind
-  -- | KindParens Kind -- no need
-
-derive instance genericKind :: Generic Kind _
-derive instance eqKind :: Eq Kind
-derive instance ordKind :: Ord Kind
-instance showKind :: Show Kind where show x = genericShow x
-
 data TypeVarBinding
-  = TypeVarKinded Ident Kind
+  = TypeVarKinded Ident PSType
   | TypeVarName Ident
 
 derive instance genericTypeVarBinding :: Generic TypeVarBinding _
@@ -149,7 +138,7 @@ derive instance ordTypeVarBinding :: Ord TypeVarBinding
 instance showTypeVarBinding :: Show TypeVarBinding where show = genericShow
 
 newtype DataHead = DataHead
-  { dataHdName :: ProperName ProperNameType_TypeName
+  { dataHdName :: ProperName ProperNameType_TypeConstructor
   , dataHdVars :: Array TypeVarBinding
   }
 
@@ -353,4 +342,3 @@ type Instance =
 
 infixl 5 ExprLambda as ====>
 infixr 5 TypeArr as ====>>
-infixr 5 KindArr as ====>>>

@@ -1,6 +1,6 @@
 module Test.Golden.DeclType.Actual where
 
-import Language.PS.CST (PSConstraint(..), DataHead(..), Declaration(..), Ident(..), Kind(..), Module(..), OpName(..), ProperName(..), PSType(..), TypeVarBinding(..), arrayType, booleanType, maybeType, mkModuleName, mkRowLabels, nonQualifiedName, numberType, qualifiedName, stringType, typeRecord, (====>>), (====>>>))
+import Language.PS.CST (PSConstraint(..), DataHead(..), Declaration(..), Ident(..), Module(..), OpName(..), ProperName(..), PSType(..), TypeVarBinding(..), arrayType, booleanType, maybeType, mkModuleName, mkRowLabels, nonQualifiedName, numberType, qualifiedName, stringType, typeRecord, (====>>))
 
 import Data.Maybe (Maybe(..))
 import Data.Array.NonEmpty as NonEmpty
@@ -27,6 +27,9 @@ myExtension = TypeConstructor $ nonQualifiedName $ ProperName "MyExtension"
 
 declFooType :: PSType -> Declaration
 declFooType type_ = DeclType { comments: Nothing, head, type_ }
+
+typeRow :: PSType
+typeRow = (TypeConstructor $ nonQualifiedName $ ProperName "Row") `TypeApp` (TypeConstructor $ nonQualifiedName $ ProperName "Type")
 
 actualModule :: Module
 actualModule = Module
@@ -134,7 +137,7 @@ actualModule = Module
     , declFooType $ TypeForall
       ( NonEmpty.cons'
         (TypeVarName $ Ident "a")
-        [ (TypeVarKinded (Ident "b") (KindRow (KindName $ nonQualifiedName (ProperName "Type"))) )
+        [ (TypeVarKinded (Ident "b") (typeRow) )
         ]
       )
       (arrayType $ TypeVar $ Ident "a")
@@ -165,10 +168,10 @@ actualModule = Module
         (TypeVar $ Ident "f"))
     , declFooType $ TypeKinded
       (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
-      (((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "Type")) ====>>> (KindName $ nonQualifiedName $ ProperName "Type"))
+      (((TypeConstructor $ nonQualifiedName $ ProperName "CustomKind") ====>> typeRow) ====>> (TypeConstructor $ nonQualifiedName $ ProperName "Type"))
     , declFooType $ TypeKinded
       (TypeConstructor $ nonQualifiedName $ ProperName "MyKindedType")
-      ((KindName $ nonQualifiedName $ ProperName "CustomKind") ====>>> KindRow (KindName $ nonQualifiedName $ ProperName "Type") ====>>> (KindName $ nonQualifiedName $ ProperName "Type"))
+      ((TypeConstructor $ nonQualifiedName $ ProperName "CustomKind") ====>> typeRow ====>> (TypeConstructor $ nonQualifiedName $ ProperName "Type"))
     , declFooType $
       (TypeConstructor $ nonQualifiedName (ProperName "FooBarBaz"))
       `TypeApp`
