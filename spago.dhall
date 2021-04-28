@@ -1,4 +1,4 @@
-{ name = "purescript-ps-cst"
+{ name = "ps-cst"
 , dependencies =
     [ "effect"
     , "psci-support"

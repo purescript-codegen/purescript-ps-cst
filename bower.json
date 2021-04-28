@@ -1,5 +1,5 @@
 {
-    "name": "purescript-purescript-ps-cst",
+    "name": "purescript-ps-cst",
     "license": [
         "Apache-2.0"
     ],
@@ -17,7 +17,7 @@
         "purescript-aff": "^v6.0.0",
         "purescript-ansi": "^v6.1.0",
         "purescript-arrays": "^v6.0.0",
-        "purescript-dodo-printer": "https://github.com/srghma/purescript-dodo-printer.git#master",
+        "purescript-dodo-printer": "https://github.com/natefaubion/purescript-dodo-printer.git#v2.0.0",
         "purescript-effect": "^v3.0.0",
         "purescript-either": "^v5.0.0",
         "purescript-foldable-traversable": "^v5.0.0",
