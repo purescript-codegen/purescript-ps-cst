@@ -1,0 +1,40 @@
+{
+    "name": "purescript-purescript-ps-cst",
+    "license": [
+        "Apache-2.0"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/purescript-codegen/purescript-ps-cst"
+    },
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "output"
+    ],
+    "dependencies": {
+        "purescript-aff": "^v6.0.0",
+        "purescript-ansi": "^v6.1.0",
+        "purescript-arrays": "^v6.0.0",
+        "purescript-dodo-printer": "https://github.com/srghma/purescript-dodo-printer.git#master",
+        "purescript-effect": "^v3.0.0",
+        "purescript-either": "^v5.0.0",
+        "purescript-foldable-traversable": "^v5.0.0",
+        "purescript-functions": "^v5.0.0",
+        "purescript-lists": "^v6.0.0",
+        "purescript-maybe": "^v5.0.0",
+        "purescript-newtype": "^v4.0.0",
+        "purescript-node-buffer": "^v7.0.0",
+        "purescript-node-fs-aff": "^v7.0.0",
+        "purescript-node-path": "^v4.0.0",
+        "purescript-ordered-collections": "^v2.0.0",
+        "purescript-parallel": "^v5.0.0",
+        "purescript-prelude": "^v5.0.0",
+        "purescript-psci-support": "^v5.0.0",
+        "purescript-spec": "^v5.0.0",
+        "purescript-strings": "^v5.0.0",
+        "purescript-transformers": "^v5.0.0",
+        "purescript-tuples": "^v6.0.0"
+    }
+}
