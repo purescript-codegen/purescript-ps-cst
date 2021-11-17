@@ -25,6 +25,6 @@
     ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]
-, license = "Apache-2.0"
+, license = "BSD-3-Clause"
 , repository = "https://github.com/purescript-codegen/purescript-ps-cst"
 }
